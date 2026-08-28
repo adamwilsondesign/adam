@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import type { YearRange } from "@/lib/content/model";
 
@@ -26,6 +26,9 @@ export function YearRangeSlider({
 }: YearRangeSliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef<"start" | "end" | null>(null);
+  // Which handle shows its floating year readout (pointer drags only;
+  // keyboard focus shows it via :focus-visible in CSS).
+  const [dragging, setDragging] = useState<"start" | "end" | null>(null);
 
   const span = Math.max(1, bounds.end - bounds.start);
   const startPercent = ((value.start - bounds.start) / span) * 100;
@@ -54,8 +57,9 @@ export function YearRangeSlider({
   const handlePointerDown = (handle: "start" | "end") => (event: React.PointerEvent) => {
     event.preventDefault();
     draggingRef.current = handle;
-    (event.target as HTMLElement).setPointerCapture(event.pointerId);
-    (event.target as HTMLElement).focus();
+    setDragging(handle);
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    (event.currentTarget as HTMLElement).focus();
   };
 
   const handlePointerMove = (event: React.PointerEvent) => {
@@ -67,7 +71,8 @@ export function YearRangeSlider({
   const handlePointerUp = (event: React.PointerEvent) => {
     if (!draggingRef.current) return;
     draggingRef.current = null;
-    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
+    setDragging(null);
+    (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
     onInteractionEnd();
   };
 
@@ -77,6 +82,7 @@ export function YearRangeSlider({
     const handle = Math.abs(year - value.start) <= Math.abs(year - value.end) ? "start" : "end";
     moveHandle(handle, year);
     draggingRef.current = handle;
+    setDragging(handle);
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   };
 
@@ -135,6 +141,7 @@ export function YearRangeSlider({
             type="button"
             role="slider"
             className={styles.thumb}
+            data-dragging={dragging === handle || undefined}
             style={{ left: `${handle === "start" ? startPercent : endPercent}%` }}
             aria-label={handle === "start" ? "Start year" : "End year"}
             aria-valuemin={bounds.start}
@@ -146,7 +153,12 @@ export function YearRangeSlider({
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
             onKeyDown={handleKeyDown(handle)}
-          />
+          >
+            {/* Floating readout while this handle is being adjusted. */}
+            <span className={styles.thumbValue} aria-hidden>
+              {handle === "start" ? value.start : value.end}
+            </span>
+          </button>
         ))}
       </div>
       <span className={styles.yearLabel} aria-hidden>

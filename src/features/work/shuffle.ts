@@ -39,3 +39,31 @@ export function orderForSeed(ids: readonly string[], seed: number): Map<string, 
   shuffled.forEach((id, index) => order.set(id, index));
   return order;
 }
+
+/**
+ * Spatial continuity between filter states.
+ *
+ * Survivors keep their relative order (which, in a row-major grid, collapses
+ * gaps by shifting each survivor the minimum distance forward); newcomers
+ * append after them, ordered by the session's canonical shuffled order so
+ * entrances vary between visits but are deterministic within one.
+ *
+ * When the visible set is unchanged, the previous array is returned as-is so
+ * no downstream memo or animation re-fires.
+ */
+export function nextOrder(
+  previous: readonly string[],
+  visibleIds: readonly string[],
+  canonicalOrder: Map<string, number>,
+): string[] {
+  const visible = new Set(visibleIds);
+  const survivors = previous.filter((id) => visible.has(id));
+  if (survivors.length === previous.length && survivors.length === visibleIds.length) {
+    return previous as string[];
+  }
+  const surviving = new Set(survivors);
+  const newcomers = visibleIds
+    .filter((id) => !surviving.has(id))
+    .sort((a, b) => (canonicalOrder.get(a) ?? 0) - (canonicalOrder.get(b) ?? 0));
+  return [...survivors, ...newcomers];
+}

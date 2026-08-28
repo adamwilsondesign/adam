@@ -50,6 +50,15 @@ export function ArrowUpRightIcon({ size = 16 }: IconProps) {
   );
 }
 
+/** Crossing paths — shuffle the grid composition. */
+export function ShuffleIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...iconAttributes(size)}>
+      <path d="M3 6h3l8 8h3M3 14h3l2-2M12 8l2-2h3M14 3l3 3-3 3M14 11l3 3-3 3" />
+    </svg>
+  );
+}
+
 /** Half-filled disc — theme toggle. */
 export function ThemeIcon({ size = 20 }: IconProps) {
   return (

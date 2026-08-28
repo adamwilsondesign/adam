@@ -19,3 +19,29 @@
   top: 0;
   left: 0;
 }
+
+/* Contextual cursor label: a quiet caption trailing the pointer. It is an
+   enhancement only — aria-labels and the hover treatments carry the same
+   distinction — and never renders for coarse pointers. */
+.cursorLabel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 46;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  color: var(--color-fg);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-line);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cursorLabel {
+    display: none;
+  }
+}

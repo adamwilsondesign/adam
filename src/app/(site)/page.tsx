@@ -26,7 +26,11 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
       />
-      <HomeView intro={settings.description} />
+      <HomeView
+        intro={settings.description}
+        sections={settings.navigation}
+        workRange={{ start: settings.workStartYear, end: settings.workEndYear }}
+      />
     </>
   );
 }

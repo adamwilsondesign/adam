@@ -184,6 +184,7 @@ export function DesktopCaseModal({
             >
               Visit project
               <ArrowUpRightIcon />
+              <span className="visually-hidden">(external site, opens in a new tab)</span>
             </motion.a>
           ) : null}
         </motion.div>

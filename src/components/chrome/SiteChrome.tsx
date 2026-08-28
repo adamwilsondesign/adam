@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ArrowLeftIcon, MenuIcon, ThemeIcon } from "@/components/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import type { NavSection } from "@/lib/content/model";
 import { interceptShellNavigation } from "@/lib/shell-navigation";
 
 import { MenuOverlay } from "./MenuOverlay";
@@ -16,22 +17,31 @@ type SiteChromeProps = {
   title: string;
   logoUrl: string | null;
   contactUrl: string | null;
+  navigation: NavSection[];
 };
 
-const slotTransition = { duration: 0.24, ease: [0.22, 1, 0.36, 1] as const };
+const slotTransition = { duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
 
 /**
- * The persistent shell chrome: menu / back at top left, the personal logo
+ * The persistent shell chrome: back (or menu) at top left, the personal logo
  * centred, theme and contact at top right (homepage only). It stays mounted
  * across routes so the shell reads as one continuous interface.
+ *
+ * The header resolves instantly per route: Work shows only Back and the
+ * centred home control (the left-slot swap crossfades in place, so no
+ * impossible combination ever renders); the homepage shows the menu — and
+ * only when more than one section exists for it to navigate, since a menu
+ * that duplicates the visible homepage index adds nothing.
  */
-export function SiteChrome({ title, logoUrl, contactUrl }: SiteChromeProps) {
+export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChromeProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const mode = pathname === "/" ? "home" : pathname.startsWith("/work") ? "work" : "other";
+  const availableSections = navigation.filter((section) => section.available);
+  const showMenu = availableSections.length > 1;
 
   useEffect(() => {
     router.prefetch("/work");
@@ -47,10 +57,11 @@ export function SiteChrome({ title, logoUrl, contactUrl }: SiteChromeProps) {
     <>
       <header className={styles.header}>
         <div className={styles.slot}>
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence initial={false}>
             {mode === "work" ? (
               <motion.div
                 key="back"
+                className={styles.slotItem}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -61,9 +72,10 @@ export function SiteChrome({ title, logoUrl, contactUrl }: SiteChromeProps) {
                   <span className={styles.controlLabel}>Back</span>
                 </button>
               </motion.div>
-            ) : (
+            ) : showMenu ? (
               <motion.div
                 key="menu"
+                className={styles.slotItem}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -80,7 +92,7 @@ export function SiteChrome({ title, logoUrl, contactUrl }: SiteChromeProps) {
                   <span className={styles.controlLabel}>Menu</span>
                 </button>
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
         </div>
 
@@ -100,7 +112,7 @@ export function SiteChrome({ title, logoUrl, contactUrl }: SiteChromeProps) {
             {mode !== "work" && (
               <motion.div
                 key="home-controls"
-                className={styles.controlGroup}
+                className={`${styles.slotItem} ${styles.controlGroup}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -127,12 +139,15 @@ export function SiteChrome({ title, logoUrl, contactUrl }: SiteChromeProps) {
         </div>
       </header>
 
-      <MenuOverlay
-        open={menuOpen}
-        pathname={pathname}
-        onClose={() => setMenuOpen(false)}
-        onNavigate={navigate}
-      />
+      {showMenu ? (
+        <MenuOverlay
+          open={menuOpen}
+          pathname={pathname}
+          sections={availableSections}
+          onClose={() => setMenuOpen(false)}
+          onNavigate={navigate}
+        />
+      ) : null}
     </>
   );
 }

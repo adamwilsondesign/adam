@@ -75,3 +75,31 @@
   cursor: grabbing;
   background: var(--color-fg);
 }
+
+/* The active year floats above the handle while it is being adjusted. */
+.thumbValue {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  font-size: 12px;
+  font-weight: var(--weight-light);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 4px 6px;
+  color: var(--color-fg);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-line);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition:
+    opacity 140ms var(--ease-precise),
+    transform 140ms var(--ease-precise);
+}
+
+.thumb[data-dragging] .thumbValue,
+.thumb:focus-visible .thumbValue {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

@@ -1,16 +1,34 @@
 .cell {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
   color: var(--color-fg);
   opacity: 0.8;
-  transition: opacity 200ms var(--ease-precise);
+  transition: opacity 160ms var(--ease-precise);
+}
+
+.cell[data-align="start"] {
+  justify-content: flex-start;
+  padding-left: 6%;
+}
+
+.cell[data-align="end"] {
+  justify-content: flex-end;
+  padding-right: 6%;
 }
 
 .cell:hover,
 .cell:focus-visible {
   opacity: 1;
+}
+
+/* A clear square focus treatment that survives complex image masks. */
+.cell:focus-visible {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 3px;
 }
 
 /* The grid cell whose case study is currently open hands its logo to the
@@ -22,7 +40,20 @@
 }
 
 .logoBox {
-  position: absolute;
-  inset: 15%;
+  position: relative;
   display: block;
+  /* width/height set inline from the optical normalization. */
+}
+
+/* Case-study cells lift slightly under hover and focus, strengthening the
+   hero reveal on thin wordmark masks without touching layout. */
+@media (prefers-reduced-motion: no-preference) {
+  a.cell .logoBox {
+    transition: transform 240ms var(--ease-precise);
+  }
+
+  a.cell:hover .logoBox,
+  a.cell:focus-visible .logoBox {
+    transform: scale(1.05);
+  }
 }

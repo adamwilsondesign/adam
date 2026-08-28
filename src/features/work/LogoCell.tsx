@@ -9,7 +9,17 @@ import type { WorkClient } from "@/lib/content/model";
 
 import styles from "./LogoCell.module.css";
 import { LogoMark } from "./LogoMark";
+import { opticalLogoBox } from "./optical";
 import { setCaseOrigin } from "./origin-store";
+
+/** Tooltip intents raised by informational cells; DesktopGrid owns timing. */
+export type TooltipIntents = {
+  hoverStart: (client: WorkClient, rect: DOMRect) => void;
+  hoverEnd: () => void;
+  focusStart: (client: WorkClient, rect: DOMRect) => void;
+  focusEnd: () => void;
+  stickyToggle: (client: WorkClient, rect: DOMRect) => void;
+};
 
 type LogoCellProps = {
   client: WorkClient;
@@ -17,21 +27,36 @@ type LogoCellProps = {
   openSlug: string | null;
   /** True while this client's informational tooltip is open. */
   infoOpen: boolean;
-  onInfoToggle: (client: WorkClient, rect: DOMRect) => void;
-  onInfoClose: () => void;
+  /** Roving tabindex: exactly one cell in the grid is tabbable. */
+  tabIndex: number;
+  gridIndex: number;
+  onFocusIndex: (index: number) => void;
+  onCursorLabel: (label: string | null) => void;
+  tooltip: TooltipIntents;
 };
 
 /**
  * One desktop grid cell. Case-study clients are real links whose logo mask
- * fills with the hero image on hover; informational clients are buttons that
- * toggle the anchored tooltip on click (hover only raises their opacity).
+ * fills with the hero image on hover and focus; informational clients open
+ * the anchored tooltip on hover and focus, and pin it sticky on click. The
+ * two behaviours are also distinguished by a contextual cursor label.
  */
-export function LogoCell({ client, openSlug, infoOpen, onInfoToggle, onInfoClose }: LogoCellProps) {
+export function LogoCell({
+  client,
+  openSlug,
+  infoOpen,
+  tabIndex,
+  gridIndex,
+  onFocusIndex,
+  onCursorLabel,
+  tooltip,
+}: LogoCellProps) {
   const cellRef = useRef<HTMLElement | null>(null);
   const [hovered, setHovered] = useState(false);
 
   const caseStudy = client.caseStudy;
   const isOrigin = caseStudy !== null && caseStudy.slug === openSlug;
+  const optical = opticalLogoBox(client.logoAspect, client.logoTreatment);
 
   useEffect(() => {
     if (caseStudy) preload(caseStudy.heroUrl, { as: "image" });
@@ -40,6 +65,11 @@ export function LogoCell({ client, openSlug, infoOpen, onInfoToggle, onInfoClose
   const markRect = (): DOMRect => {
     const mask = cellRef.current?.querySelector("[data-logo-mask]");
     return (mask ?? cellRef.current!).getBoundingClientRect();
+  };
+
+  const logoBoxStyle: React.CSSProperties = {
+    width: `${optical.widthPct}%`,
+    height: `${optical.heightPct}%`,
   };
 
   if (caseStudy) {
@@ -51,13 +81,24 @@ export function LogoCell({ client, openSlug, infoOpen, onInfoToggle, onInfoClose
         href={`/work/${caseStudy.slug}`}
         className={styles.cell}
         data-case-cell={caseStudy.slug}
+        data-grid-index={gridIndex}
+        data-align={optical.alignment}
         aria-label={`${client.name} — open case study “${caseStudy.title}”`}
         aria-hidden={isOrigin || undefined}
-        tabIndex={isOrigin ? -1 : undefined}
+        tabIndex={isOrigin ? -1 : tabIndex}
         data-origin={isOrigin || undefined}
-        onPointerEnter={() => setHovered(true)}
-        onPointerLeave={() => setHovered(false)}
-        onFocus={() => setHovered(true)}
+        onPointerEnter={() => {
+          setHovered(true);
+          onCursorLabel("view project");
+        }}
+        onPointerLeave={() => {
+          setHovered(false);
+          onCursorLabel(null);
+        }}
+        onFocus={() => {
+          setHovered(true);
+          onFocusIndex(gridIndex);
+        }}
         onBlur={() => setHovered(false)}
         onClick={() => {
           const rect = markRect();
@@ -70,12 +111,14 @@ export function LogoCell({ client, openSlug, infoOpen, onInfoToggle, onInfoClose
           // The overlay swallows pointerleave, so drop the hover fill now —
           // the cell must be plain monochrome when the overlay hands back.
           setHovered(false);
+          onCursorLabel(null);
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
-        <span className={styles.logoBox}>
+        <span className={styles.logoBox} style={logoBoxStyle}>
           <LogoMark
             logoUrl={client.logoUrl}
+            treatment={client.logoTreatment}
             heroUrl={caseStudy.heroUrl}
             heroVisible={hovered}
             parallax
@@ -93,16 +136,29 @@ export function LogoCell({ client, openSlug, infoOpen, onInfoToggle, onInfoClose
       type="button"
       className={styles.cell}
       data-client-cell={client.id}
+      data-grid-index={gridIndex}
+      data-align={optical.alignment}
       aria-label={client.name}
       aria-expanded={infoOpen}
       aria-describedby={infoOpen ? "work-tooltip" : undefined}
-      onClick={() => onInfoToggle(client, markRect())}
-      onBlur={() => {
-        if (infoOpen) onInfoClose();
+      tabIndex={tabIndex}
+      onPointerEnter={() => {
+        onCursorLabel("details");
+        tooltip.hoverStart(client, markRect());
       }}
+      onPointerLeave={() => {
+        onCursorLabel(null);
+        tooltip.hoverEnd();
+      }}
+      onFocus={() => {
+        onFocusIndex(gridIndex);
+        tooltip.focusStart(client, markRect());
+      }}
+      onBlur={() => tooltip.focusEnd()}
+      onClick={() => tooltip.stickyToggle(client, markRect())}
     >
-      <span className={styles.logoBox}>
-        <LogoMark logoUrl={client.logoUrl} />
+      <span className={styles.logoBox} style={logoBoxStyle}>
+        <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} />
       </span>
     </button>
   );

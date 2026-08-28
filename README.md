@@ -128,6 +128,45 @@ All portfolio content lives in Sanity — **no component edits are needed**:
    credential-less development and CI; they never leak into a configured
    production build.
 
+### Content validation & placeholder guards
+
+`src/lib/content/validate.ts` runs once per server process from the content
+facade and reports duplicate slugs, inverted engagement ranges, missing
+required copy, missing alt text, and placeholder leakage (example.com URLs,
+placeholder contact addresses).
+
+- **Placeholder mode** (fixtures): structural problems are errors; placeholder
+  leakage is a warning — the documented demo build never fails for being a
+  demo.
+- **Production mode** (Sanity configured, or
+  `NEXT_PUBLIC_CONTENT_VALIDATION=production`): leakage becomes an error and
+  fails the build with an actionable report.
+
+Independently of validation, `src/lib/content/placeholder-guard.ts` sanitizes
+every external/contact URL at the facade: an example.com project CTA or a
+placeholder email can never render in **any** build — the control is omitted
+instead. The Contact control appears only once a real address exists (Sanity
+site settings → Contact, or `NEXT_PUBLIC_CONTACT_URL` while on fixtures).
+
+### Optical logo fields → Sanity mapping
+
+Equal grid cells get optically balanced marks via
+`src/features/work/optical.ts`, driven by per-client fields:
+
+| Model field                | Sanity field                       | Purpose                                            |
+| -------------------------- | ---------------------------------- | -------------------------------------------------- |
+| `logoAspect`               | `client.logoAspect`                | Intrinsic width ÷ height; automatic sizing input.  |
+| `logoTreatment.scale`      | `client.logoTreatment.scale`       | Exceptional multiplier on the automatic size.      |
+| `logoTreatment.padding`    | `client.logoTreatment.padding`     | Extra breathing room inside the cell (0–0.2).      |
+| `logoTreatment.alignment`  | `client.logoTreatment.alignment`   | `center` / `start` / `end` within the cell.        |
+| `logoTreatment.lightUrl`   | `client.logoTreatment.logoLight`   | Light-theme asset override (mask handles theming). |
+| `logoTreatment.darkUrl`    | `client.logoTreatment.logoDark`    | Dark-theme asset override.                         |
+| `logoTreatment.compactUrl` | `client.logoTreatment.compactLogo` | Denser mark for very small (pinched) cells.        |
+
+Aspect-ratio defaults are computed by the placeholder generator (from each
+SVG's viewBox) and entered per client in Studio for real logos; every
+treatment field is optional and most clients need none.
+
 ---
 
 ## Architecture
@@ -169,8 +208,24 @@ URL updates with a real history entry while the grid stays mounted, so Back
 `/work/[slug]` render the full page — default Work state beneath the opened
 case study — with Sanity-authored metadata, canonicals, OG/Twitter cards and
 CreativeWork JSON-LD. Filters, year range, zoom and pan never appear in the
-URL. The mobile info card participates in history via a same-URL state entry
-so the device back gesture dismisses it.
+URL (only case slugs are shareable); leaving for the homepage and returning
+restores the exploration through an in-memory session snapshot
+(`src/features/work/work-state-store.ts`). The mobile info card participates
+in history via a same-URL state entry so the device back gesture dismisses
+it.
+
+**Filter model.** An explicit **All** chip is the default: no individual tag
+is selected. Selecting a tag exits All; further tags expand the set with
+inclusive OR; deselecting the last tag (or pressing All) restores the full
+collection. Actions that would empty the grid are rejected with a pulse and
+an announcement, and pills that would do so are pre-marked subdued
+(`aria-disabled`). The live `NN / 40` count sits beside the slider.
+
+**Composition continuity.** The entrance is randomized once per visit.
+Filtering never reshuffles survivors: they keep their relative order (gaps
+collapse forward) and newcomers append in a deterministic per-session order
+(`nextOrder` in `src/features/work/shuffle.ts`). The quiet shuffle control in
+the dock is the one way to re-randomize.
 
 **Theming.** `data-theme` on `<html>`, stamped before paint by an inline
 script (stored preference, else system), persisted in `localStorage`.
@@ -190,12 +245,15 @@ setAnalyticsProvider((event) => myProvider.track(event.name, event));
 ## Testing
 
 ```bash
-npm test            # 37 unit tests: filtering, OR/date-overlap logic,
-                    # zero-result prevention, grid math, shuffle, normalization
-npm run test:e2e    # 16 Playwright tests: direct URLs + refresh, 404s,
-                    # Back/Forward state restoration, Escape + focus return,
-                    # zero-result rejection, slider keyboard support,
-                    # shuffle discipline, theme persistence, mobile flows
+npm test            # unit tests: All/OR/date-overlap filter logic, zero-result
+                    # prevention, spatial-continuity ordering, optical logo
+                    # normalization, grid math, content validation + guards
+npm run test:e2e    # Playwright: direct URLs + refresh, 404s, Back/Forward
+                    # state restoration, focus trap + Escape + focus return,
+                    # zero-result rejection, survivor stability, rapid filter
+                    # interruption, roving tabindex + skip link, tooltip
+                    # hover/focus/sticky, slider keyboard, reduced motion,
+                    # theme persistence, mobile flows
 ```
 
 Playwright builds and serves the fixture bundle itself. In sandboxes with a

@@ -2,7 +2,29 @@
   "title": "Adam Wilson",
   "description": "Independent designer working on interfaces, interaction and product strategy across AI, hardware and consumer software.",
   "logoUrl": null,
-  "contactUrl": "mailto:hello@example.com",
+  "contactUrl": null,
+  "navigation": [
+    {
+      "label": "Work",
+      "href": "/work",
+      "available": true
+    },
+    {
+      "label": "About",
+      "href": "/about",
+      "available": false
+    },
+    {
+      "label": "Blog",
+      "href": "/blog",
+      "available": false
+    },
+    {
+      "label": "Experiments",
+      "href": "/experiments",
+      "available": false
+    }
+  ],
   "workStartYear": 2010,
   "workEndYear": 2026,
   "seo": {

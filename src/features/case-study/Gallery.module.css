@@ -83,3 +83,17 @@
 .endFade[data-hidden] {
   opacity: 0;
 }
+
+/* Quiet position indicator in the vitrine's upper corner. */
+.progress {
+  position: absolute;
+  top: -34px;
+  right: 26px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--weight-thin);
+  font-variant-numeric: tabular-nums;
+  color: #b2b2b2;
+  user-select: none;
+  pointer-events: none;
+}

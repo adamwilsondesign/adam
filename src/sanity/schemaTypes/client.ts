@@ -46,6 +46,67 @@ export const clientType = defineType({
         }),
     }),
     defineField({
+      name: "logoAspect",
+      title: "Logo aspect ratio (width ÷ height)",
+      type: "number",
+      group: "identity",
+      description:
+        "Intrinsic width ÷ height of the SVG viewBox (e.g. 4.5 for a wide wordmark, 1 for a square symbol). Drives automatic optical sizing in the grid. Defaults to 1 when empty.",
+      validation: (rule) => rule.min(0.2).max(12),
+    }),
+    defineField({
+      name: "logoTreatment",
+      title: "Optical overrides",
+      type: "object",
+      group: "identity",
+      description:
+        "Exceptional per-client adjustments to the automatic optical sizing. Leave empty for almost every client.",
+      options: { collapsible: true, collapsed: true },
+      fields: [
+        defineField({
+          name: "scale",
+          title: "Scale multiplier",
+          type: "number",
+          description: "Multiplies the automatic size (0.5–1.5; 1 = automatic).",
+          validation: (rule) => rule.min(0.5).max(1.5),
+        }),
+        defineField({
+          name: "padding",
+          title: "Extra padding",
+          type: "number",
+          description: "Extra breathing room inside the cell, 0–0.2 (fraction of the cell).",
+          validation: (rule) => rule.min(0).max(0.2),
+        }),
+        defineField({
+          name: "alignment",
+          title: "Horizontal alignment",
+          type: "string",
+          options: { list: ["center", "start", "end"], layout: "radio" },
+        }),
+        defineField({
+          name: "logoLight",
+          title: "Light-theme logo (SVG)",
+          type: "file",
+          options: { accept: "image/svg+xml,.svg" },
+          description:
+            "Only for logos that cannot be recoloured as a mask; the main logo already adapts to both themes.",
+        }),
+        defineField({
+          name: "logoDark",
+          title: "Dark-theme logo (SVG)",
+          type: "file",
+          options: { accept: "image/svg+xml,.svg" },
+        }),
+        defineField({
+          name: "compactLogo",
+          title: "Compact mark (SVG)",
+          type: "file",
+          options: { accept: "image/svg+xml,.svg" },
+          description: "Denser alternate mark used when cells become very small (mobile pinch).",
+        }),
+      ],
+    }),
+    defineField({
       name: "description",
       title: "Informational description",
       type: "string",

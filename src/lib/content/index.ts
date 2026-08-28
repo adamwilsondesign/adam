@@ -9,30 +9,33 @@ import {
   fixtureWorkIndex,
 } from "./fixtures";
 import type { CaseStudy, SiteSettings, WorkClient } from "./model";
+import { sanitizeContactUrl, sanitizeExternalUrl } from "./placeholder-guard";
 import {
   sanityCaseStudy,
   sanityCaseStudySlugs,
   sanitySiteSettings,
   sanityWorkIndex,
 } from "./sanity-source";
+import { formatIssues, validateContent, type ValidationMode } from "./validate";
 
 export type ContentSourceName = "sanity" | "fixtures";
 
 export class ContentConfigurationError extends Error {
-  constructor() {
+  constructor(detail?: string) {
     super(
-      [
-        "No content source is configured for a production build.",
-        "",
-        "Sanity is the production source of truth. To connect it:",
-        "  1. Set NEXT_PUBLIC_SANITY_PROJECT_ID (and NEXT_PUBLIC_SANITY_DATASET) — see .env.example.",
-        "  2. Optionally set SANITY_API_READ_TOKEN for draft previews.",
-        "  3. Seed placeholder content with `npm run sanity:seed` if the dataset is empty.",
-        "",
-        "To intentionally build with local fixture content (CI, previews without a CMS),",
-        "set NEXT_PUBLIC_CONTENT_SOURCE=fixtures explicitly. Production never falls back",
-        "to fixtures silently.",
-      ].join("\n"),
+      detail ??
+        [
+          "No content source is configured for a production build.",
+          "",
+          "Sanity is the production source of truth. To connect it:",
+          "  1. Set NEXT_PUBLIC_SANITY_PROJECT_ID (and NEXT_PUBLIC_SANITY_DATASET) — see .env.example.",
+          "  2. Optionally set SANITY_API_READ_TOKEN for draft previews.",
+          "  3. Seed placeholder content with `npm run sanity:seed` if the dataset is empty.",
+          "",
+          "To intentionally build with local fixture content (CI, previews without a CMS),",
+          "set NEXT_PUBLIC_CONTENT_SOURCE=fixtures explicitly. Production never falls back",
+          "to fixtures silently.",
+        ].join("\n"),
     );
     this.name = "ContentConfigurationError";
   }
@@ -59,18 +62,98 @@ export function resolveContentSource(): ContentSourceName {
   throw new ContentConfigurationError();
 }
 
+/**
+ * Placeholder mode is the documented fixture-backed state; production mode
+ * turns placeholder leakage (example URLs, fake contact addresses, missing
+ * alt text) into hard errors. Sanity-backed builds always validate as
+ * production; NEXT_PUBLIC_CONTENT_VALIDATION=production forces it early.
+ */
+export function resolveValidationMode(): ValidationMode {
+  if (process.env.NEXT_PUBLIC_CONTENT_VALIDATION === "production") return "production";
+  return resolveContentSource() === "sanity" ? "production" : "placeholder";
+}
+
+/* ------------------------------------------------------------------ */
+/* One-shot validation                                                 */
+/* ------------------------------------------------------------------ */
+
+let validationRun: Promise<void> | null = null;
+
+async function loadAll(): Promise<{
+  settings: SiteSettings;
+  clients: WorkClient[];
+  caseStudies: CaseStudy[];
+}> {
+  const sanity = resolveContentSource() === "sanity";
+  const settings = sanity ? await sanitySiteSettings() : fixtureSiteSettings();
+  const clients = sanity ? await sanityWorkIndex() : fixtureWorkIndex();
+  const slugs = sanity ? await sanityCaseStudySlugs() : fixtureCaseStudySlugs();
+  const caseStudies = (
+    await Promise.all(
+      slugs.map(({ slug }) => (sanity ? sanityCaseStudy(slug) : fixtureCaseStudy(slug))),
+    )
+  ).filter((study): study is CaseStudy => study !== null);
+  return { settings, clients, caseStudies };
+}
+
+/**
+ * Validates the full content set once per server process. Errors fail
+ * production builds with an actionable message; in development everything is
+ * reported to the console and the site keeps rendering.
+ */
+function ensureValidated(): Promise<void> {
+  validationRun ??= (async () => {
+    const mode = resolveValidationMode();
+    const bundle = await loadAll();
+    const issues = validateContent(bundle, mode);
+    if (issues.length === 0) return;
+
+    const errors = issues.filter((issue) => issue.level === "error");
+    const report = formatIssues(issues);
+    if (errors.length > 0 && process.env.NODE_ENV === "production") {
+      throw new ContentConfigurationError(
+        `Content validation failed (${mode} mode):\n${report}\n\nFix the content (Sanity Studio or \`npm run placeholders\`) and rebuild.`,
+      );
+    }
+    console.warn(`[content] validation report (${mode} mode):\n${report}`);
+  })().catch((error) => {
+    validationRun = null; // allow a later retry in dev
+    throw error;
+  });
+  return validationRun;
+}
+
+/* ------------------------------------------------------------------ */
+/* Facade                                                              */
+/* ------------------------------------------------------------------ */
+
 export async function getSiteSettings(): Promise<SiteSettings> {
-  return resolveContentSource() === "sanity" ? sanitySiteSettings() : fixtureSiteSettings();
+  await ensureValidated();
+  const settings =
+    resolveContentSource() === "sanity" ? await sanitySiteSettings() : fixtureSiteSettings();
+  const envContact = process.env.NEXT_PUBLIC_CONTACT_URL || null;
+  return {
+    ...settings,
+    // A placeholder contact address can never render; the control hides.
+    contactUrl: sanitizeContactUrl(settings.contactUrl ?? envContact),
+  };
 }
 
 export async function getWorkIndex(): Promise<WorkClient[]> {
+  await ensureValidated();
   return resolveContentSource() === "sanity" ? sanityWorkIndex() : fixtureWorkIndex();
 }
 
 export async function getCaseStudy(slug: string): Promise<CaseStudy | null> {
-  return resolveContentSource() === "sanity" ? sanityCaseStudy(slug) : fixtureCaseStudy(slug);
+  await ensureValidated();
+  const study =
+    resolveContentSource() === "sanity" ? await sanityCaseStudy(slug) : fixtureCaseStudy(slug);
+  if (!study) return null;
+  // A placeholder project URL never ships as a CTA.
+  return { ...study, externalUrl: sanitizeExternalUrl(study.externalUrl) };
 }
 
 export async function getCaseStudySlugs(): Promise<{ slug: string; updatedAt: string }[]> {
+  await ensureValidated();
   return resolveContentSource() === "sanity" ? sanityCaseStudySlugs() : fixtureCaseStudySlugs();
 }

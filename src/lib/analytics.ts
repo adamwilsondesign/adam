@@ -28,6 +28,8 @@ export type AnalyticsEvent =
   | { name: "work_opened" }
   | { name: "work_closed" }
   | { name: "work_tag_toggled"; tag: WorkTag; active: boolean; rejected: boolean }
+  | { name: "work_tags_cleared" }
+  | { name: "work_shuffled" }
   | { name: "work_years_changed"; start: number; end: number }
   | { name: "client_info_opened"; clientId: string }
   | { name: "case_study_opened"; slug: string; source: "grid" | "direct" }

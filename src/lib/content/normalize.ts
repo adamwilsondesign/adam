@@ -24,7 +24,10 @@ import {
   WORK_TAGS,
   type CaseStudy,
   type Engagement,
+  type LogoAlignment,
+  type LogoTreatment,
   type MediaAspect,
+  type NavSection,
   type SiteSettings,
   type WorkClient,
   type WorkMedia,
@@ -79,6 +82,31 @@ function normalizeEngagements(raw: RawEngagement[] | null): Engagement[] {
   return engagements;
 }
 
+type RawLogoTreatment = {
+  scale?: number | null;
+  padding?: number | null;
+  alignment?: string | null;
+  lightUrl?: string | null;
+  darkUrl?: string | null;
+  compactUrl?: string | null;
+} | null;
+
+function normalizeLogoTreatment(raw: RawLogoTreatment): LogoTreatment | null {
+  if (!raw) return null;
+  const alignment = stegaClean(raw.alignment) as LogoAlignment | null;
+  const treatment: LogoTreatment = {
+    scale: raw.scale ?? null,
+    padding: raw.padding ?? null,
+    alignment:
+      alignment === "start" || alignment === "end" || alignment === "center" ? alignment : null,
+    lightUrl: raw.lightUrl ?? null,
+    darkUrl: raw.darkUrl ?? null,
+    compactUrl: raw.compactUrl ?? null,
+  };
+  const meaningful = Object.values(treatment).some((value) => value !== null);
+  return meaningful ? treatment : null;
+}
+
 export function normalizeWorkIndex(raw: WORK_INDEX_QUERY_RESULT): WorkClient[] {
   const clients: WorkClient[] = [];
   for (const item of raw) {
@@ -98,6 +126,8 @@ export function normalizeWorkIndex(raw: WORK_INDEX_QUERY_RESULT): WorkClient[] {
       name: item.name,
       slug,
       logoUrl: item.logoUrl,
+      logoAspect: item.logoAspect ?? 1,
+      logoTreatment: normalizeLogoTreatment(item.logoTreatment),
       description: item.description ?? "",
       engagements,
       caseStudy,
@@ -197,6 +227,19 @@ export function normalizeCaseStudy(raw: CASE_STUDY_QUERY_RESULT): CaseStudy | nu
   };
 }
 
+const DEFAULT_NAVIGATION: NavSection[] = [{ label: "Work", href: "/work", available: true }];
+
+function normalizeNavigation(
+  raw: Array<{ label: string | null; href: string | null; available: boolean | null }> | null,
+): NavSection[] {
+  const sections = (raw ?? []).flatMap((item) => {
+    const href = stegaClean(item.href);
+    if (!item.label || !href || !href.startsWith("/")) return [];
+    return [{ label: item.label, href, available: item.available === true }];
+  });
+  return sections.length > 0 ? sections : DEFAULT_NAVIGATION;
+}
+
 export function normalizeSiteSettings(raw: SITE_SETTINGS_QUERY_RESULT): SiteSettings {
   const title = raw?.title ?? "Portfolio";
   const description = raw?.description ?? "";
@@ -207,6 +250,7 @@ export function normalizeSiteSettings(raw: SITE_SETTINGS_QUERY_RESULT): SiteSett
     description,
     logoUrl: raw?.logoUrl ?? null,
     contactUrl: stegaClean(raw?.contactUrl) ?? null,
+    navigation: normalizeNavigation(raw?.navigation ?? null),
     workStartYear: Math.min(start, end),
     workEndYear: Math.max(start, end),
     seo: {

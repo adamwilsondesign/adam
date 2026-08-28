@@ -55,6 +55,56 @@ export const siteSettingsType = defineType({
         }),
     }),
     defineField({
+      name: "navigation",
+      title: "Site sections",
+      type: "array",
+      group: "identity",
+      description:
+        "Sections in display order. Unavailable sections are hidden from the interface entirely (never shown as “soon”).",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "label",
+              title: "Label",
+              type: "string",
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "href",
+              title: "Path",
+              type: "string",
+              description: "Root-relative path, e.g. /work.",
+              validation: (rule) =>
+                rule
+                  .required()
+                  .custom((value) =>
+                    typeof value === "string" && value.startsWith("/")
+                      ? true
+                      : "Use a root-relative path starting with /.",
+                  ),
+            }),
+            defineField({
+              name: "available",
+              title: "Available",
+              type: "boolean",
+              initialValue: false,
+            }),
+          ],
+          preview: {
+            select: { title: "label", subtitle: "href", available: "available" },
+            prepare({ title, subtitle, available }) {
+              return {
+                title: title ?? "Section",
+                subtitle: `${subtitle}${available ? "" : " · hidden"}`,
+              };
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
       name: "workStartYear",
       title: "Work range start",
       type: "number",

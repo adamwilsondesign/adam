@@ -12,3 +12,26 @@
   pointer-events: none;
   z-index: 30;
 }
+
+/* Keyboard shortcut past the logo field, visible only while focused. */
+.skipLink {
+  position: fixed;
+  top: calc(var(--chrome-header-height) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: var(--weight-light);
+  text-transform: lowercase;
+  color: var(--color-fg);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-line-strong);
+  clip-path: inset(50%);
+  pointer-events: none;
+}
+
+.skipLink:focus-visible {
+  clip-path: none;
+  pointer-events: auto;
+}

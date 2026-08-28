@@ -18,12 +18,28 @@
 }
 
 .slot {
+  position: relative;
   display: flex;
   align-items: center;
+  min-height: 44px;
+}
+
+/* Entering and exiting slot contents overlap in place, so the header can
+   crossfade Back ↔ Menu without ever stacking impossible combinations. */
+.slotItem {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
 }
 
 .rightSlot {
   justify-content: flex-end;
+}
+
+.rightSlot .slotItem {
+  left: auto;
+  right: 0;
 }
 
 .centerSlot {

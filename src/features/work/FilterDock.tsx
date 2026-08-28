@@ -3,6 +3,7 @@
 import { motion, useAnimationControls, useReducedMotion } from "motion/react";
 import { useEffect } from "react";
 
+import { ShuffleIcon } from "@/components/icons";
 import { WORK_TAGS, type WorkTag } from "@/lib/content/model";
 
 import styles from "./FilterDock.module.css";
@@ -15,31 +16,61 @@ type FilterDockProps = {
 };
 
 /**
- * The persistent floating filter dock: eight tag pills and the double-ended
- * year slider. Desktop centres it as a floating panel; mobile pins it across
- * the bottom with safe-area padding, the canvas panning beneath it.
+ * The persistent floating filter dock: the All chip, eight tag pills, the
+ * result count, the double-ended year slider and a quiet shuffle control.
+ * Desktop centres it as a floating instrument; mobile pins it across the
+ * bottom with safe-area padding, the canvas panning beneath it.
  */
 export function FilterDock({ state, variant }: FilterDockProps) {
   return (
-    <div className={variant === "desktop" ? styles.dockDesktop : styles.dockMobile}>
+    <div
+      id="work-filters"
+      tabIndex={-1}
+      className={variant === "desktop" ? styles.dockDesktop : styles.dockMobile}
+    >
       <div className={styles.pillRow} role="group" aria-label="Filter by tag">
+        <button
+          type="button"
+          className={`${styles.pill} ${styles.pillAll}`}
+          data-active={state.allSelected || undefined}
+          aria-pressed={state.allSelected}
+          onClick={state.onSelectAll}
+        >
+          All
+        </button>
         {WORK_TAGS.map((tag) => (
           <TagPill
             key={tag}
             tag={tag}
             active={state.activeTags.includes(tag)}
+            blocked={state.blockedTags.has(tag) && !state.activeTags.includes(tag)}
             pulseKey={state.rejectionPulse?.tag === tag ? state.rejectionPulse.key : null}
             onToggle={state.onToggleTag}
           />
         ))}
       </div>
-      <div className={styles.sliderRow}>
-        <YearRangeSlider
-          bounds={state.bounds}
-          value={state.years}
-          onChange={state.onYearsChange}
-          onInteractionEnd={state.onYearsInteractionEnd}
-        />
+      <div className={styles.controlRow}>
+        <span className={styles.count} aria-hidden>
+          {String(state.visibleClients.length).padStart(2, "0")} /{" "}
+          {String(state.totalCount).padStart(2, "0")}
+        </span>
+        <div className={styles.sliderRow}>
+          <YearRangeSlider
+            bounds={state.bounds}
+            value={state.years}
+            onChange={state.onYearsChange}
+            onInteractionEnd={state.onYearsInteractionEnd}
+          />
+        </div>
+        <button
+          type="button"
+          className={styles.shuffle}
+          aria-label="Shuffle the composition"
+          onClick={state.onShuffle}
+        >
+          <ShuffleIcon />
+          <span className={styles.shuffleLabel}>shuffle</span>
+        </button>
       </div>
       <div aria-live="polite" role="status" className="visually-hidden">
         {state.announcement}
@@ -51,12 +82,14 @@ export function FilterDock({ state, variant }: FilterDockProps) {
 type TagPillProps = {
   tag: WorkTag;
   active: boolean;
+  /** True when toggling this tag on would currently empty the grid. */
+  blocked: boolean;
   /** Changes every time a toggle of this tag is rejected. */
   pulseKey: number | null;
   onToggle: (tag: WorkTag) => void;
 };
 
-function TagPill({ tag, active, pulseKey, onToggle }: TagPillProps) {
+function TagPill({ tag, active, blocked, pulseKey, onToggle }: TagPillProps) {
   const controls = useAnimationControls();
   const reducedMotion = useReducedMotion();
 
@@ -71,7 +104,9 @@ function TagPill({ tag, active, pulseKey, onToggle }: TagPillProps) {
       type="button"
       className={styles.pill}
       data-active={active || undefined}
+      data-blocked={blocked || undefined}
       aria-pressed={active}
+      aria-disabled={blocked || undefined}
       animate={controls}
       onClick={() => onToggle(tag)}
     >

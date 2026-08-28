@@ -167,6 +167,7 @@ describe("normalizeSiteSettings", () => {
       description: "D",
       logoUrl: null,
       contactUrl: null,
+      navigation: null,
       workStartYear: 2030,
       workEndYear: 2012,
       seoTitle: null,

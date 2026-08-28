@@ -20,11 +20,21 @@ const GAP = 14;
 
 type Position = { left: number; top: number };
 
+type WorkTooltipProps = {
+  anchor: TooltipAnchor | null;
+  /** Pointer entered the tooltip — cancel any pending close (safe corridor). */
+  onPointerHold?: () => void;
+  /** Pointer left the tooltip — resume the grace-period close. */
+  onPointerRelease?: () => void;
+};
+
 /**
  * The informational tooltip for clients without a case study, anchored
- * beside the hovered logo and repositioned to avoid every viewport edge.
+ * beside the hovered or focused logo and repositioned edge-aware (right,
+ * left, above, below — whichever fits). The plate is pointer-interactive so
+ * crossing from the logo onto it never dismisses the content mid-read.
  */
-export function WorkTooltip({ anchor }: { anchor: TooltipAnchor | null }) {
+export function WorkTooltip({ anchor, onPointerHold, onPointerRelease }: WorkTooltipProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position | null>(null);
 
@@ -83,8 +93,10 @@ export function WorkTooltip({ anchor }: { anchor: TooltipAnchor | null }) {
           }}
           initial={{ opacity: 0, y: 6, scale: 0.99 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.16 } }}
-          transition={{ duration: 0.34, ease: EASE_OUT }}
+          exit={{ opacity: 0, transition: { duration: 0.14 } }}
+          transition={{ duration: 0.2, ease: EASE_OUT }}
+          onPointerEnter={onPointerHold}
+          onPointerLeave={onPointerRelease}
         >
           <p className={styles.name}>{anchor.client.name}</p>
           <p className={styles.meta}>

@@ -12,7 +12,9 @@ import { EASE_INOUT, EASE_OUT } from "@/lib/motion";
 
 import styles from "./MobileCanvas.module.css";
 import { LogoMark } from "./LogoMark";
+import { opticalLogoBox } from "./optical";
 import { setCaseOrigin } from "./origin-store";
+import { readCanvasSnapshot, saveCanvasSnapshot } from "./work-state-store";
 
 const GAP = 10;
 const MIN_CELL = 92;
@@ -32,7 +34,12 @@ type MobileCanvasProps = {
   /** Client shown in the info overlay (its cell hides while open). */
   infoClientId: string | null;
   onInfoOpen: (client: WorkClient, rect: DOMRect) => void;
+  /** False the moment a logo activation begins — pan/pinch freeze instantly. */
+  gesturesEnabled: boolean;
 };
+
+/** Below this cell size, clients with a compact alternate mark use it. */
+const COMPACT_BELOW = 112;
 
 function clampRange(viewport: number, content: number, bleed: number): [number, number] {
   if (content >= viewport) return [viewport - content - bleed, bleed];
@@ -47,12 +54,18 @@ function clampRange(viewport: number, content: number, bleed: number): [number, 
  * during the gesture (a live transform) and the column count commits at
  * density thresholds, reflowing smoothly around the gesture midpoint.
  */
-export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: MobileCanvasProps) {
+export function MobileCanvas({
+  clients,
+  openSlug,
+  infoClientId,
+  onInfoOpen,
+  gesturesEnabled,
+}: MobileCanvasProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
 
-  const [cellSize, setCellSize] = useState(INITIAL_CELL);
+  const [cellSize, setCellSize] = useState(() => readCanvasSnapshot()?.cellSize ?? INITIAL_CELL);
   const [viewport, setViewport] = useState<{ width: number; height: number } | null>(null);
 
   const x = useMotionValue(0);
@@ -92,20 +105,33 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
     [viewport, canvasWidth, canvasHeight],
   );
 
-  // Center the canvas on first measure and re-clamp when composition changes.
+  // Center the canvas on first measure (or restore the saved exploration
+  // position) and re-clamp when the composition changes.
   const centeredRef = useRef(false);
   useEffect(() => {
     if (!viewport) return;
     if (!centeredRef.current) {
       centeredRef.current = true;
-      x.set((viewport.width - canvasWidth) / 2);
-      y.set((viewport.height - canvasHeight) / 2);
+      const saved = readCanvasSnapshot();
+      if (saved) {
+        const [sx, sy] = clampPan(saved.x, saved.y);
+        x.set(sx);
+        y.set(sy);
+      } else {
+        x.set((viewport.width - canvasWidth) / 2);
+        y.set((viewport.height - canvasHeight) / 2);
+      }
       return;
     }
     const [cx, cy] = clampPan(x.get(), y.get());
     if (cx !== x.get()) animate(x, cx, { duration: 0.45, ease: EASE_OUT });
     if (cy !== y.get()) animate(y, cy, { duration: 0.45, ease: EASE_OUT });
   }, [viewport, canvasWidth, canvasHeight, clampPan, x, y]);
+
+  /** Persist the exploration state so revisits restore it exactly. */
+  const persistCanvas = useCallback((px: number, py: number, cell: number) => {
+    saveCanvasSnapshot({ cellSize: cell, x: px, y: py });
+  }, []);
 
   useGesture(
     {
@@ -131,6 +157,7 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
           const [tx, ty] = clampPan(ox + dx * speed * 90, oy + dy * speed * 90);
           animate(x, tx, { duration: 0.55, ease: EASE_OUT });
           animate(y, ty, { duration: 0.55, ease: EASE_OUT });
+          persistCanvas(tx, ty, cellSize);
           return;
         }
         x.set(ox);
@@ -173,11 +200,15 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
           const [cx2, cy2] = clampPan(x.get(), y.get());
           if (cx2 !== x.get()) animate(x, cx2, { duration: 0.4, ease: EASE_OUT });
           if (cy2 !== y.get()) animate(y, cy2, { duration: 0.4, ease: EASE_OUT });
+          persistCanvas(cx2, cy2, desiredCell);
         }
       },
     },
     {
       target: viewportRef,
+      // Activation freeze: the first tap on a logo disables the gesture layer
+      // so no pan or pinch can disturb the departure composition.
+      enabled: gesturesEnabled,
       eventOptions: { passive: false },
       drag: {
         from: () => [x.get(), y.get()],
@@ -234,6 +265,7 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
                 openSlug={openSlug}
                 hidden={client.id === infoClientId}
                 onInfoOpen={onInfoOpen}
+                compact={cellSize < COMPACT_BELOW}
               />
             </motion.div>
           ))}
@@ -248,12 +280,19 @@ type MobileCellProps = {
   openSlug: string | null;
   hidden: boolean;
   onInfoOpen: (client: WorkClient, rect: DOMRect) => void;
+  /** True when cells are small enough to prefer compact alternate marks. */
+  compact: boolean;
 };
 
-function MobileCell({ client, openSlug, hidden, onInfoOpen }: MobileCellProps) {
+function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCellProps) {
   const ref = useRef<HTMLElement | null>(null);
   const caseStudy = client.caseStudy;
   const isOrigin = caseStudy !== null && caseStudy.slug === openSlug;
+  const optical = opticalLogoBox(client.logoAspect, client.logoTreatment);
+  const logoBoxStyle: React.CSSProperties = {
+    width: `${optical.widthPct}%`,
+    height: `${optical.heightPct}%`,
+  };
 
   useEffect(() => {
     if (caseStudy) preload(caseStudy.heroUrl, { as: "image" });
@@ -289,8 +328,13 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen }: MobileCellProps) {
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
-        <span className={styles.logoBox}>
-          <LogoMark logoUrl={client.logoUrl} heroUrl={caseStudy.heroUrl} />
+        <span className={styles.logoBox} style={logoBoxStyle}>
+          <LogoMark
+            logoUrl={client.logoUrl}
+            treatment={client.logoTreatment}
+            compact={compact}
+            heroUrl={caseStudy.heroUrl}
+          />
         </span>
       </Link>
     );
@@ -309,8 +353,8 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen }: MobileCellProps) {
       style={hidden ? { opacity: 0, pointerEvents: "none" } : undefined}
       onClick={() => onInfoOpen(client, markRect())}
     >
-      <span className={styles.logoBox}>
-        <LogoMark logoUrl={client.logoUrl} />
+      <span className={styles.logoBox} style={logoBoxStyle}>
+        <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} compact={compact} />
       </span>
     </button>
   );

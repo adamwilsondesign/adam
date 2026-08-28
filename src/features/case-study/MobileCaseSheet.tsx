@@ -17,10 +17,14 @@ import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
 import styles from "./MobileCaseSheet.module.css";
 import { PortableTextBody } from "./PortableTextBody";
 
-const TRAVEL_MS = 480;
-const PAN_MS = 2000;
+/** Cinematic intro: logo travel, then the hero pans through the mask.
+ *  Tuned to ~1.3s total — long enough to read as intentional, short enough
+ *  to never feel like a loading screen. */
+const TRAVEL_MS = 420;
+const PAN_MS = 900;
 /** The sheet starts rising just before the mask pan completes. */
-const SHEET_AT_MS = TRAVEL_MS + PAN_MS - 150;
+const SHEET_AT_MS = TRAVEL_MS + PAN_MS - 120;
+/** Native-feeling dismissal thresholds (distance px, velocity px/ms). */
 const DISMISS_DISTANCE = 140;
 const DISMISS_VELOCITY = 0.55;
 
@@ -65,17 +69,18 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
     setPhase("closing");
   };
 
-  // Drag-to-dismiss, coordinated with the internal scroller: the gesture only
-  // engages when the sheet is scrolled to the top and moving downward.
+  // Drag-to-dismiss from the deliberate top gesture region only (the drag
+  // handle and close strip) — scrolling the content can never accidentally
+  // dismiss the sheet.
   useDrag(
-    ({ event, last, movement: [, my], velocity: [, vy], cancel }) => {
+    ({ event, first, last, movement: [, my], velocity: [, vy], cancel }) => {
       if (phase !== "sheet" || !active) return;
-      const scroller = scrollRef.current;
-      const target = event.target as HTMLElement | null;
-      const inScroller = target ? scroller?.contains(target) : false;
-      if (inScroller && (scroller?.scrollTop ?? 0) > 1) {
-        cancel();
-        return;
+      if (first) {
+        const target = event.target as HTMLElement | null;
+        if (!target?.closest("[data-sheet-grip]")) {
+          cancel();
+          return;
+        }
       }
       if (my <= 0 && sheetY.get() === 0) return;
       if (last) {
@@ -199,7 +204,7 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
         animate={phase === "sheet" ? { y: 0 } : undefined}
         transition={{ duration: reducedMotion ? 0.2 : DUR.slow, ease: EASE_OUT }}
       >
-        <div className={styles.handleArea}>
+        <div className={styles.handleArea} data-sheet-grip>
           <span className={styles.handle} aria-hidden />
         </div>
         <button
@@ -247,6 +252,7 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
               >
                 Visit project
                 <ArrowUpRightIcon />
+                <span className="visually-hidden">(external site, opens in a new tab)</span>
               </a>
             ) : null}
           </header>

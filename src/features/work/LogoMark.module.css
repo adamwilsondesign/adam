@@ -4,12 +4,21 @@
   display: block;
   background-color: currentColor;
   overflow: hidden;
+  mask-image: var(--logo-mask);
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;
+  -webkit-mask-image: var(--logo-mask);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   -webkit-mask-size: contain;
+}
+
+/* Theme-specific asset overrides (identical to the base mask for clients
+   without them, so this rule is inert in the common case). */
+:global([data-theme="dark"]) .mask {
+  mask-image: var(--logo-mask-dark);
+  -webkit-mask-image: var(--logo-mask-dark);
 }
 
 .fill {

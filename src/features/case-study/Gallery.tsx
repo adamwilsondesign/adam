@@ -24,7 +24,11 @@ type GalleryProps = {
 export function Gallery({ media, slug, active }: GalleryProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [atEnd, setAtEnd] = useState(media.length <= 1);
+  const [current, setCurrent] = useState(0);
   const dragState = useRef<{ startX: number; startScroll: number; moved: boolean } | null>(null);
+  const scrollFrame = useRef(0);
+
+  useEffect(() => () => cancelAnimationFrame(scrollFrame.current), []);
 
   // Vertical wheel input scrolls the strip horizontally.
   useEffect(() => {
@@ -64,9 +68,23 @@ export function Gallery({ media, slug, active }: GalleryProps) {
   }, [active, slug, media.length]);
 
   const onScroll = () => {
-    const node = scrollRef.current;
-    if (!node) return;
-    setAtEnd(node.scrollLeft + node.clientWidth >= node.scrollWidth - 32);
+    cancelAnimationFrame(scrollFrame.current);
+    scrollFrame.current = requestAnimationFrame(() => {
+      const node = scrollRef.current;
+      if (!node) return;
+      setAtEnd(node.scrollLeft + node.clientWidth >= node.scrollWidth - 32);
+      // Progress: the item whose left edge sits nearest the viewport edge.
+      let nearest = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      node.querySelectorAll<HTMLElement>("[data-index]").forEach((item) => {
+        const distance = Math.abs(item.offsetLeft - node.scrollLeft);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearest = Number(item.dataset.index);
+        }
+      });
+      setCurrent(nearest);
+    });
   };
 
   const onPointerDown = (event: React.PointerEvent) => {
@@ -138,6 +156,11 @@ export function Gallery({ media, slug, active }: GalleryProps) {
         <div className={styles.endSpacer} aria-hidden />
       </div>
       <div className={styles.endFade} data-hidden={atEnd || undefined} aria-hidden />
+      {media.length > 1 ? (
+        <p className={styles.progress} aria-live="off">
+          {String(current + 1).padStart(2, "0")} / {String(media.length).padStart(2, "0")}
+        </p>
+      ) : null}
     </div>
   );
 }

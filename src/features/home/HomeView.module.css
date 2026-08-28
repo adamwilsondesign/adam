@@ -38,8 +38,7 @@
   gap: 15px;
 }
 
-.navLink,
-.navDisabled {
+.navLink {
   display: inline-flex;
   align-items: baseline;
   gap: 12px;
@@ -62,17 +61,6 @@
 .navLink:focus-visible {
   text-decoration: underline;
   color: var(--color-link);
-}
-
-.navDisabled {
-  color: var(--color-fg-faint);
-}
-
-.soon {
-  font-size: 13px;
-  font-weight: var(--weight-thin);
-  color: var(--color-fg-faint);
-  text-transform: lowercase;
 }
 
 /* The carbon footer band — the page's single dark plane. */

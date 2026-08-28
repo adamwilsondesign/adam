@@ -115,6 +115,27 @@ export type Client = {
     media?: unknown;
     _type: "file";
   };
+  logoAspect?: number;
+  logoTreatment?: {
+    scale?: number;
+    padding?: number;
+    alignment?: "center" | "start" | "end";
+    logoLight?: {
+      asset?: SanityFileAssetReference;
+      media?: unknown;
+      _type: "file";
+    };
+    logoDark?: {
+      asset?: SanityFileAssetReference;
+      media?: unknown;
+      _type: "file";
+    };
+    compactLogo?: {
+      asset?: SanityFileAssetReference;
+      media?: unknown;
+      _type: "file";
+    };
+  };
   description?: string;
   hidden?: boolean;
   engagements?: Array<
@@ -161,6 +182,12 @@ export type SiteSettings = {
     _type: "file";
   };
   contactUrl?: string;
+  navigation?: Array<{
+    label?: string;
+    href?: string;
+    available?: boolean;
+    _key: string;
+  }>;
   workStartYear?: number;
   workEndYear?: number;
   seoTitle?: string;
@@ -293,12 +320,17 @@ export type AllSanitySchemaTypes =
 
 // Source: src/sanity/lib/queries.ts
 // Variable: SITE_SETTINGS_QUERY
-// Query: *[_type == "siteSettings"][0]{  title,  description,  "logoUrl": logo.asset->url,  contactUrl,  workStartYear,  workEndYear,  seoTitle,  seoDescription,  defaultOgImage}
+// Query: *[_type == "siteSettings"][0]{  title,  description,  "logoUrl": logo.asset->url,  contactUrl,  navigation[]{ label, href, available },  workStartYear,  workEndYear,  seoTitle,  seoDescription,  defaultOgImage}
 export type SITE_SETTINGS_QUERY_RESULT = {
   title: string | null;
   description: string | null;
   logoUrl: string | null;
   contactUrl: string | null;
+  navigation: Array<{
+    label: string | null;
+    href: string | null;
+    available: boolean | null;
+  }> | null;
   workStartYear: number | null;
   workEndYear: number | null;
   seoTitle: string | null;
@@ -314,12 +346,21 @@ export type SITE_SETTINGS_QUERY_RESULT = {
 
 // Source: src/sanity/lib/queries.ts
 // Variable: WORK_INDEX_QUERY
-// Query: *[_type == "client" && hidden != true] | order(name asc){  "id": _id,  name,  "slug": slug.current,  "logoUrl": logo.asset->url,  description,  engagements[]{ startYear, endYear, tags, description },  caseStudy{    "slug": slug.current,    title,    heroImage  }}
+// Query: *[_type == "client" && hidden != true] | order(name asc){  "id": _id,  name,  "slug": slug.current,  "logoUrl": logo.asset->url,  logoAspect,  logoTreatment{    scale,    padding,    alignment,    "lightUrl": logoLight.asset->url,    "darkUrl": logoDark.asset->url,    "compactUrl": compactLogo.asset->url  },  description,  engagements[]{ startYear, endYear, tags, description },  caseStudy{    "slug": slug.current,    title,    heroImage  }}
 export type WORK_INDEX_QUERY_RESULT = Array<{
   id: string;
   name: string | null;
   slug: string | null;
   logoUrl: string | null;
+  logoAspect: number | null;
+  logoTreatment: {
+    scale: number | null;
+    padding: number | null;
+    alignment: "center" | "end" | "start" | null;
+    lightUrl: string | null;
+    darkUrl: string | null;
+    compactUrl: string | null;
+  } | null;
   description: string | null;
   engagements: Array<{
     startYear: number | null;
@@ -427,8 +468,8 @@ export type CASE_STUDY_SLUGS_QUERY_RESULT = Array<{
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '*[_type == "siteSettings"][0]{\n  title,\n  description,\n  "logoUrl": logo.asset->url,\n  contactUrl,\n  workStartYear,\n  workEndYear,\n  seoTitle,\n  seoDescription,\n  defaultOgImage\n}': SITE_SETTINGS_QUERY_RESULT;
-    '*[_type == "client" && hidden != true] | order(name asc){\n  "id": _id,\n  name,\n  "slug": slug.current,\n  "logoUrl": logo.asset->url,\n  description,\n  engagements[]{ startYear, endYear, tags, description },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    heroImage\n  }\n}': WORK_INDEX_QUERY_RESULT;
+    '*[_type == "siteSettings"][0]{\n  title,\n  description,\n  "logoUrl": logo.asset->url,\n  contactUrl,\n  navigation[]{ label, href, available },\n  workStartYear,\n  workEndYear,\n  seoTitle,\n  seoDescription,\n  defaultOgImage\n}': SITE_SETTINGS_QUERY_RESULT;
+    '*[_type == "client" && hidden != true] | order(name asc){\n  "id": _id,\n  name,\n  "slug": slug.current,\n  "logoUrl": logo.asset->url,\n  logoAspect,\n  logoTreatment{\n    scale,\n    padding,\n    alignment,\n    "lightUrl": logoLight.asset->url,\n    "darkUrl": logoDark.asset->url,\n    "compactUrl": compactLogo.asset->url\n  },\n  description,\n  engagements[]{ startYear, endYear, tags, description },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    heroImage\n  }\n}': WORK_INDEX_QUERY_RESULT;
     '*[_type == "client" && caseStudy.slug.current == $slug && hidden != true][0]{\n  "clientId": _id,\n  "clientName": name,\n  "logoUrl": logo.asset->url,\n  engagements[]{ startYear, endYear, tags },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    subtitle,\n    displayDate,\n    shortDescription,\n    body,\n    externalUrl,\n    heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },\n    gallery[]{ _key, image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip }, alt, caption, aspect },\n    seoTitle,\n    seoDescription,\n    ogImage\n  }\n}': CASE_STUDY_QUERY_RESULT;
     '*[_type == "client" && defined(caseStudy.slug.current) && hidden != true]{\n  "slug": caseStudy.slug.current,\n  "updatedAt": _updatedAt\n}': CASE_STUDY_SLUGS_QUERY_RESULT;
   }

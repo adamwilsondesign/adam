@@ -245,9 +245,64 @@ function wordmarkBody(rng, height, minWidth, maxWidth) {
 }
 
 function symbolBody(rng, s) {
-  const motif = rng.int(0, 5);
+  const motif = rng.int(0, 9);
   const c = s / 2;
   switch (motif) {
+    case 6: {
+      // diamond outline with inner accent
+      const t = s * (0.08 + rng.next() * 0.04);
+      const inset = t / Math.SQRT2;
+      const pts = [
+        [c, inset],
+        [s - inset, c],
+        [c, s - inset],
+        [inset, c],
+      ];
+      const inner = rng.chance(0.6)
+        ? circle(c, c, s * (0.1 + rng.next() * 0.06))
+        : poly([
+            [c, c - s * 0.14],
+            [c + s * 0.14, c],
+            [c, c + s * 0.14],
+            [c - s * 0.14, c],
+          ]);
+      return `<polygon points="${pts.map((p) => p.join(",")).join(" ")}" fill="none" stroke="#000" stroke-width="${t}" stroke-linejoin="round"/>${inner}`;
+    }
+    case 7: {
+      // plus / cross form, sometimes rotated 45°
+      const arm = s * (0.26 + rng.next() * 0.08);
+      const t = s * (0.2 + rng.next() * 0.08);
+      const rot = rng.chance(0.4) ? ` transform="rotate(45 ${c} ${c})"` : "";
+      const dot = rng.chance(0.5) ? circle(c, c, t * 0.28) : "";
+      return `<g${rot}>${rect(c - t / 2, c - arm, t, arm * 2, t * 0.24)}${rect(c - arm, c - t / 2, arm * 2, t, t * 0.24)}</g>${dot}`;
+    }
+    case 8: {
+      // stair-step blocks descending the diagonal
+      const n = rng.pick([3, 4]);
+      const unit = s / (n + 0.4);
+      const rx = unit * (0.08 + rng.next() * 0.2);
+      const parts = [];
+      for (let i = 0; i < n; i++) {
+        parts.push(rect(i * unit, i * unit, unit * 1.16, unit * 1.16, rx));
+      }
+      if (rng.chance(0.5)) parts.push(circle(s - unit * 0.5, unit * 0.5, unit * 0.42));
+      return parts.join("");
+    }
+    case 9: {
+      // wave bars: horizontal sine strokes with phase drift
+      const rows = rng.pick([3, 4]);
+      const t = s * (0.07 + rng.next() * 0.03);
+      const amp = s * (0.06 + rng.next() * 0.05);
+      const parts = [];
+      for (let i = 0; i < rows; i++) {
+        const y = s * 0.2 + (i * s * 0.6) / (rows - 1);
+        const phase = i * s * 0.12;
+        parts.push(
+          `<path d="M ${s * 0.06} ${y} C ${s * 0.3 - phase * 0.2} ${y - amp}, ${s * 0.45} ${y + amp}, ${c} ${y} S ${s * 0.8} ${y - amp}, ${s * 0.94} ${y}" fill="none" stroke="#000" stroke-width="${t}" stroke-linecap="round"/>`,
+        );
+      }
+      return parts.join("");
+    }
     case 0: {
       // target: concentric rings + centre form, ring geometry varies
       const t = s * (0.07 + rng.next() * 0.05);
@@ -408,17 +463,51 @@ function makeLogo(name, archetype) {
     case "circular": {
       const s = 104;
       const c = s / 2;
-      const t = s * 0.09;
-      const inner = rng.chance(0.5)
-        ? circle(c, c, s * 0.16)
-        : rect(c - s * 0.14, c - s * 0.14, s * 0.28, s * 0.28, 4);
-      const notch = rng.chance(0.6)
-        ? `<line x1="${c}" y1="0" x2="${c}" y2="${t * 2.4}" stroke="#fff" stroke-width="${t * 1.4}"/>`
-        : "";
-      return svg(
-        `0 0 ${s} ${s}`,
-        `${ring(c, c, s * 0.5, t)}${ring(c, c, s * 0.34, t)}${inner}${notch}`,
-      );
+      const t = s * (0.07 + rng.next() * 0.04);
+      const variant = rng.int(0, 2);
+      if (variant === 0) {
+        // classic double ring with centre form
+        const inner = rng.chance(0.5)
+          ? circle(c, c, s * 0.16)
+          : rect(c - s * 0.14, c - s * 0.14, s * 0.28, s * 0.28, 4);
+        const notch = rng.chance(0.6)
+          ? `<line x1="${c}" y1="0" x2="${c}" y2="${t * 2.4}" stroke="#fff" stroke-width="${t * 1.4}"/>`
+          : "";
+        return svg(
+          `0 0 ${s} ${s}`,
+          `${ring(c, c, s * 0.5, t)}${ring(c, c, s * 0.34, t)}${inner}${notch}`,
+        );
+      }
+      if (variant === 1) {
+        // broken arc: single ring with a gap and a counterweight dot
+        const gap = 40 + rng.int(0, 50);
+        const startAngle = rng.next() * 360;
+        const r = s * 0.5 - t / 2;
+        const a0 = (startAngle * Math.PI) / 180;
+        const a1 = ((startAngle + 360 - gap) * Math.PI) / 180;
+        const large = 360 - gap > 180 ? 1 : 0;
+        const arc = `<path d="M ${c + Math.cos(a0) * r} ${c + Math.sin(a0) * r} A ${r} ${r} 0 ${large} 1 ${c + Math.cos(a1) * r} ${c + Math.sin(a1) * r}" fill="none" stroke="#000" stroke-width="${t}" stroke-linecap="round"/>`;
+        const mid = ((startAngle - gap / 2) * Math.PI) / 180;
+        const dot = circle(c + Math.cos(mid) * r, c + Math.sin(mid) * r, t * 0.85);
+        const core = rng.chance(0.6) ? circle(c, c, s * (0.12 + rng.next() * 0.06)) : "";
+        return svg(`0 0 ${s} ${s}`, `${arc}${dot}${core}`);
+      }
+      // segmented dial: ring of short arcs
+      const n = rng.pick([3, 4, 5]);
+      const r = s * 0.5 - t / 2;
+      const seg = 360 / n;
+      const gapDeg = seg * (0.22 + rng.next() * 0.18);
+      const offset = rng.next() * 360;
+      const parts = [];
+      for (let i = 0; i < n; i++) {
+        const a0 = ((offset + i * seg) * Math.PI) / 180;
+        const a1 = ((offset + i * seg + seg - gapDeg) * Math.PI) / 180;
+        parts.push(
+          `<path d="M ${c + Math.cos(a0) * r} ${c + Math.sin(a0) * r} A ${r} ${r} 0 0 1 ${c + Math.cos(a1) * r} ${c + Math.sin(a1) * r}" fill="none" stroke="#000" stroke-width="${t}" stroke-linecap="round"/>`,
+        );
+      }
+      parts.push(circle(c, c, s * (0.11 + rng.next() * 0.07)));
+      return svg(`0 0 ${s} ${s}`, parts.join(""));
     }
     default: {
       // lockup: symbol + short wordmark
@@ -616,6 +705,13 @@ async function main() {
     const logoSvg = makeLogo(name, archetype);
     await writeFile(path.join(LOGO_DIR, `${slug}.svg`), logoSvg);
 
+    // Intrinsic aspect ratio, read back from the viewBox: this feeds the
+    // optical normalization that keeps wordmarks and symbols in balance.
+    const viewBox = logoSvg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    const logoAspect = viewBox
+      ? Math.round((Number(viewBox[1]) / Number(viewBox[2])) * 1000) / 1000
+      : 1;
+
     const engagements = buildEngagements(makeRng(hashString(`${name}:eng`)));
     const primaryTag = engagements[0].tags[0];
     const description = `${makeRng(hashString(`${name}:copy`)).pick(VERBS)} ${makeRng(hashString(`${name}:dom`)).pick(DOMAINS[primaryTag])}.`;
@@ -721,6 +817,8 @@ async function main() {
       name,
       slug,
       logoUrl: `/placeholders/logos/${slug}.svg`,
+      logoAspect,
+      logoTreatment: null,
       description,
       engagements,
       caseStudy: caseStudySummary,
@@ -751,7 +849,15 @@ async function main() {
     description:
       "Independent designer working on interfaces, interaction and product strategy across AI, hardware and consumer software.",
     logoUrl: null,
-    contactUrl: "mailto:hello@example.com",
+    // No invented address: the Contact control stays hidden until a real one
+    // is configured (Sanity site settings, or NEXT_PUBLIC_CONTACT_URL).
+    contactUrl: null,
+    navigation: [
+      { label: "Work", href: "/work", available: true },
+      { label: "About", href: "/about", available: false },
+      { label: "Blog", href: "/blog", available: false },
+      { label: "Experiments", href: "/experiments", available: false },
+    ],
     workStartYear: 2010,
     workEndYear: 2026,
     seo: {

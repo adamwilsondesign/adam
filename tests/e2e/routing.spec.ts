@@ -36,7 +36,7 @@ test.describe("case-study routing", () => {
     await page.getByRole("button", { name: "Crypto", exact: true }).click();
     await expect(page.getByRole("button", { name: "Crypto", exact: true })).toHaveAttribute(
       "aria-pressed",
-      "false",
+      "true",
     );
     await page.waitForTimeout(700);
     const orderBefore = await page
@@ -56,7 +56,7 @@ test.describe("case-study routing", () => {
     // The exact previous Work state is restored: filters and composition.
     await expect(page.getByRole("button", { name: "Crypto", exact: true })).toHaveAttribute(
       "aria-pressed",
-      "false",
+      "true",
     );
     const orderAfter = await page
       .locator("[data-case-cell], button[data-client-cell]")
@@ -82,6 +82,24 @@ test.describe("case-study routing", () => {
     await expect(page.locator(`a[data-case-cell="${slug}"]`)).toBeFocused();
   });
 
+  test("focus is trapped inside the open modal", async ({ page }) => {
+    await page.goto("/work");
+    const caseCell = page.locator("a[data-case-cell]").first();
+    await caseCell.waitFor();
+    await caseCell.click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await page.waitForTimeout(900);
+
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press("Tab");
+      const inside = await dialog.evaluate((node) => node.contains(document.activeElement));
+      expect(inside).toBe(true);
+    }
+    await page.keyboard.press("Escape");
+    await expect(page).toHaveURL(/\/work$/);
+  });
+
   test("home → work → home traversal", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: /^Work/ }).click();
@@ -91,5 +109,56 @@ test.describe("case-study routing", () => {
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("link", { name: /^Work/ })).toBeVisible();
+  });
+
+  test("work exploration state survives a home round trip in-session", async ({ page }) => {
+    await page.goto("/work");
+    await page.locator("a[data-case-cell]").first().waitFor();
+    await page.getByRole("button", { name: "AI", exact: true }).click();
+    await page.waitForTimeout(600);
+    const orderBefore = await page
+      .locator("[data-case-cell], button[data-client-cell]")
+      .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("aria-label")));
+
+    await page.getByRole("button", { name: "Back" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.getByRole("link", { name: /^Work/ }).click();
+    await expect(page).toHaveURL(/\/work$/);
+    await page.waitForTimeout(900);
+
+    await expect(page.getByRole("button", { name: "AI", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    const orderAfter = await page
+      .locator("[data-case-cell], button[data-client-cell]")
+      .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("aria-label")));
+    expect(orderAfter).toEqual(orderBefore);
+  });
+});
+
+test.describe("reduced motion", () => {
+  test.use({ contextOptions: { reducedMotion: "reduce" } });
+
+  test("work and case studies stay fully functional with short fades", async ({ page }) => {
+    await page.goto("/work");
+    await expect(page.locator("a[data-case-cell], button[data-client-cell]")).toHaveCount(40);
+
+    const caseCell = page.locator("a[data-case-cell]").first();
+    const slug = await caseCell.getAttribute("data-case-cell");
+    await caseCell.click();
+    // No long morph: the dialog resolves promptly.
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1500 });
+    await expect(page).toHaveURL(new RegExp(`/work/${slug}$`));
+
+    await page.keyboard.press("Escape");
+    await expect(page).toHaveURL(/\/work$/, { timeout: 1500 });
+
+    // Filtering applies with immediate layout updates.
+    await page.getByRole("button", { name: "AI", exact: true }).click();
+    await page.waitForTimeout(400);
+    expect(
+      await page.locator("a[data-case-cell], button[data-client-cell]").count(),
+    ).toBeGreaterThan(0);
   });
 });

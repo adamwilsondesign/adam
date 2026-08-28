@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { WORK_TAGS, type WorkClient } from "@/lib/content/model";
+import type { WorkClient } from "@/lib/content/model";
 import {
+  blockedTags,
   clampYearRange,
   clientMatches,
   defaultFilter,
   engagementMatches,
   filterClients,
+  isAllSelected,
+  selectAll,
   toggleTag,
   type WorkFilter,
 } from "@/features/work/filtering";
@@ -19,6 +22,8 @@ function client(id: string, engagements: WorkClient["engagements"]): WorkClient 
     name: id,
     slug: id,
     logoUrl: `/logos/${id}.svg`,
+    logoAspect: 1,
+    logoTreatment: null,
     description: "",
     engagements,
     caseStudy: null,
@@ -28,6 +33,29 @@ function client(id: string, engagements: WorkClient["engagements"]): WorkClient 
 const filterWith = (overrides: Partial<WorkFilter>): WorkFilter => ({
   ...defaultFilter(BOUNDS),
   ...overrides,
+});
+
+describe("the All selection", () => {
+  it("is the default: no individual tag is selected", () => {
+    const filter = defaultFilter(BOUNDS);
+    expect(filter.tags).toEqual([]);
+    expect(isAllSelected(filter)).toBe(true);
+  });
+
+  it("matches every tagged engagement in range", () => {
+    const engagement = { startYear: 2015, endYear: 2018, tags: ["AI" as const] };
+    expect(engagementMatches(engagement, defaultFilter(BOUNDS))).toBe(true);
+    expect(engagementMatches(engagement, filterWith({ years: { start: 2019, end: 2026 } }))).toBe(
+      false,
+    );
+  });
+
+  it("is restored by selectAll and never rejected", () => {
+    const filter = filterWith({ tags: ["AI", "Crypto"] });
+    const restored = selectAll(filter);
+    expect(isAllSelected(restored)).toBe(true);
+    expect(restored.years).toEqual(filter.years);
+  });
 });
 
 describe("engagementMatches", () => {
@@ -48,10 +76,11 @@ describe("engagementMatches", () => {
     );
   });
 
-  it("uses inclusive OR across active tags", () => {
+  it("uses inclusive OR across selected tags", () => {
     const multi = { startYear: 2015, endYear: 2018, tags: ["AI" as const, "Crypto" as const] };
     expect(engagementMatches(multi, filterWith({ tags: ["Crypto"] }))).toBe(true);
     expect(engagementMatches(multi, filterWith({ tags: ["Hardware"] }))).toBe(false);
+    expect(engagementMatches(multi, filterWith({ tags: ["Hardware", "AI"] }))).toBe(true);
   });
 });
 
@@ -80,36 +109,62 @@ describe("toggleTag", () => {
     client("b", [{ startYear: 2016, endYear: 2018, tags: ["Crypto"] }]),
   ];
 
-  it("removes and restores tags preserving canonical order", () => {
-    const filter = defaultFilter(BOUNDS);
-    const removed = toggleTag(clients, filter, "Crypto");
-    expect(removed.rejected).toBe(false);
-    expect(removed.filter.tags).not.toContain("Crypto");
-
-    const restored = toggleTag(clients, removed.filter, "Crypto");
-    expect(restored.filter.tags).toEqual([...WORK_TAGS]);
+  it("selecting a tag exits All and narrows to it", () => {
+    const result = toggleTag(clients, defaultFilter(BOUNDS), "AI");
+    expect(result.rejected).toBe(false);
+    expect(result.filter.tags).toEqual(["AI"]);
+    expect(filterClients(clients, result.filter).map((c) => c.id)).toEqual(["a"]);
   });
 
-  it("rejects a toggle that would produce zero results", () => {
-    const filter = filterWith({ tags: ["AI"], years: { start: 2012, end: 2014 } });
-    const result = toggleTag(clients, filter, "AI");
+  it("selecting additional tags expands the set (inclusive OR)", () => {
+    const one = toggleTag(clients, defaultFilter(BOUNDS), "AI");
+    const two = toggleTag(clients, one.filter, "Crypto");
+    expect(two.rejected).toBe(false);
+    expect(two.filter.tags).toEqual(["AI", "Crypto"]);
+    expect(filterClients(clients, two.filter)).toHaveLength(2);
+  });
+
+  it("preserves canonical tag order regardless of selection order", () => {
+    const crypto = toggleTag(clients, defaultFilter(BOUNDS), "Crypto");
+    const both = toggleTag(clients, crypto.filter, "AI");
+    expect(both.filter.tags).toEqual(["AI", "Crypto"]);
+  });
+
+  it("deselecting the last selected tag returns to All", () => {
+    const one = toggleTag(clients, defaultFilter(BOUNDS), "AI");
+    const back = toggleTag(clients, one.filter, "AI");
+    expect(back.rejected).toBe(false);
+    expect(isAllSelected(back.filter)).toBe(true);
+    expect(filterClients(clients, back.filter)).toHaveLength(2);
+  });
+
+  it("rejects selecting a tag with no matches in the selected years", () => {
+    const filter = filterWith({ years: { start: 2012, end: 2014 } });
+    const result = toggleTag(clients, filter, "Crypto");
     expect(result.rejected).toBe(true);
     expect(result.filter).toEqual(filter);
   });
 
-  it("rejects toggles when the year range excludes the added tag's engagements", () => {
-    const filter = filterWith({ tags: ["AI"], years: { start: 2012, end: 2014 } });
-    // Activating Crypto is fine (OR logic) but removing AI afterwards would zero out.
-    const withCrypto = toggleTag(clients, filter, "Crypto");
-    expect(withCrypto.rejected).toBe(false);
-    const withoutAI = toggleTag(clients, withCrypto.filter, "AI");
-    expect(withoutAI.rejected).toBe(true);
-  });
-
-  it("never leaves zero active tags", () => {
-    const filter = filterWith({ tags: ["AI"] });
+  it("rejects removing a tag when the remaining selection would be empty", () => {
+    // Both tags selected but the years only cover AI's engagement: removing
+    // AI would leave Crypto alone with zero matches.
+    const filter = filterWith({ tags: ["AI", "Crypto"], years: { start: 2012, end: 2014 } });
     const result = toggleTag(clients, filter, "AI");
     expect(result.rejected).toBe(true);
+  });
+});
+
+describe("blockedTags", () => {
+  const clients = [
+    client("a", [{ startYear: 2012, endYear: 2014, tags: ["AI"] }]),
+    client("b", [{ startYear: 2016, endYear: 2018, tags: ["Crypto"] }]),
+  ];
+
+  it("reports the tags whose toggle would currently empty the grid", () => {
+    const filter = filterWith({ years: { start: 2012, end: 2014 } });
+    const blocked = blockedTags(clients, filter);
+    expect(blocked.has("Crypto")).toBe(true);
+    expect(blocked.has("AI")).toBe(false);
   });
 });
 
@@ -171,5 +226,11 @@ describe("clampYearRange", () => {
       const result = clampYearRange(clients, filter, { start, end: 2026 }, "start", BOUNDS);
       expect(filterClients(clients, { ...filter, years: result.years }).length).toBeGreaterThan(0);
     }
+  });
+
+  it("respects narrowed tag selections when validating", () => {
+    const filter = filterWith({ tags: ["AI"], years: { start: 2010, end: 2026 } });
+    const result = clampYearRange(clients, filter, { start: 2013, end: 2019 }, "end", BOUNDS);
+    expect(filterClients(clients, { ...filter, years: result.years }).length).toBeGreaterThan(0);
   });
 });

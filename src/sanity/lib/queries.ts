@@ -14,6 +14,7 @@ export const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]{
   description,
   "logoUrl": logo.asset->url,
   contactUrl,
+  navigation[]{ label, href, available },
   workStartYear,
   workEndYear,
   seoTitle,
@@ -27,6 +28,15 @@ export const WORK_INDEX_QUERY =
   name,
   "slug": slug.current,
   "logoUrl": logo.asset->url,
+  logoAspect,
+  logoTreatment{
+    scale,
+    padding,
+    alignment,
+    "lightUrl": logoLight.asset->url,
+    "darkUrl": logoDark.asset->url,
+    "compactUrl": compactLogo.asset->url
+  },
   description,
   engagements[]{ startYear, endYear, tags, description },
   caseStudy{

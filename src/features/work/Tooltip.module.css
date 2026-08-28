@@ -1,4 +1,5 @@
-/* A ruled specimen label: white plate, steel hairline, straight cuts. */
+/* A ruled specimen label: opaque plate, steel hairline, straight cuts.
+   Pointer-interactive so the corridor between logo and label is safe. */
 .tooltip {
   position: fixed;
   z-index: 45;
@@ -7,7 +8,7 @@
   background: var(--color-surface-solid);
   border: 1px solid var(--color-line);
   padding: 15px 16px;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .name {
@@ -20,8 +21,8 @@
 .meta {
   margin: 4px 0 0;
   font-size: 13px;
-  font-weight: var(--weight-thin);
-  color: var(--color-fg-faint);
+  font-weight: var(--weight-light);
+  color: var(--color-fg-muted);
   font-variant-numeric: tabular-nums;
 }
 

@@ -46,16 +46,20 @@
   touch-action: none;
 }
 
+/* The deliberate dismissal region: a generous strip across the sheet's top.
+   Drag-to-dismiss engages only here, never from content scrolling. */
 .handleArea {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 34px;
+  height: 56px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 14px;
   z-index: 3;
+  touch-action: none;
 }
 
 .handle {
@@ -126,9 +130,9 @@
 .meta {
   margin: 16px 0 0;
   font-size: 13px;
-  font-weight: var(--weight-thin);
+  font-weight: var(--weight-light);
   text-transform: lowercase;
-  color: var(--color-fg-faint);
+  color: var(--color-fg-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -177,9 +181,9 @@
 .caption {
   margin-top: 8px;
   font-size: 13px;
-  font-weight: var(--weight-thin);
+  font-weight: var(--weight-light);
   text-transform: lowercase;
-  color: var(--color-fg-faint);
+  color: var(--color-fg-muted);
 }
 
 /* The canvas falls out of focus behind the presented logo during the

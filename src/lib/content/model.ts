@@ -41,6 +41,29 @@ export type Engagement = {
   description?: string | null;
 };
 
+export type LogoAlignment = "center" | "start" | "end";
+
+/**
+ * Optional per-client optical overrides for the grid presentation. Automatic
+ * defaults derived from the logo's intrinsic aspect ratio are correct for
+ * most marks; these exist for the exceptions (an unusually dense symbol, a
+ * wordmark with heavy descenders). Sanity mapping: `client.logoTreatment.*`.
+ */
+export type LogoTreatment = {
+  /** Multiplier on the automatic optical size (0.5–1.5; 1 = automatic). */
+  scale?: number | null;
+  /** Extra breathing room inside the cell as a fraction of it (0–0.2). */
+  padding?: number | null;
+  alignment?: LogoAlignment | null;
+  /** Theme-specific asset overrides. The default `logoUrl` is rendered as a
+   *  currentColor alpha mask, so it already adapts to both themes; these are
+   *  for real-world logos that cannot be masked. */
+  lightUrl?: string | null;
+  darkUrl?: string | null;
+  /** Denser alternate mark used when cells get very small (mobile pinch). */
+  compactUrl?: string | null;
+};
+
 export type MediaAspect = "square" | "16:9";
 
 export type WorkMedia = {
@@ -72,6 +95,11 @@ export type WorkClient = {
   slug: string;
   /** URL of the monochrome SVG logo, used directly and as a CSS alpha mask. */
   logoUrl: string;
+  /** Intrinsic aspect ratio (width / height) of the logo asset; drives the
+   *  automatic optical sizing. Defaults to 1 when a source omits it. */
+  logoAspect: number;
+  /** Optional optical overrides; most clients leave this null. */
+  logoTreatment: LogoTreatment | null;
   /** One-sentence informational description shown in tooltips and cards. */
   description: string;
   engagements: Engagement[];
@@ -100,13 +128,28 @@ export type CaseStudy = {
   };
 };
 
+export type NavSection = {
+  label: string;
+  href: string;
+  /** Unavailable sections are hidden entirely (never shown as "soon"). */
+  available: boolean;
+};
+
 export type SiteSettings = {
   title: string;
   description: string;
   /** Personal SVG logo URL; the built-in wordmark renders when absent. */
   logoUrl: string | null;
-  /** `mailto:` address or external contact URL. */
+  /**
+   * `mailto:` address or external contact URL. Null hides the Contact
+   * control. Placeholder values (example.com / example addresses) are
+   * neutralized to null at the content facade, so a fake address can never
+   * ship — set the real one in Sanity site settings, or via
+   * NEXT_PUBLIC_CONTACT_URL while running on fixtures.
+   */
   contactUrl: string | null;
+  /** Site sections in display order; unavailable ones stay hidden. */
+  navigation: NavSection[];
   workStartYear: number;
   workEndYear: number;
   seo: {

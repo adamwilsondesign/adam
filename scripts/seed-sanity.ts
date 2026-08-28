@@ -69,6 +69,7 @@ type FixtureClient = {
   name: string;
   slug: string;
   logoUrl: string;
+  logoAspect?: number;
   description: string;
   engagements: {
     startYear: number;
@@ -120,6 +121,7 @@ async function main(): Promise<void> {
     title: string;
     description: string;
     contactUrl: string | null;
+    navigation?: { label: string; href: string; available: boolean }[];
     workStartYear: number;
     workEndYear: number;
     seo: { title: string; description: string };
@@ -162,6 +164,12 @@ async function main(): Promise<void> {
     title: settings.title,
     description: settings.description,
     contactUrl: settings.contactUrl ?? undefined,
+    navigation: (settings.navigation ?? []).map((section, index) => ({
+      _key: `section-${index}`,
+      label: section.label,
+      href: section.href,
+      available: section.available,
+    })),
     workStartYear: settings.workStartYear,
     workEndYear: settings.workEndYear,
     seoTitle: settings.seo.title,
@@ -216,6 +224,7 @@ async function main(): Promise<void> {
       name: fixture.name,
       slug: { _type: "slug", current: fixture.slug },
       logo: { _type: "file", asset: { _type: "reference", _ref: logoAssetId } },
+      logoAspect: fixture.logoAspect ?? undefined,
       description: fixture.description,
       hidden: false,
       engagements: fixture.engagements.map((engagement, index) => ({

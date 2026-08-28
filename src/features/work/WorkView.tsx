@@ -119,6 +119,15 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
         transition: { duration: DUR.slow, delay: 0.18, ease: EASE_OUT },
       };
 
+  // Once a logo activation begins (info overlay or case-study navigation),
+  // the canvas freezes: no pan or pinch can disturb the departure state.
+  const gesturesEnabled = info === null && openSlug === null;
+
+  const skipToFilters = (event: React.MouseEvent) => {
+    event.preventDefault();
+    document.getElementById("work-filters")?.focus();
+  };
+
   return (
     <motion.div
       className={styles.root}
@@ -130,6 +139,9 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
       }}
       data-leaving={leaving || undefined}
     >
+      <a className={styles.skipLink} href="#work-filters" onClick={skipToFilters}>
+        Skip to filters
+      </a>
       {isMobile === null ? null : isMobile ? (
         <>
           <MobileCanvas
@@ -137,6 +149,7 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
             openSlug={openSlug}
             infoClientId={info?.client.id ?? null}
             onInfoOpen={openInfo}
+            gesturesEnabled={gesturesEnabled}
           />
           <motion.div className={styles.dockLayer} {...dockEntrance}>
             <FilterDock state={state} variant="mobile" />

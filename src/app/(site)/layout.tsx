@@ -44,6 +44,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         title={settings.title}
         logoUrl={settings.logoUrl}
         contactUrl={settings.contactUrl}
+        navigation={settings.navigation}
       />
       {children}
       {isSanityConfigured ? <LiveVisualEditing /> : null}

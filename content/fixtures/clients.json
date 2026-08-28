@@ -5,17 +5,27 @@
       "name": "Auralith",
       "slug": "auralith",
       "logoUrl": "/placeholders/logos/auralith.svg",
+      "logoAspect": 4.023,
+      "logoTreatment": null,
       "description": "Interaction design for an AR field-guide.",
       "engagements": [
         {
           "startYear": 2017,
           "endYear": 2018,
-          "tags": ["AR", "Hardware", "Enterprise"]
+          "tags": [
+            "AR",
+            "Hardware",
+            "Enterprise"
+          ]
         },
         {
           "startYear": 2019,
           "endYear": 2022,
-          "tags": ["Enterprise", "Consumer", "AR"]
+          "tags": [
+            "Enterprise",
+            "Consumer",
+            "AR"
+          ]
         }
       ],
       "caseStudy": {
@@ -29,17 +39,27 @@
       "name": "Bracketry",
       "slug": "bracketry",
       "logoUrl": "/placeholders/logos/bracketry.svg",
+      "logoAspect": 5.594,
+      "logoTreatment": null,
       "description": "Design leadership across a headset onboarding flow.",
       "engagements": [
         {
           "startYear": 2019,
           "endYear": 2020,
-          "tags": ["AR", "Crypto", "Hardware"]
+          "tags": [
+            "AR",
+            "Crypto",
+            "Hardware"
+          ]
         },
         {
           "startYear": 2021,
           "endYear": 2023,
-          "tags": ["Crypto", "AR", "Hardware"]
+          "tags": [
+            "Crypto",
+            "AR",
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -49,12 +69,16 @@
       "name": "Cairnstack",
       "slug": "cairnstack",
       "logoUrl": "/placeholders/logos/cairnstack.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "End-to-end design of a settlement network.",
       "engagements": [
         {
           "startYear": 2014,
           "endYear": 2017,
-          "tags": ["Crypto"]
+          "tags": [
+            "Crypto"
+          ]
         }
       ],
       "caseStudy": {
@@ -68,12 +92,16 @@
       "name": "Delugio",
       "slug": "delugio",
       "logoUrl": "/placeholders/logos/delugio.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design leadership across a personal-finance app.",
       "engagements": [
         {
           "startYear": 2020,
           "endYear": 2023,
-          "tags": ["Consumer"]
+          "tags": [
+            "Consumer"
+          ]
         }
       ],
       "caseStudy": null
@@ -83,12 +111,16 @@
       "name": "Emberline",
       "slug": "emberline",
       "logoUrl": "/placeholders/logos/emberline.svg",
+      "logoAspect": 8.203,
+      "logoTreatment": null,
       "description": "End-to-end design of a connected-device companion app.",
       "engagements": [
         {
           "startYear": 2012,
           "endYear": 2012,
-          "tags": ["Hardware"]
+          "tags": [
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": {
@@ -102,12 +134,16 @@
       "name": "Fenwick & Sable",
       "slug": "fenwick-and-sable",
       "logoUrl": "/placeholders/logos/fenwick-and-sable.svg",
+      "logoAspect": 6.938,
+      "logoTreatment": null,
       "description": "Design leadership across a personal-finance app.",
       "engagements": [
         {
           "startYear": 2022,
           "endYear": 2024,
-          "tags": ["Consumer"]
+          "tags": [
+            "Consumer"
+          ]
         }
       ],
       "caseStudy": null
@@ -117,17 +153,26 @@
       "name": "Glasswork Systems",
       "slug": "glasswork-systems",
       "logoUrl": "/placeholders/logos/glasswork-systems.svg",
+      "logoAspect": 3.432,
+      "logoTreatment": null,
       "description": "Design leadership across a headset onboarding flow.",
       "engagements": [
         {
           "startYear": 2018,
           "endYear": 2021,
-          "tags": ["AR", "Startup"]
+          "tags": [
+            "AR",
+            "Startup"
+          ]
         },
         {
           "startYear": 2022,
           "endYear": 2025,
-          "tags": ["R&D", "Startup", "AR"]
+          "tags": [
+            "R&D",
+            "Startup",
+            "AR"
+          ]
         }
       ],
       "caseStudy": null
@@ -137,12 +182,17 @@
       "name": "Halcyard",
       "slug": "halcyard",
       "logoUrl": "/placeholders/logos/halcyard.svg",
+      "logoAspect": 0.439,
+      "logoTreatment": null,
       "description": "End-to-end design of a connected-device companion app.",
       "engagements": [
         {
           "startYear": 2019,
           "endYear": 2020,
-          "tags": ["Hardware", "AR"]
+          "tags": [
+            "Hardware",
+            "AR"
+          ]
         }
       ],
       "caseStudy": {
@@ -156,12 +206,18 @@
       "name": "Ironquill",
       "slug": "ironquill",
       "logoUrl": "/placeholders/logos/ironquill.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "End-to-end design of an internal prototyping lab.",
       "engagements": [
         {
           "startYear": 2013,
           "endYear": 2013,
-          "tags": ["R&D", "Startup", "AR"]
+          "tags": [
+            "R&D",
+            "Startup",
+            "AR"
+          ]
         }
       ],
       "caseStudy": null
@@ -171,12 +227,17 @@
       "name": "Junipeak",
       "slug": "junipeak",
       "logoUrl": "/placeholders/logos/junipeak.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for an applied-research assistant.",
       "engagements": [
         {
           "startYear": 2017,
           "endYear": 2018,
-          "tags": ["AI", "Hardware"]
+          "tags": [
+            "AI",
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -186,12 +247,17 @@
       "name": "Kelvinet",
       "slug": "kelvinet",
       "logoUrl": "/placeholders/logos/kelvinet.svg",
+      "logoAspect": 7.797,
+      "logoTreatment": null,
       "description": "Product strategy and interface design for a launch-ready MVP.",
       "engagements": [
         {
           "startYear": 2012,
           "endYear": 2015,
-          "tags": ["Startup", "Crypto"]
+          "tags": [
+            "Startup",
+            "Crypto"
+          ]
         }
       ],
       "caseStudy": null
@@ -201,17 +267,24 @@
       "name": "Lumenfold",
       "slug": "lumenfold",
       "logoUrl": "/placeholders/logos/lumenfold.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Product strategy and interface design for a custody dashboard.",
       "engagements": [
         {
           "startYear": 2021,
           "endYear": 2023,
-          "tags": ["Crypto", "Hardware"]
+          "tags": [
+            "Crypto",
+            "Hardware"
+          ]
         },
         {
           "startYear": 2025,
           "endYear": 2026,
-          "tags": ["AR"]
+          "tags": [
+            "AR"
+          ]
         }
       ],
       "caseStudy": {
@@ -225,12 +298,16 @@
       "name": "Mistgrove",
       "slug": "mistgrove",
       "logoUrl": "/placeholders/logos/mistgrove.svg",
+      "logoAspect": 0.311,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for a launch-ready MVP.",
       "engagements": [
         {
           "startYear": 2022,
           "endYear": 2025,
-          "tags": ["Startup"]
+          "tags": [
+            "Startup"
+          ]
         }
       ],
       "caseStudy": null
@@ -240,17 +317,27 @@
       "name": "Noctilume",
       "slug": "noctilume",
       "logoUrl": "/placeholders/logos/noctilume.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "End-to-end design of an internal prototyping lab.",
       "engagements": [
         {
           "startYear": 2014,
           "endYear": 2015,
-          "tags": ["R&D", "Consumer", "AR"]
+          "tags": [
+            "R&D",
+            "Consumer",
+            "AR"
+          ]
         },
         {
           "startYear": 2017,
           "endYear": 2017,
-          "tags": ["Consumer", "Crypto", "Hardware"]
+          "tags": [
+            "Consumer",
+            "Crypto",
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -260,12 +347,18 @@
       "name": "Ozoni",
       "slug": "ozoni",
       "logoUrl": "/placeholders/logos/ozoni.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Product strategy and interface design for a headset onboarding flow.",
       "engagements": [
         {
           "startYear": 2015,
           "endYear": 2017,
-          "tags": ["AR", "Startup", "Hardware"]
+          "tags": [
+            "AR",
+            "Startup",
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -275,12 +368,17 @@
       "name": "Pinegate Labs",
       "slug": "pinegate-labs",
       "logoUrl": "/placeholders/logos/pinegate-labs.svg",
+      "logoAspect": 3.818,
+      "logoTreatment": null,
       "description": "Design leadership across an on-chain analytics suite.",
       "engagements": [
         {
           "startYear": 2014,
           "endYear": 2017,
-          "tags": ["Crypto", "Consumer"]
+          "tags": [
+            "Crypto",
+            "Consumer"
+          ]
         }
       ],
       "caseStudy": null
@@ -290,12 +388,16 @@
       "name": "Quarrel & Post",
       "slug": "quarrel-and-post",
       "logoUrl": "/placeholders/logos/quarrel-and-post.svg",
+      "logoAspect": 6.422,
+      "logoTreatment": null,
       "description": "Design leadership across an operations control room.",
       "engagements": [
         {
           "startYear": 2017,
           "endYear": 2018,
-          "tags": ["Enterprise"]
+          "tags": [
+            "Enterprise"
+          ]
         }
       ],
       "caseStudy": {
@@ -309,12 +411,18 @@
       "name": "Ridgeline Twelve",
       "slug": "ridgeline-twelve",
       "logoUrl": "/placeholders/logos/ridgeline-twelve.svg",
+      "logoAspect": 3.591,
+      "logoTreatment": null,
       "description": "Brand and product design for a sensor console.",
       "engagements": [
         {
           "startYear": 2022,
           "endYear": 2023,
-          "tags": ["Hardware", "AI", "Enterprise"]
+          "tags": [
+            "Hardware",
+            "AI",
+            "Enterprise"
+          ]
         }
       ],
       "caseStudy": null
@@ -324,17 +432,24 @@
       "name": "Saltfern",
       "slug": "saltfern",
       "logoUrl": "/placeholders/logos/saltfern.svg",
+      "logoAspect": 0.338,
+      "logoTreatment": null,
       "description": "Interaction design for a travel companion.",
       "engagements": [
         {
           "startYear": 2015,
           "endYear": 2015,
-          "tags": ["Consumer"]
+          "tags": [
+            "Consumer"
+          ]
         },
         {
           "startYear": 2018,
           "endYear": 2021,
-          "tags": ["Consumer", "Startup"]
+          "tags": [
+            "Consumer",
+            "Startup"
+          ]
         }
       ],
       "caseStudy": null
@@ -344,17 +459,25 @@
       "name": "Tesselworks",
       "slug": "tesselworks",
       "logoUrl": "/placeholders/logos/tesselworks.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design leadership across a seed-stage platform.",
       "engagements": [
         {
           "startYear": 2019,
           "endYear": 2021,
-          "tags": ["Startup", "R&D", "AR"]
+          "tags": [
+            "Startup",
+            "R&D",
+            "AR"
+          ]
         },
         {
           "startYear": 2022,
           "endYear": 2025,
-          "tags": ["AR"]
+          "tags": [
+            "AR"
+          ]
         }
       ],
       "caseStudy": null
@@ -364,12 +487,17 @@
       "name": "Umbrelight",
       "slug": "umbrelight",
       "logoUrl": "/placeholders/logos/umbrelight.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for a research notebook.",
       "engagements": [
         {
           "startYear": 2017,
           "endYear": 2019,
-          "tags": ["R&D", "Startup"]
+          "tags": [
+            "R&D",
+            "Startup"
+          ]
         }
       ],
       "caseStudy": {
@@ -383,12 +511,17 @@
       "name": "Veldtline",
       "slug": "veldtline",
       "logoUrl": "/placeholders/logos/veldtline.svg",
+      "logoAspect": 5,
+      "logoTreatment": null,
       "description": "Product strategy and interface design for a connected-device companion app.",
       "engagements": [
         {
           "startYear": 2019,
           "endYear": 2020,
-          "tags": ["Hardware", "Enterprise"]
+          "tags": [
+            "Hardware",
+            "Enterprise"
+          ]
         }
       ],
       "caseStudy": null
@@ -398,12 +531,17 @@
       "name": "Wickerbyte",
       "slug": "wickerbyte",
       "logoUrl": "/placeholders/logos/wickerbyte.svg",
+      "logoAspect": 4.75,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for a spatial-computing toolkit.",
       "engagements": [
         {
           "startYear": 2019,
           "endYear": 2022,
-          "tags": ["AR", "Hardware"]
+          "tags": [
+            "AR",
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -413,17 +551,23 @@
       "name": "Xylograph",
       "slug": "xylograph",
       "logoUrl": "/placeholders/logos/xylograph.svg",
+      "logoAspect": 0.412,
+      "logoTreatment": null,
       "description": "Brand and product design for an internal prototyping lab.",
       "engagements": [
         {
           "startYear": 2010,
           "endYear": 2013,
-          "tags": ["R&D"]
+          "tags": [
+            "R&D"
+          ]
         },
         {
           "startYear": 2016,
           "endYear": 2016,
-          "tags": ["Startup"]
+          "tags": [
+            "Startup"
+          ]
         }
       ],
       "caseStudy": {
@@ -437,17 +581,23 @@
       "name": "Yonderplane",
       "slug": "yonderplane",
       "logoUrl": "/placeholders/logos/yonderplane.svg",
+      "logoAspect": 7.219,
+      "logoTreatment": null,
       "description": "Interaction design for a launch-ready MVP.",
       "engagements": [
         {
           "startYear": 2020,
           "endYear": 2020,
-          "tags": ["Startup"]
+          "tags": [
+            "Startup"
+          ]
         },
         {
           "startYear": 2021,
           "endYear": 2021,
-          "tags": ["Consumer"]
+          "tags": [
+            "Consumer"
+          ]
         }
       ],
       "caseStudy": null
@@ -457,12 +607,17 @@
       "name": "Zephyrite",
       "slug": "zephyrite",
       "logoUrl": "/placeholders/logos/zephyrite.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design leadership across an AR field-guide.",
       "engagements": [
         {
           "startYear": 2013,
           "endYear": 2014,
-          "tags": ["AR", "AI"]
+          "tags": [
+            "AR",
+            "AI"
+          ]
         }
       ],
       "caseStudy": null
@@ -472,12 +627,18 @@
       "name": "Astral Ledger",
       "slug": "astral-ledger",
       "logoUrl": "/placeholders/logos/astral-ledger.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Interaction design for a sensor console.",
       "engagements": [
         {
           "startYear": 2013,
           "endYear": 2013,
-          "tags": ["Hardware", "Enterprise", "AR"]
+          "tags": [
+            "Hardware",
+            "Enterprise",
+            "AR"
+          ]
         }
       ],
       "caseStudy": null
@@ -487,17 +648,23 @@
       "name": "Bellmarrow",
       "slug": "bellmarrow",
       "logoUrl": "/placeholders/logos/bellmarrow.svg",
+      "logoAspect": 0.318,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for a spatial-computing toolkit.",
       "engagements": [
         {
           "startYear": 2010,
           "endYear": 2011,
-          "tags": ["AR"]
+          "tags": [
+            "AR"
+          ]
         },
         {
           "startYear": 2013,
           "endYear": 2015,
-          "tags": ["AR"]
+          "tags": [
+            "AR"
+          ]
         }
       ],
       "caseStudy": null
@@ -507,12 +674,17 @@
       "name": "Coppermine Optics",
       "slug": "coppermine-optics",
       "logoUrl": "/placeholders/logos/coppermine-optics.svg",
+      "logoAspect": 3.943,
+      "logoTreatment": null,
       "description": "End-to-end design of a sensor console.",
       "engagements": [
         {
           "startYear": 2011,
           "endYear": 2012,
-          "tags": ["Hardware", "Crypto"]
+          "tags": [
+            "Hardware",
+            "Crypto"
+          ]
         }
       ],
       "caseStudy": null
@@ -522,12 +694,16 @@
       "name": "Driftcast",
       "slug": "driftcast",
       "logoUrl": "/placeholders/logos/driftcast.svg",
+      "logoAspect": 6.375,
+      "logoTreatment": null,
       "description": "Design leadership across a personal-finance app.",
       "engagements": [
         {
           "startYear": 2017,
           "endYear": 2019,
-          "tags": ["Consumer"]
+          "tags": [
+            "Consumer"
+          ]
         }
       ],
       "caseStudy": null
@@ -537,17 +713,24 @@
       "name": "Eastfold",
       "slug": "eastfold",
       "logoUrl": "/placeholders/logos/eastfold.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design leadership across a research notebook.",
       "engagements": [
         {
           "startYear": 2012,
           "endYear": 2015,
-          "tags": ["R&D"]
+          "tags": [
+            "R&D"
+          ]
         },
         {
           "startYear": 2018,
           "endYear": 2020,
-          "tags": ["Enterprise", "AR"]
+          "tags": [
+            "Enterprise",
+            "AR"
+          ]
         }
       ],
       "caseStudy": null
@@ -557,17 +740,25 @@
       "name": "Farrowtech",
       "slug": "farrowtech",
       "logoUrl": "/placeholders/logos/farrowtech.svg",
+      "logoAspect": 6.969,
+      "logoTreatment": null,
       "description": "Design leadership across a headset onboarding flow.",
       "engagements": [
         {
           "startYear": 2018,
           "endYear": 2020,
-          "tags": ["AR"]
+          "tags": [
+            "AR"
+          ]
         },
         {
           "startYear": 2023,
           "endYear": 2025,
-          "tags": ["AI", "Startup", "Enterprise"]
+          "tags": [
+            "AI",
+            "Startup",
+            "Enterprise"
+          ]
         }
       ],
       "caseStudy": null
@@ -577,17 +768,25 @@
       "name": "Gantryline",
       "slug": "gantryline",
       "logoUrl": "/placeholders/logos/gantryline.svg",
+      "logoAspect": 0.531,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for an experimental instrument.",
       "engagements": [
         {
           "startYear": 2020,
           "endYear": 2023,
-          "tags": ["R&D"]
+          "tags": [
+            "R&D"
+          ]
         },
         {
           "startYear": 2026,
           "endYear": 2026,
-          "tags": ["AR", "Consumer", "Crypto"]
+          "tags": [
+            "AR",
+            "Consumer",
+            "Crypto"
+          ]
         }
       ],
       "caseStudy": null
@@ -597,12 +796,16 @@
       "name": "Hexbound",
       "slug": "hexbound",
       "logoUrl": "/placeholders/logos/hexbound.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Product strategy and interface design for a sensor console.",
       "engagements": [
         {
           "startYear": 2019,
           "endYear": 2021,
-          "tags": ["Hardware"]
+          "tags": [
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -612,12 +815,17 @@
       "name": "Interlace Guild",
       "slug": "interlace-guild",
       "logoUrl": "/placeholders/logos/interlace-guild.svg",
+      "logoAspect": 3.636,
+      "logoTreatment": null,
       "description": "Interaction design for a compliance workspace.",
       "engagements": [
         {
           "startYear": 2015,
           "endYear": 2018,
-          "tags": ["Enterprise", "R&D"]
+          "tags": [
+            "Enterprise",
+            "R&D"
+          ]
         }
       ],
       "caseStudy": null
@@ -627,22 +835,35 @@
       "name": "Jettison Labs",
       "slug": "jettison-labs",
       "logoUrl": "/placeholders/logos/jettison-labs.svg",
+      "logoAspect": 7.344,
+      "logoTreatment": null,
       "description": "Interaction design for a personal-finance app.",
       "engagements": [
         {
           "startYear": 2021,
           "endYear": 2022,
-          "tags": ["Consumer", "Crypto", "Startup"]
+          "tags": [
+            "Consumer",
+            "Crypto",
+            "Startup"
+          ]
         },
         {
           "startYear": 2023,
           "endYear": 2024,
-          "tags": ["Crypto", "Startup"]
+          "tags": [
+            "Crypto",
+            "Startup"
+          ]
         },
         {
           "startYear": 2026,
           "endYear": 2026,
-          "tags": ["Crypto", "Enterprise", "Startup"]
+          "tags": [
+            "Crypto",
+            "Enterprise",
+            "Startup"
+          ]
         }
       ],
       "caseStudy": null
@@ -652,12 +873,17 @@
       "name": "Krillhaus",
       "slug": "krillhaus",
       "logoUrl": "/placeholders/logos/krillhaus.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "Design systems and prototyping for a custody dashboard.",
       "engagements": [
         {
           "startYear": 2011,
           "endYear": 2012,
-          "tags": ["Crypto", "Startup"]
+          "tags": [
+            "Crypto",
+            "Startup"
+          ]
         }
       ],
       "caseStudy": null
@@ -667,12 +893,16 @@
       "name": "Loomward",
       "slug": "loomward",
       "logoUrl": "/placeholders/logos/loomward.svg",
+      "logoAspect": 0.296,
+      "logoTreatment": null,
       "description": "Interaction design for a research notebook.",
       "engagements": [
         {
           "startYear": 2014,
           "endYear": 2016,
-          "tags": ["R&D"]
+          "tags": [
+            "R&D"
+          ]
         }
       ],
       "caseStudy": null
@@ -682,12 +912,18 @@
       "name": "Meridian Falsework",
       "slug": "meridian-falsework",
       "logoUrl": "/placeholders/logos/meridian-falsework.svg",
+      "logoAspect": 5.781,
+      "logoTreatment": null,
       "description": "Product strategy and interface design for a travel companion.",
       "engagements": [
         {
           "startYear": 2011,
           "endYear": 2013,
-          "tags": ["Consumer", "R&D", "Hardware"]
+          "tags": [
+            "Consumer",
+            "R&D",
+            "Hardware"
+          ]
         }
       ],
       "caseStudy": null
@@ -697,17 +933,27 @@
       "name": "Nullhaven",
       "slug": "nullhaven",
       "logoUrl": "/placeholders/logos/nullhaven.svg",
+      "logoAspect": 1,
+      "logoTreatment": null,
       "description": "End-to-end design of an inference console.",
       "engagements": [
         {
           "startYear": 2011,
           "endYear": 2013,
-          "tags": ["AI", "Consumer", "Startup"]
+          "tags": [
+            "AI",
+            "Consumer",
+            "Startup"
+          ]
         },
         {
           "startYear": 2015,
           "endYear": 2015,
-          "tags": ["Enterprise", "AR", "Startup"]
+          "tags": [
+            "Enterprise",
+            "AR",
+            "Startup"
+          ]
         }
       ],
       "caseStudy": null
@@ -722,7 +968,12 @@
       "title": "Field Console",
       "subtitle": "Realtime coordination for distributed crews",
       "displayDate": "2017–2022",
-      "tags": ["AR", "Hardware", "Enterprise", "Consumer"],
+      "tags": [
+        "AR",
+        "Hardware",
+        "Enterprise",
+        "Consumer"
+      ],
       "summary": "Field Console is a placeholder case study for Auralith: realtime coordination for distributed crews.",
       "body": [
         {
@@ -816,7 +1067,9 @@
       "title": "Ledgerlight",
       "subtitle": "Making custody legible for operations teams",
       "displayDate": "2014–2017",
-      "tags": ["Crypto"],
+      "tags": [
+        "Crypto"
+      ],
       "summary": "Ledgerlight is a placeholder case study for Cairnstack: making custody legible for operations teams.",
       "body": [
         {
@@ -910,7 +1163,9 @@
       "title": "Waypoint",
       "subtitle": "Spatial onboarding without the manual",
       "displayDate": "2012",
-      "tags": ["Hardware"],
+      "tags": [
+        "Hardware"
+      ],
       "summary": "Waypoint is a placeholder case study for Emberline: spatial onboarding without the manual.",
       "body": [
         {
@@ -1004,7 +1259,10 @@
       "title": "Signal Bench",
       "subtitle": "An evaluation workbench for applied research",
       "displayDate": "2019–2020",
-      "tags": ["AR", "Hardware"],
+      "tags": [
+        "AR",
+        "Hardware"
+      ],
       "summary": "Signal Bench is a placeholder case study for Halcyard: an evaluation workbench for applied research.",
       "body": [
         {
@@ -1098,7 +1356,11 @@
       "title": "Northroom",
       "subtitle": "A control room that reads at a glance",
       "displayDate": "2021–2026",
-      "tags": ["AR", "Crypto", "Hardware"],
+      "tags": [
+        "AR",
+        "Crypto",
+        "Hardware"
+      ],
       "summary": "Northroom is a placeholder case study for Lumenfold: a control room that reads at a glance.",
       "body": [
         {
@@ -1201,7 +1463,9 @@
       "title": "Loomline",
       "subtitle": "Weaving hardware telemetry into one thread",
       "displayDate": "2017–2018",
-      "tags": ["Enterprise"],
+      "tags": [
+        "Enterprise"
+      ],
       "summary": "Loomline is a placeholder case study for Quarrel & Post: weaving hardware telemetry into one thread.",
       "body": [
         {
@@ -1304,7 +1568,10 @@
       "title": "Softmarket",
       "subtitle": "A calmer way to buy complicated things",
       "displayDate": "2017–2019",
-      "tags": ["R&D", "Startup"],
+      "tags": [
+        "R&D",
+        "Startup"
+      ],
       "summary": "Softmarket is a placeholder case study for Umbrelight: a calmer way to buy complicated things.",
       "body": [
         {
@@ -1398,7 +1665,10 @@
       "title": "Kilnworks",
       "subtitle": "Prototyping tools for a materials lab",
       "displayDate": "2010–2016",
-      "tags": ["R&D", "Startup"],
+      "tags": [
+        "R&D",
+        "Startup"
+      ],
       "summary": "Kilnworks is a placeholder case study for Xylograph: prototyping tools for a materials lab.",
       "body": [
         {

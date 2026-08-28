@@ -64,9 +64,9 @@
 .meta {
   margin: 12px 0 0;
   font-size: 13px;
-  font-weight: var(--weight-thin);
+  font-weight: var(--weight-light);
   text-transform: lowercase;
-  color: var(--color-fg-faint);
+  color: var(--color-fg-muted);
   font-variant-numeric: tabular-nums;
 }
 

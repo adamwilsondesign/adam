@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { orderForSeed, shuffleWithSeed } from "@/features/work/shuffle";
+import { nextOrder, orderForSeed, shuffleWithSeed } from "@/features/work/shuffle";
 
 const IDS = Array.from({ length: 40 }, (_, i) => `client-${i}`);
 
@@ -38,5 +38,47 @@ describe("orderForSeed", () => {
     // subsetB is subsetA filtered further; relative order must be preserved.
     const filtered = subsetA.filter((id) => subsetB.includes(id));
     expect(filtered).toEqual(subsetB);
+  });
+});
+
+describe("nextOrder (spatial continuity)", () => {
+  const canonical = orderForSeed(IDS, 7);
+
+  it("keeps survivors in their relative order when the set narrows", () => {
+    const previous = shuffleWithSeed(IDS, 3);
+    const visible = IDS.filter((_, i) => i % 3 === 0);
+    const next = nextOrder(previous, visible, canonical);
+    expect(next).toEqual(previous.filter((id) => visible.includes(id)));
+  });
+
+  it("keeps survivors first and appends newcomers when the set expands", () => {
+    const previous = shuffleWithSeed(IDS.slice(0, 10), 3);
+    const next = nextOrder(previous, IDS, canonical);
+    expect(next.slice(0, previous.length)).toEqual(previous);
+    expect([...next].sort()).toEqual([...IDS].sort());
+  });
+
+  it("orders newcomers deterministically by the canonical order", () => {
+    const previous = shuffleWithSeed(IDS.slice(0, 10), 3);
+    const a = nextOrder(previous, IDS, canonical);
+    const b = nextOrder(previous, IDS, canonical);
+    expect(a).toEqual(b);
+    const newcomers = a.slice(previous.length);
+    const sorted = [...newcomers].sort((x, y) => (canonical.get(x) ?? 0) - (canonical.get(y) ?? 0));
+    expect(newcomers).toEqual(sorted);
+  });
+
+  it("returns the same array reference when the visible set is unchanged", () => {
+    const previous = shuffleWithSeed(IDS, 5);
+    const next = nextOrder(previous, [...previous].reverse(), canonical);
+    expect(next).toBe(previous);
+  });
+
+  it("is stable across a narrow-then-restore round trip", () => {
+    const initial = shuffleWithSeed(IDS, 11);
+    const narrowed = nextOrder(initial, IDS.slice(0, 12), canonical);
+    const restored = nextOrder(narrowed, IDS, canonical);
+    // The 12 survivors keep their exact narrowed positions at the head.
+    expect(restored.slice(0, narrowed.length)).toEqual(narrowed);
   });
 });

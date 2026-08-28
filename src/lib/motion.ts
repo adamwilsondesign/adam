@@ -20,6 +20,6 @@ export const DUR = {
   base: 0.48,
   /** Shared-element travel and large surfaces. */
   slow: 0.62,
-  /** Grid recomposition glide. */
-  grid: 0.58,
+  /** Grid recomposition glide (filter reflow settles within ~450ms). */
+  grid: 0.42,
 } as const;

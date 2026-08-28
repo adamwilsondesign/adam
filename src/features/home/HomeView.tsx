@@ -5,20 +5,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import type { NavSection, YearRange } from "@/lib/content/model";
 import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
 
 import styles from "./HomeView.module.css";
 
 type HomeViewProps = {
+  /** The introductory statement, from site settings (Sanity-editable later). */
   intro: string;
+  /** Site sections; unavailable ones are hidden entirely, never teased. */
+  sections: NavSection[];
+  workRange: YearRange;
 };
-
-const SECTIONS = [
-  { label: "Work", href: "/work", available: true },
-  { label: "About", href: "/about", available: false },
-  { label: "Blog", href: "/blog", available: false },
-  { label: "Experiments", href: "/experiments", available: false },
-] as const;
 
 const EXIT_DURATION = 0.3;
 
@@ -27,7 +25,7 @@ const EXIT_DURATION = 0.3;
  * the section index. Opening Work fades this interface away before the logo
  * field populates, so the change reads as one continuous surface.
  */
-export function HomeView({ intro }: HomeViewProps) {
+export function HomeView({ intro, sections, workRange }: HomeViewProps) {
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const [leaving, setLeaving] = useState(false);
@@ -74,25 +72,26 @@ export function HomeView({ intro }: HomeViewProps) {
 
         <nav className={styles.nav} aria-label="Site sections">
           <ul className={styles.navList}>
-            {SECTIONS.map((section, index) => (
-              <motion.li key={section.href} {...enter(0.16 + index * 0.07)}>
-                {section.available ? (
-                  <Link className={styles.navLink} href={section.href} onClick={openWork}>
+            {sections
+              .filter((section) => section.available)
+              .map((section, index) => (
+                <motion.li key={section.href} {...enter(0.16 + index * 0.07)}>
+                  <Link
+                    className={styles.navLink}
+                    href={section.href}
+                    onClick={section.href === "/work" ? openWork : undefined}
+                  >
                     {section.label}
                   </Link>
-                ) : (
-                  <span className={styles.navDisabled}>
-                    {section.label}
-                    <span className={styles.soon}>soon</span>
-                  </span>
-                )}
-              </motion.li>
-            ))}
+                </motion.li>
+              ))}
           </ul>
         </nav>
 
         <motion.footer className={styles.footer} {...enter(0.42)}>
-          <span>Selected work, 2010–2026</span>
+          <span>
+            Selected work, {workRange.start}–{workRange.end}
+          </span>
           <span>© {new Date().getFullYear()}</span>
         </motion.footer>
       </div>

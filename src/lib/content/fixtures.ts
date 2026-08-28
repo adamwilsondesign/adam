@@ -6,20 +6,29 @@
  * Sanity credentials during development. Regenerate the data with
  * `npm run placeholders`; import it into a real Sanity project with
  * `npm run sanity:seed`.
+ *
+ * Missing optional fields degrade gracefully here (aspect ratios default to
+ * 1, treatments to null, navigation to a Work-only index), so older fixture
+ * files and hand-edited content keep working.
  */
 
 import fixtureClients from "@content/fixtures/clients.json";
 import fixtureSettings from "@content/fixtures/site-settings.json";
 
-import type { CaseStudy, SiteSettings, WorkClient } from "./model";
+import type { CaseStudy, NavSection, SiteSettings, WorkClient } from "./model";
 
 type FixtureFile = {
-  clients: WorkClient[];
+  clients: (Omit<WorkClient, "logoAspect" | "logoTreatment"> &
+    Partial<Pick<WorkClient, "logoAspect" | "logoTreatment">>)[];
   caseStudies: CaseStudy[];
 };
 
+type FixtureSettings = Omit<SiteSettings, "navigation"> & { navigation?: NavSection[] };
+
 const data = fixtureClients as unknown as FixtureFile;
-const settings = fixtureSettings as unknown as SiteSettings;
+const settings = fixtureSettings as unknown as FixtureSettings;
+
+const DEFAULT_NAVIGATION: NavSection[] = [{ label: "Work", href: "/work", available: true }];
 
 function assertFixtures(): void {
   if (!Array.isArray(data.clients) || data.clients.length === 0) {
@@ -30,12 +39,19 @@ function assertFixtures(): void {
 }
 
 export function fixtureSiteSettings(): SiteSettings {
-  return settings;
+  return {
+    ...settings,
+    navigation: settings.navigation ?? DEFAULT_NAVIGATION,
+  };
 }
 
 export function fixtureWorkIndex(): WorkClient[] {
   assertFixtures();
-  return data.clients;
+  return data.clients.map((client) => ({
+    ...client,
+    logoAspect: client.logoAspect ?? 1,
+    logoTreatment: client.logoTreatment ?? null,
+  }));
 }
 
 export function fixtureCaseStudy(slug: string): CaseStudy | null {
