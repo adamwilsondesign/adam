@@ -102,7 +102,10 @@ export function WorkTooltip({
   const tags = anchor ? clientTags(anchor.client) : [];
 
   return (
-    <AnimatePresence>
+    // mode="wait": when the anchor re-targets to another client, the old card
+    // fully exits before the new one mounts — there is only ever one element
+    // carrying id="work-tooltip" (aria-describedby must stay unambiguous).
+    <AnimatePresence mode="wait">
       {anchor && (
         <motion.div
           key={anchor.client.id}

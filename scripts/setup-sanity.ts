@@ -34,6 +34,22 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const API = "https://api.sanity.io/v2021-06-07";
 
+/**
+ * Node's global fetch (undici) ignores HTTP(S)_PROXY environment variables,
+ * so in proxied environments (corporate networks, sandboxed CI) it bypasses
+ * the proxy other tools use and gets blocked. Route it through the env proxy
+ * when one is configured.
+ */
+async function installProxyDispatcher(): Promise<void> {
+  if (!process.env.HTTPS_PROXY && !process.env.https_proxy) return;
+  try {
+    const { EnvHttpProxyAgent, setGlobalDispatcher } = await import("undici");
+    setGlobalDispatcher(new EnvHttpProxyAgent());
+  } catch {
+    // undici unavailable — fetch stays direct
+  }
+}
+
 function flag(name: string): string | null {
   const index = process.argv.indexOf(`--${name}`);
   if (index === -1) return null;
@@ -133,6 +149,7 @@ async function writeEnvLocal(values: Record<string, string>): Promise<void> {
 
 async function main(): Promise<void> {
   await loadDotEnvLocal();
+  await installProxyDispatcher();
   const token = await resolveAuthToken();
 
   const displayName = flag("name") ?? "Adam Wilson — Portfolio";
@@ -169,9 +186,15 @@ async function main(): Promise<void> {
     console.log(`Created Sanity project ${projectId} (“${displayName}”).`);
   }
 
-  // 2. Dataset (PUT is create-or-keep).
-  await api(token, "PUT", `/projects/${projectId}/datasets/${dataset}`, { aclMode: "public" });
-  console.log(`Dataset “${dataset}” ready (public read for published content).`);
+  // 2. Dataset. Check first: re-PUTting an existing dataset needs management
+  //    rights some tokens (e.g. project robots) lack, and it's a no-op anyway.
+  const datasets = await api<{ name: string }[]>(token, "GET", `/projects/${projectId}/datasets`);
+  if (datasets.some((entry) => entry.name === dataset)) {
+    console.log(`Dataset “${dataset}” already exists.`);
+  } else {
+    await api(token, "PUT", `/projects/${projectId}/datasets/${dataset}`, { aclMode: "public" });
+    console.log(`Dataset “${dataset}” created (public read for published content).`);
+  }
 
   // 3. Tokens — keep any already configured, mint the missing ones.
   let writeToken = process.env.SANITY_API_WRITE_TOKEN ?? null;
@@ -212,7 +235,9 @@ async function main(): Promise<void> {
       if (/exist/i.test(message)) {
         console.log(`CORS origin already present: ${origin}`);
       } else {
-        throw error;
+        // CORS only affects the browser Studio, not seeding — warn, don't abort.
+        console.warn(`Could not add CORS origin ${origin} (${message}).`);
+        console.warn("Add it manually at sanity.io/manage → API → CORS origins.");
       }
     }
   }

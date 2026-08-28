@@ -291,38 +291,73 @@ test.describe("informational tooltip", () => {
     await page.goto("/work");
     const tooltip = page.locator("#work-tooltip");
 
-    // Pick an informational cell in the middle third of the viewport, so
-    // both horizontal placements genuinely fit and the dodge can flip.
+    // Pick an informational cell in the middle third of the viewport with
+    // vertical clearance, so both horizontal placements genuinely fit and the
+    // dodge can flip. (Left/right placements centre the card on the cell —
+    // near the top or bottom edge they can't fit and the dodge correctly
+    // holds still, which is not what this test is about.)
     const viewport = page.viewportSize()!;
     const cells = page.locator("button[data-client-cell]");
+
+    // Geometry decisions below need settled positions: wait until the
+    // entrance animation stops moving the first cell before measuring.
+    await cells.first().waitFor();
+    await expect
+      .poll(
+        async () => {
+          const a = await cells.first().boundingBox();
+          await page.waitForTimeout(200);
+          const b = await cells.first().boundingBox();
+          return a && b && Math.abs(a.x - b.x) < 0.5 && Math.abs(a.width - b.width) < 0.5;
+        },
+        { timeout: 8000 },
+      )
+      .toBe(true);
+
     let info = cells.first();
+    let found = false;
     for (const candidate of await cells.all()) {
       const box = await candidate.boundingBox();
       if (!box) continue;
-      const center = box.x + box.width / 2;
-      if (center > viewport.width / 3 && center < (viewport.width * 2) / 3) {
+      const centerX = box.x + box.width / 2;
+      const centerY = box.y + box.height / 2;
+      if (
+        centerX > viewport.width / 3 &&
+        centerX < (viewport.width * 2) / 3 &&
+        centerY > 220 &&
+        centerY < viewport.height - 220
+      ) {
         info = candidate;
+        found = true;
         break;
       }
     }
+    expect(found, "an informational cell with room on both sides exists").toBe(true);
 
     await info.hover();
     await expect(tooltip).toBeVisible();
 
-    // Hovering the card itself flips it to the horizontally opposite edge
-    // of the logo. (Assert inside the hover-intent window: once the card has
-    // dodged, whatever logo now sits under the cursor may legitimately
-    // re-target the tooltip after the 150ms intent delay.)
+    // Hovering the card itself flips it to the horizontally opposite edge of
+    // the logo. The flip is instant but happens on React's schedule, so poll
+    // rather than sampling one fixed instant. (Once the card has dodged,
+    // whatever logo now sits under the cursor may legitimately re-target the
+    // tooltip after the 150ms intent delay — the first observed flip ends
+    // the poll well inside that window.)
     const cellBox = (await info.boundingBox())!;
     const before = (await tooltip.boundingBox())!;
-    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
-    await page.waitForTimeout(80);
-    await expect(tooltip).toBeVisible();
-    const after = (await tooltip.boundingBox())!;
     const cellCenter = cellBox.x + cellBox.width / 2;
-    expect(before.x + before.width / 2 > cellCenter).not.toBe(
-      after.x + after.width / 2 > cellCenter,
-    );
+    const beforeRight = before.x + before.width / 2 > cellCenter;
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await expect
+      .poll(
+        async () => {
+          const after = await tooltip.boundingBox();
+          if (!after) return "hidden";
+          return after.x + after.width / 2 > cellCenter ? "right" : "left";
+        },
+        { timeout: 2000, intervals: [40, 60, 80, 120, 200] },
+      )
+      .toBe(beforeRight ? "left" : "right");
 
     // Left alone, it closes after the dodge grace period.
     await page.mouse.move(4, page.viewportSize()!.height - 4);

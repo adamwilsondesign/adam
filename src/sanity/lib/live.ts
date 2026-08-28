@@ -1,5 +1,7 @@
 import { defineLive } from "next-sanity/live";
 
+import "@/lib/proxy-fetch";
+
 import { readToken } from "../env";
 import { client } from "./client";
 

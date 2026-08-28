@@ -12,9 +12,12 @@
  *   SANITY_API_WRITE_TOKEN          a token with Editor rights (server-side only)
  *
  * Safety:
- *   - Every document this script writes uses an id under the `placeholder.`
- *     prefix (e.g. placeholder.client.auralith), so re-running only replaces
- *     placeholder documents and can never overwrite real content.
+ *   - Every document this script writes uses an id with the `placeholder-`
+ *     prefix (e.g. placeholder-client-auralith), so re-running only replaces
+ *     placeholder documents and can never overwrite real content. The prefix
+ *     is dash-separated on purpose: Sanity treats ids containing dots as
+ *     path-scoped and hides them from public (unauthenticated) queries, which
+ *     would make the seeded content invisible to the published site.
  *   - Site settings are created with `createIfNotExists` — an existing
  *     settings document is left untouched.
  *   - Uploaded assets are tagged with a `placeholder--` filename prefix and
@@ -26,6 +29,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createClient } from "@sanity/client";
+
+import { isPlaceholderExternalUrl } from "../src/lib/content/placeholder-guard";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -126,7 +131,10 @@ function realWriter(projectId: string, dataset: string, token: string): Writer {
       await client.createOrReplace(doc);
     },
     deletePlaceholders: async () => {
-      await client.delete({ query: `*[_id in path("placeholder.**")]` });
+      // Covers current dash-prefixed ids and the dotted ids of earlier seeds.
+      await client.delete({
+        query: `*[string::startsWith(_id, "placeholder-") || _id in path("placeholder.**")]`,
+      });
     },
   };
 }
@@ -143,7 +151,7 @@ function dryWriter(counters: { assets: number; documents: string[] }): Writer {
       counters.documents.push(`${doc._id} (create-if-missing)`);
     },
     createOrReplace: async (doc) => {
-      if (!doc._id.startsWith("placeholder.") && doc._id !== "siteSettings") {
+      if (!doc._id.startsWith("placeholder-") && doc._id !== "siteSettings") {
         throw new Error(`Refusing non-placeholder id: ${doc._id}`);
       }
       counters.documents.push(doc._id);
@@ -281,7 +289,13 @@ async function main(): Promise<void> {
         displayDate: study.displayDate,
         shortDescription: study.summary,
         body: study.body,
-        externalUrl: study.externalUrl ?? undefined,
+        // Placeholder URLs (example.com) never enter the dataset: production
+        // validation treats them as errors, and the CTA is meant to appear
+        // only once a real project URL is set in Studio.
+        externalUrl:
+          study.externalUrl && !isPlaceholderExternalUrl(study.externalUrl)
+            ? study.externalUrl
+            : undefined,
         heroImage: {
           _type: "image",
           asset: { _type: "reference", _ref: heroAssetId },
@@ -294,7 +308,9 @@ async function main(): Promise<void> {
     }
 
     await writer.createOrReplace({
-      _id: fixture.id,
+      // Fixture ids are dotted (placeholder.client.foo); dots would make the
+      // document path-scoped and publicly invisible, so flatten them.
+      _id: fixture.id.replace(/\./g, "-"),
       _type: "client",
       name: fixture.name,
       slug: { _type: "slug", current: fixture.slug },
@@ -317,7 +333,7 @@ async function main(): Promise<void> {
 
   if (dryRun) {
     console.log(
-      `Dry run OK: ${counters.documents.length} documents (${counters.documents.filter((d) => d.startsWith("placeholder.")).length} placeholder-scoped), ${counters.assets} assets readable and ready to upload.`,
+      `Dry run OK: ${counters.documents.length} documents (${counters.documents.filter((d) => d.startsWith("placeholder-")).length} placeholder-scoped), ${counters.assets} assets readable and ready to upload.`,
     );
     return;
   }

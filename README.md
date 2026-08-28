@@ -99,7 +99,7 @@ Content Lake automatically, and `/studio` mounts the Studio.
    ```
 
    The seed is explicitly invoked, idempotent, and **only writes documents
-   with the `placeholder.` id prefix** (plus a `createIfNotExists` for site
+   with the `placeholder-` id prefix** (plus a `createIfNotExists` for site
    settings, which never overwrites existing settings). Remove all
    placeholders later with `npm run sanity:seed -- --remove`.
 
@@ -308,7 +308,11 @@ custom domain.
    structured data).
 2. Seed or author content first (`npm run sanity:seed` locally) so the Work
    grid isn't empty.
-3. Add the production URL to the Sanity project's CORS origins.
+3. Add the production URL to the Sanity project's CORS origins. This is
+   **load-bearing for the public site**, not just Studio: client logos are
+   rendered as CSS masks fetched from `cdn.sanity.io`, and mask-image
+   requests are CORS-checked — from an origin that isn't allowlisted the
+   CDN answers 403 and every logo renders invisible.
 4. Redeploy (env vars are inlined at build time) and remove `vercel.json`'s
    fixture opt-in. Published Sanity edits then update the live site without
    redeploys; `/studio` is served from the same deployment (and excluded

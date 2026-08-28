@@ -47,5 +47,14 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
+    // The e2e suite is hermetic: it always runs on fixture content, even when
+    // a developer's .env.local configures Sanity (blanking the project id
+    // makes the facade treat Sanity as unconfigured).
+    env: {
+      NEXT_PUBLIC_CONTENT_SOURCE: "fixtures",
+      NEXT_PUBLIC_SANITY_PROJECT_ID: "",
+      SANITY_API_READ_TOKEN: "",
+      SANITY_API_WRITE_TOKEN: "",
+    },
   },
 });
