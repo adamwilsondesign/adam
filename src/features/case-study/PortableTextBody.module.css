@@ -1,0 +1,22 @@
+.paragraph {
+  margin: 0 0 1em;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--color-fg-muted);
+  max-width: 44ch;
+}
+
+.paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.link {
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-line-strong);
+}
+
+.link:hover {
+  text-decoration-color: currentColor;
+}

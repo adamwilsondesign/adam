@@ -1,0 +1,78 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.yearLabel {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--color-fg-muted);
+  min-width: 34px;
+  text-align: center;
+  user-select: none;
+}
+
+.track {
+  position: relative;
+  flex: 1;
+  height: 36px;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.rail {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--color-line);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.fill {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--color-fg);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-bg);
+  border: 2px solid var(--color-fg);
+  cursor: grab;
+  touch-action: none;
+  transition: transform 120ms var(--ease-precise);
+}
+
+/* Generous invisible hit area for touch. */
+.thumb::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+}
+
+.thumb:hover,
+.thumb:focus-visible {
+  transform: translate(-50%, -50%) scale(1.18);
+}
+
+.thumb:active {
+  cursor: grabbing;
+}

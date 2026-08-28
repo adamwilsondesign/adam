@@ -1,0 +1,21 @@
+.field {
+  position: fixed;
+  top: var(--chrome-header-height);
+  bottom: var(--chrome-dock-clearance);
+  left: var(--page-margin);
+  right: var(--page-margin);
+}
+
+.list {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

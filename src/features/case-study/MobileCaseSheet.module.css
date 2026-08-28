@@ -1,0 +1,173 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+}
+
+.floatingLogo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  color: var(--color-fg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.introMask {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-color: currentColor;
+  overflow: hidden;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+.introHero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  touch-action: none;
+}
+
+.handleArea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-line-strong);
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  left: 10px;
+  z-index: 3;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-muted);
+}
+
+.scroller {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  padding: 64px 20px calc(40px + env(safe-area-inset-bottom, 0px));
+}
+
+.header {
+  padding: 8px 4px 6px;
+}
+
+.sheetLogo {
+  position: relative;
+  display: block;
+  width: 132px;
+  height: 52px;
+  color: var(--color-fg);
+  margin-bottom: 22px;
+}
+
+.title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 550;
+  letter-spacing: -0.022em;
+  line-height: 1.14;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--color-fg-muted);
+}
+
+.meta {
+  margin: 16px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.metaSep {
+  color: var(--color-fg-faint);
+}
+
+.body {
+  margin-top: 18px;
+}
+
+.body p {
+  font-size: 15px;
+}
+
+.external {
+  margin-top: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-fg);
+}
+
+.gallery {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.galleryItem {
+  margin: 0;
+}
+
+.galleryImage {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.caption {
+  margin-top: 8px;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--color-fg-faint);
+}

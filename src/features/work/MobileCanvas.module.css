@@ -1,0 +1,54 @@
+.viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  /* The canvas owns all touch gestures — no browser panning or zooming. */
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* Keeps the header legible while outer logos bleed beneath it. */
+.viewport::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--chrome-header-height) + 18px);
+  background: linear-gradient(to bottom, var(--color-bg) 30%, transparent);
+  pointer-events: none;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  will-change: transform;
+}
+
+.cellBox {
+  position: relative;
+}
+
+.cell {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--color-fg);
+  opacity: 0.8;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cellCase {
+  opacity: 1;
+}
+
+.logoBox {
+  position: absolute;
+  inset: 16%;
+  display: block;
+}

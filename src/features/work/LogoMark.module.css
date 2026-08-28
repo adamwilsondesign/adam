@@ -1,0 +1,23 @@
+.mask {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-color: currentColor;
+  overflow: hidden;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+.fill {
+  position: absolute;
+  /* Overscan so the ~5% parallax travel never exposes an edge. */
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
+  user-select: none;
+}

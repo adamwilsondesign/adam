@@ -1,0 +1,17 @@
+.desktopHost {
+  display: contents;
+}
+
+.mobileHost {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .desktopHost {
+    display: none;
+  }
+
+  .mobileHost {
+    display: contents;
+  }
+}

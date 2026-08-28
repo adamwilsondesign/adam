@@ -1,0 +1,118 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) 2fr;
+  background: var(--color-bg);
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  left: calc(var(--page-margin) - 10px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  color: var(--color-fg-muted);
+  transition: color 160ms var(--ease-precise);
+}
+
+.close:hover,
+.close:focus-visible {
+  color: var(--color-fg);
+}
+
+.closeLabel {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 34px;
+  padding: calc(var(--chrome-header-height) + 8px) 12px 48px var(--page-margin);
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.logoBox {
+  position: relative;
+  width: min(220px, 60%);
+  height: 96px;
+  color: var(--color-fg);
+  flex: none;
+}
+
+.content {
+  max-width: 46ch;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(26px, 2.6vw, 38px);
+  font-weight: 550;
+  letter-spacing: -0.022em;
+  line-height: 1.14;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--color-fg-muted);
+}
+
+.meta {
+  margin: 18px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.client {
+  color: var(--color-fg-muted);
+}
+
+.metaSep {
+  color: var(--color-fg-faint);
+}
+
+.body {
+  margin-top: 20px;
+}
+
+.external {
+  margin-top: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-fg);
+  border-bottom: 1px solid var(--color-line-strong);
+  padding-bottom: 3px;
+  transition: border-color 160ms var(--ease-precise);
+}
+
+.external:hover,
+.external:focus-visible {
+  border-color: currentColor;
+}
+
+.media {
+  min-width: 0;
+  padding: calc(var(--chrome-header-height) + 16px) 0 56px 26px;
+}

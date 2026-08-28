@@ -1,0 +1,19 @@
+.wordmark {
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.mark {
+  display: block;
+  width: 132px;
+  height: 22px;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}

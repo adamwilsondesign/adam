@@ -1,0 +1,87 @@
+.dockDesktop,
+.dockMobile {
+  position: fixed;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--color-line);
+}
+
+.dockDesktop {
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  width: min(660px, calc(100vw - 2 * var(--page-margin)));
+  border-radius: 18px;
+  padding: 12px 20px 8px;
+  gap: 2px;
+}
+
+.dockMobile {
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  border-radius: 18px 18px 0 0;
+  border-bottom: none;
+  padding: 10px 14px calc(8px + env(safe-area-inset-bottom, 0px));
+  gap: 2px;
+}
+
+.pillRow {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.dockMobile .pillRow {
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -14px;
+  padding: 2px 14px;
+}
+
+.dockMobile .pillRow::-webkit-scrollbar {
+  display: none;
+}
+
+.pill {
+  flex: none;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  color: var(--color-fg-muted);
+  transition:
+    color 160ms var(--ease-precise),
+    background-color 160ms var(--ease-precise),
+    border-color 160ms var(--ease-precise);
+}
+
+.dockMobile .pill {
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.pill:hover {
+  color: var(--color-fg);
+  border-color: var(--color-line-strong);
+}
+
+.pill[data-active] {
+  background: var(--color-fg);
+  border-color: var(--color-fg);
+  color: var(--color-bg);
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+}

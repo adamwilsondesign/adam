@@ -1,0 +1,1497 @@
+{
+  "clients": [
+    {
+      "id": "placeholder.client.auralith",
+      "name": "Auralith",
+      "slug": "auralith",
+      "logoUrl": "/placeholders/logos/auralith.svg",
+      "description": "Interaction design for an AR field-guide.",
+      "engagements": [
+        {
+          "startYear": 2017,
+          "endYear": 2018,
+          "tags": ["AR", "Hardware", "Enterprise"]
+        },
+        {
+          "startYear": 2019,
+          "endYear": 2022,
+          "tags": ["Enterprise", "Consumer", "AR"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "auralith",
+        "title": "Field Console",
+        "heroUrl": "/placeholders/case-studies/auralith/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.bracketry",
+      "name": "Bracketry",
+      "slug": "bracketry",
+      "logoUrl": "/placeholders/logos/bracketry.svg",
+      "description": "Design leadership across a headset onboarding flow.",
+      "engagements": [
+        {
+          "startYear": 2019,
+          "endYear": 2020,
+          "tags": ["AR", "Crypto", "Hardware"]
+        },
+        {
+          "startYear": 2021,
+          "endYear": 2023,
+          "tags": ["Crypto", "AR", "Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.cairnstack",
+      "name": "Cairnstack",
+      "slug": "cairnstack",
+      "logoUrl": "/placeholders/logos/cairnstack.svg",
+      "description": "End-to-end design of a settlement network.",
+      "engagements": [
+        {
+          "startYear": 2014,
+          "endYear": 2017,
+          "tags": ["Crypto"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "cairnstack",
+        "title": "Ledgerlight",
+        "heroUrl": "/placeholders/case-studies/cairnstack/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.delugio",
+      "name": "Delugio",
+      "slug": "delugio",
+      "logoUrl": "/placeholders/logos/delugio.svg",
+      "description": "Design leadership across a personal-finance app.",
+      "engagements": [
+        {
+          "startYear": 2020,
+          "endYear": 2023,
+          "tags": ["Consumer"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.emberline",
+      "name": "Emberline",
+      "slug": "emberline",
+      "logoUrl": "/placeholders/logos/emberline.svg",
+      "description": "End-to-end design of a connected-device companion app.",
+      "engagements": [
+        {
+          "startYear": 2012,
+          "endYear": 2012,
+          "tags": ["Hardware"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "emberline",
+        "title": "Waypoint",
+        "heroUrl": "/placeholders/case-studies/emberline/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.fenwick-and-sable",
+      "name": "Fenwick & Sable",
+      "slug": "fenwick-and-sable",
+      "logoUrl": "/placeholders/logos/fenwick-and-sable.svg",
+      "description": "Design leadership across a personal-finance app.",
+      "engagements": [
+        {
+          "startYear": 2022,
+          "endYear": 2024,
+          "tags": ["Consumer"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.glasswork-systems",
+      "name": "Glasswork Systems",
+      "slug": "glasswork-systems",
+      "logoUrl": "/placeholders/logos/glasswork-systems.svg",
+      "description": "Design leadership across a headset onboarding flow.",
+      "engagements": [
+        {
+          "startYear": 2018,
+          "endYear": 2021,
+          "tags": ["AR", "Startup"]
+        },
+        {
+          "startYear": 2022,
+          "endYear": 2025,
+          "tags": ["R&D", "Startup", "AR"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.halcyard",
+      "name": "Halcyard",
+      "slug": "halcyard",
+      "logoUrl": "/placeholders/logos/halcyard.svg",
+      "description": "End-to-end design of a connected-device companion app.",
+      "engagements": [
+        {
+          "startYear": 2019,
+          "endYear": 2020,
+          "tags": ["Hardware", "AR"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "halcyard",
+        "title": "Signal Bench",
+        "heroUrl": "/placeholders/case-studies/halcyard/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.ironquill",
+      "name": "Ironquill",
+      "slug": "ironquill",
+      "logoUrl": "/placeholders/logos/ironquill.svg",
+      "description": "End-to-end design of an internal prototyping lab.",
+      "engagements": [
+        {
+          "startYear": 2013,
+          "endYear": 2013,
+          "tags": ["R&D", "Startup", "AR"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.junipeak",
+      "name": "Junipeak",
+      "slug": "junipeak",
+      "logoUrl": "/placeholders/logos/junipeak.svg",
+      "description": "Design systems and prototyping for an applied-research assistant.",
+      "engagements": [
+        {
+          "startYear": 2017,
+          "endYear": 2018,
+          "tags": ["AI", "Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.kelvinet",
+      "name": "Kelvinet",
+      "slug": "kelvinet",
+      "logoUrl": "/placeholders/logos/kelvinet.svg",
+      "description": "Product strategy and interface design for a launch-ready MVP.",
+      "engagements": [
+        {
+          "startYear": 2012,
+          "endYear": 2015,
+          "tags": ["Startup", "Crypto"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.lumenfold",
+      "name": "Lumenfold",
+      "slug": "lumenfold",
+      "logoUrl": "/placeholders/logos/lumenfold.svg",
+      "description": "Product strategy and interface design for a custody dashboard.",
+      "engagements": [
+        {
+          "startYear": 2021,
+          "endYear": 2023,
+          "tags": ["Crypto", "Hardware"]
+        },
+        {
+          "startYear": 2025,
+          "endYear": 2026,
+          "tags": ["AR"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "lumenfold",
+        "title": "Northroom",
+        "heroUrl": "/placeholders/case-studies/lumenfold/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.mistgrove",
+      "name": "Mistgrove",
+      "slug": "mistgrove",
+      "logoUrl": "/placeholders/logos/mistgrove.svg",
+      "description": "Design systems and prototyping for a launch-ready MVP.",
+      "engagements": [
+        {
+          "startYear": 2022,
+          "endYear": 2025,
+          "tags": ["Startup"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.noctilume",
+      "name": "Noctilume",
+      "slug": "noctilume",
+      "logoUrl": "/placeholders/logos/noctilume.svg",
+      "description": "End-to-end design of an internal prototyping lab.",
+      "engagements": [
+        {
+          "startYear": 2014,
+          "endYear": 2015,
+          "tags": ["R&D", "Consumer", "AR"]
+        },
+        {
+          "startYear": 2017,
+          "endYear": 2017,
+          "tags": ["Consumer", "Crypto", "Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.ozoni",
+      "name": "Ozoni",
+      "slug": "ozoni",
+      "logoUrl": "/placeholders/logos/ozoni.svg",
+      "description": "Product strategy and interface design for a headset onboarding flow.",
+      "engagements": [
+        {
+          "startYear": 2015,
+          "endYear": 2017,
+          "tags": ["AR", "Startup", "Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.pinegate-labs",
+      "name": "Pinegate Labs",
+      "slug": "pinegate-labs",
+      "logoUrl": "/placeholders/logos/pinegate-labs.svg",
+      "description": "Design leadership across an on-chain analytics suite.",
+      "engagements": [
+        {
+          "startYear": 2014,
+          "endYear": 2017,
+          "tags": ["Crypto", "Consumer"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.quarrel-and-post",
+      "name": "Quarrel & Post",
+      "slug": "quarrel-and-post",
+      "logoUrl": "/placeholders/logos/quarrel-and-post.svg",
+      "description": "Design leadership across an operations control room.",
+      "engagements": [
+        {
+          "startYear": 2017,
+          "endYear": 2018,
+          "tags": ["Enterprise"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "quarrel-and-post",
+        "title": "Loomline",
+        "heroUrl": "/placeholders/case-studies/quarrel-and-post/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.ridgeline-twelve",
+      "name": "Ridgeline Twelve",
+      "slug": "ridgeline-twelve",
+      "logoUrl": "/placeholders/logos/ridgeline-twelve.svg",
+      "description": "Brand and product design for a sensor console.",
+      "engagements": [
+        {
+          "startYear": 2022,
+          "endYear": 2023,
+          "tags": ["Hardware", "AI", "Enterprise"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.saltfern",
+      "name": "Saltfern",
+      "slug": "saltfern",
+      "logoUrl": "/placeholders/logos/saltfern.svg",
+      "description": "Interaction design for a travel companion.",
+      "engagements": [
+        {
+          "startYear": 2015,
+          "endYear": 2015,
+          "tags": ["Consumer"]
+        },
+        {
+          "startYear": 2018,
+          "endYear": 2021,
+          "tags": ["Consumer", "Startup"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.tesselworks",
+      "name": "Tesselworks",
+      "slug": "tesselworks",
+      "logoUrl": "/placeholders/logos/tesselworks.svg",
+      "description": "Design leadership across a seed-stage platform.",
+      "engagements": [
+        {
+          "startYear": 2019,
+          "endYear": 2021,
+          "tags": ["Startup", "R&D", "AR"]
+        },
+        {
+          "startYear": 2022,
+          "endYear": 2025,
+          "tags": ["AR"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.umbrelight",
+      "name": "Umbrelight",
+      "slug": "umbrelight",
+      "logoUrl": "/placeholders/logos/umbrelight.svg",
+      "description": "Design systems and prototyping for a research notebook.",
+      "engagements": [
+        {
+          "startYear": 2017,
+          "endYear": 2019,
+          "tags": ["R&D", "Startup"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "umbrelight",
+        "title": "Softmarket",
+        "heroUrl": "/placeholders/case-studies/umbrelight/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.veldtline",
+      "name": "Veldtline",
+      "slug": "veldtline",
+      "logoUrl": "/placeholders/logos/veldtline.svg",
+      "description": "Product strategy and interface design for a connected-device companion app.",
+      "engagements": [
+        {
+          "startYear": 2019,
+          "endYear": 2020,
+          "tags": ["Hardware", "Enterprise"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.wickerbyte",
+      "name": "Wickerbyte",
+      "slug": "wickerbyte",
+      "logoUrl": "/placeholders/logos/wickerbyte.svg",
+      "description": "Design systems and prototyping for a spatial-computing toolkit.",
+      "engagements": [
+        {
+          "startYear": 2019,
+          "endYear": 2022,
+          "tags": ["AR", "Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.xylograph",
+      "name": "Xylograph",
+      "slug": "xylograph",
+      "logoUrl": "/placeholders/logos/xylograph.svg",
+      "description": "Brand and product design for an internal prototyping lab.",
+      "engagements": [
+        {
+          "startYear": 2010,
+          "endYear": 2013,
+          "tags": ["R&D"]
+        },
+        {
+          "startYear": 2016,
+          "endYear": 2016,
+          "tags": ["Startup"]
+        }
+      ],
+      "caseStudy": {
+        "slug": "xylograph",
+        "title": "Kilnworks",
+        "heroUrl": "/placeholders/case-studies/xylograph/hero.webp"
+      }
+    },
+    {
+      "id": "placeholder.client.yonderplane",
+      "name": "Yonderplane",
+      "slug": "yonderplane",
+      "logoUrl": "/placeholders/logos/yonderplane.svg",
+      "description": "Interaction design for a launch-ready MVP.",
+      "engagements": [
+        {
+          "startYear": 2020,
+          "endYear": 2020,
+          "tags": ["Startup"]
+        },
+        {
+          "startYear": 2021,
+          "endYear": 2021,
+          "tags": ["Consumer"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.zephyrite",
+      "name": "Zephyrite",
+      "slug": "zephyrite",
+      "logoUrl": "/placeholders/logos/zephyrite.svg",
+      "description": "Design leadership across an AR field-guide.",
+      "engagements": [
+        {
+          "startYear": 2013,
+          "endYear": 2014,
+          "tags": ["AR", "AI"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.astral-ledger",
+      "name": "Astral Ledger",
+      "slug": "astral-ledger",
+      "logoUrl": "/placeholders/logos/astral-ledger.svg",
+      "description": "Interaction design for a sensor console.",
+      "engagements": [
+        {
+          "startYear": 2013,
+          "endYear": 2013,
+          "tags": ["Hardware", "Enterprise", "AR"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.bellmarrow",
+      "name": "Bellmarrow",
+      "slug": "bellmarrow",
+      "logoUrl": "/placeholders/logos/bellmarrow.svg",
+      "description": "Design systems and prototyping for a spatial-computing toolkit.",
+      "engagements": [
+        {
+          "startYear": 2010,
+          "endYear": 2011,
+          "tags": ["AR"]
+        },
+        {
+          "startYear": 2013,
+          "endYear": 2015,
+          "tags": ["AR"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.coppermine-optics",
+      "name": "Coppermine Optics",
+      "slug": "coppermine-optics",
+      "logoUrl": "/placeholders/logos/coppermine-optics.svg",
+      "description": "End-to-end design of a sensor console.",
+      "engagements": [
+        {
+          "startYear": 2011,
+          "endYear": 2012,
+          "tags": ["Hardware", "Crypto"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.driftcast",
+      "name": "Driftcast",
+      "slug": "driftcast",
+      "logoUrl": "/placeholders/logos/driftcast.svg",
+      "description": "Design leadership across a personal-finance app.",
+      "engagements": [
+        {
+          "startYear": 2017,
+          "endYear": 2019,
+          "tags": ["Consumer"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.eastfold",
+      "name": "Eastfold",
+      "slug": "eastfold",
+      "logoUrl": "/placeholders/logos/eastfold.svg",
+      "description": "Design leadership across a research notebook.",
+      "engagements": [
+        {
+          "startYear": 2012,
+          "endYear": 2015,
+          "tags": ["R&D"]
+        },
+        {
+          "startYear": 2018,
+          "endYear": 2020,
+          "tags": ["Enterprise", "AR"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.farrowtech",
+      "name": "Farrowtech",
+      "slug": "farrowtech",
+      "logoUrl": "/placeholders/logos/farrowtech.svg",
+      "description": "Design leadership across a headset onboarding flow.",
+      "engagements": [
+        {
+          "startYear": 2018,
+          "endYear": 2020,
+          "tags": ["AR"]
+        },
+        {
+          "startYear": 2023,
+          "endYear": 2025,
+          "tags": ["AI", "Startup", "Enterprise"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.gantryline",
+      "name": "Gantryline",
+      "slug": "gantryline",
+      "logoUrl": "/placeholders/logos/gantryline.svg",
+      "description": "Design systems and prototyping for an experimental instrument.",
+      "engagements": [
+        {
+          "startYear": 2020,
+          "endYear": 2023,
+          "tags": ["R&D"]
+        },
+        {
+          "startYear": 2026,
+          "endYear": 2026,
+          "tags": ["AR", "Consumer", "Crypto"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.hexbound",
+      "name": "Hexbound",
+      "slug": "hexbound",
+      "logoUrl": "/placeholders/logos/hexbound.svg",
+      "description": "Product strategy and interface design for a sensor console.",
+      "engagements": [
+        {
+          "startYear": 2019,
+          "endYear": 2021,
+          "tags": ["Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.interlace-guild",
+      "name": "Interlace Guild",
+      "slug": "interlace-guild",
+      "logoUrl": "/placeholders/logos/interlace-guild.svg",
+      "description": "Interaction design for a compliance workspace.",
+      "engagements": [
+        {
+          "startYear": 2015,
+          "endYear": 2018,
+          "tags": ["Enterprise", "R&D"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.jettison-labs",
+      "name": "Jettison Labs",
+      "slug": "jettison-labs",
+      "logoUrl": "/placeholders/logos/jettison-labs.svg",
+      "description": "Interaction design for a personal-finance app.",
+      "engagements": [
+        {
+          "startYear": 2021,
+          "endYear": 2022,
+          "tags": ["Consumer", "Crypto", "Startup"]
+        },
+        {
+          "startYear": 2023,
+          "endYear": 2024,
+          "tags": ["Crypto", "Startup"]
+        },
+        {
+          "startYear": 2026,
+          "endYear": 2026,
+          "tags": ["Crypto", "Enterprise", "Startup"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.krillhaus",
+      "name": "Krillhaus",
+      "slug": "krillhaus",
+      "logoUrl": "/placeholders/logos/krillhaus.svg",
+      "description": "Design systems and prototyping for a custody dashboard.",
+      "engagements": [
+        {
+          "startYear": 2011,
+          "endYear": 2012,
+          "tags": ["Crypto", "Startup"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.loomward",
+      "name": "Loomward",
+      "slug": "loomward",
+      "logoUrl": "/placeholders/logos/loomward.svg",
+      "description": "Interaction design for a research notebook.",
+      "engagements": [
+        {
+          "startYear": 2014,
+          "endYear": 2016,
+          "tags": ["R&D"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.meridian-falsework",
+      "name": "Meridian Falsework",
+      "slug": "meridian-falsework",
+      "logoUrl": "/placeholders/logos/meridian-falsework.svg",
+      "description": "Product strategy and interface design for a travel companion.",
+      "engagements": [
+        {
+          "startYear": 2011,
+          "endYear": 2013,
+          "tags": ["Consumer", "R&D", "Hardware"]
+        }
+      ],
+      "caseStudy": null
+    },
+    {
+      "id": "placeholder.client.nullhaven",
+      "name": "Nullhaven",
+      "slug": "nullhaven",
+      "logoUrl": "/placeholders/logos/nullhaven.svg",
+      "description": "End-to-end design of an inference console.",
+      "engagements": [
+        {
+          "startYear": 2011,
+          "endYear": 2013,
+          "tags": ["AI", "Consumer", "Startup"]
+        },
+        {
+          "startYear": 2015,
+          "endYear": 2015,
+          "tags": ["Enterprise", "AR", "Startup"]
+        }
+      ],
+      "caseStudy": null
+    }
+  ],
+  "caseStudies": [
+    {
+      "slug": "auralith",
+      "clientId": "placeholder.client.auralith",
+      "clientName": "Auralith",
+      "logoUrl": "/placeholders/logos/auralith.svg",
+      "title": "Field Console",
+      "subtitle": "Realtime coordination for distributed crews",
+      "displayDate": "2017–2022",
+      "tags": ["AR", "Hardware", "Enterprise", "Consumer"],
+      "summary": "Field Console is a placeholder case study for Auralith: realtime coordination for distributed crews.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Field Console began as a narrow brief and widened into the core product. Working directly with the Auralith team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": null,
+      "hero": {
+        "url": "/placeholders/case-studies/auralith/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Field Console: stacked rectangular blocks on a dark field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/auralith/image-01.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Field Console interface study: diagonal bands on a light field",
+          "caption": "Field Console — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/auralith/image-02.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Field Console interface study: sweeping arcs on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/auralith/image-03.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Field Console interface study: a rhythmic dot grid on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/auralith/image-04.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Field Console interface study: a rhythmic dot grid on a dark field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Field Console — Auralith",
+        "description": "Field Console is a placeholder case study for Auralith: realtime coordination for distributed crews.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "cairnstack",
+      "clientId": "placeholder.client.cairnstack",
+      "clientName": "Cairnstack",
+      "logoUrl": "/placeholders/logos/cairnstack.svg",
+      "title": "Ledgerlight",
+      "subtitle": "Making custody legible for operations teams",
+      "displayDate": "2014–2017",
+      "tags": ["Crypto"],
+      "summary": "Ledgerlight is a placeholder case study for Cairnstack: making custody legible for operations teams.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Ledgerlight began as a narrow brief and widened into the core product. Working directly with the Cairnstack team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": "https://example.com/cairnstack",
+      "hero": {
+        "url": "/placeholders/case-studies/cairnstack/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Ledgerlight: split colour fields with a floating disc on a light field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/cairnstack/image-01.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Ledgerlight interface study: sweeping arcs on a dark field",
+          "caption": "Ledgerlight — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/cairnstack/image-02.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Ledgerlight interface study: stacked rectangular blocks on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/cairnstack/image-03.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Ledgerlight interface study: diagonal bands on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/cairnstack/image-04.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Ledgerlight interface study: split colour fields with a floating disc on a light field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Ledgerlight — Cairnstack",
+        "description": "Ledgerlight is a placeholder case study for Cairnstack: making custody legible for operations teams.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "emberline",
+      "clientId": "placeholder.client.emberline",
+      "clientName": "Emberline",
+      "logoUrl": "/placeholders/logos/emberline.svg",
+      "title": "Waypoint",
+      "subtitle": "Spatial onboarding without the manual",
+      "displayDate": "2012",
+      "tags": ["Hardware"],
+      "summary": "Waypoint is a placeholder case study for Emberline: spatial onboarding without the manual.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Waypoint began as a narrow brief and widened into the core product. Working directly with the Emberline team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": "https://example.com/emberline",
+      "hero": {
+        "url": "/placeholders/case-studies/emberline/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Waypoint: split colour fields with a floating disc on a dark field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/emberline/image-01.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Waypoint interface study: sweeping arcs on a dark field",
+          "caption": "Waypoint — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/emberline/image-02.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Waypoint interface study: a rhythmic dot grid on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/emberline/image-03.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Waypoint interface study: a rhythmic dot grid on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/emberline/image-04.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Waypoint interface study: sweeping arcs on a dark field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Waypoint — Emberline",
+        "description": "Waypoint is a placeholder case study for Emberline: spatial onboarding without the manual.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "halcyard",
+      "clientId": "placeholder.client.halcyard",
+      "clientName": "Halcyard",
+      "logoUrl": "/placeholders/logos/halcyard.svg",
+      "title": "Signal Bench",
+      "subtitle": "An evaluation workbench for applied research",
+      "displayDate": "2019–2020",
+      "tags": ["AR", "Hardware"],
+      "summary": "Signal Bench is a placeholder case study for Halcyard: an evaluation workbench for applied research.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Signal Bench began as a narrow brief and widened into the core product. Working directly with the Halcyard team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": null,
+      "hero": {
+        "url": "/placeholders/case-studies/halcyard/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Signal Bench: a rhythmic dot grid on a light field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/halcyard/image-01.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Signal Bench interface study: a rhythmic dot grid on a dark field",
+          "caption": "Signal Bench — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/halcyard/image-02.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Signal Bench interface study: diagonal bands on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/halcyard/image-03.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Signal Bench interface study: split colour fields with a floating disc on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/halcyard/image-04.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Signal Bench interface study: diagonal bands on a light field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Signal Bench — Halcyard",
+        "description": "Signal Bench is a placeholder case study for Halcyard: an evaluation workbench for applied research.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "lumenfold",
+      "clientId": "placeholder.client.lumenfold",
+      "clientName": "Lumenfold",
+      "logoUrl": "/placeholders/logos/lumenfold.svg",
+      "title": "Northroom",
+      "subtitle": "A control room that reads at a glance",
+      "displayDate": "2021–2026",
+      "tags": ["AR", "Crypto", "Hardware"],
+      "summary": "Northroom is a placeholder case study for Lumenfold: a control room that reads at a glance.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Northroom began as a narrow brief and widened into the core product. Working directly with the Lumenfold team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": "https://example.com/lumenfold",
+      "hero": {
+        "url": "/placeholders/case-studies/lumenfold/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Northroom: sweeping arcs on a dark field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/lumenfold/image-01.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Northroom interface study: concentric rings on a dark field",
+          "caption": "Northroom — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/lumenfold/image-02.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Northroom interface study: diagonal bands on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/lumenfold/image-03.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Northroom interface study: a rhythmic dot grid on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/lumenfold/image-04.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Northroom interface study: stacked rectangular blocks on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/lumenfold/image-05.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Northroom interface study: concentric rings on a dark field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Northroom — Lumenfold",
+        "description": "Northroom is a placeholder case study for Lumenfold: a control room that reads at a glance.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "quarrel-and-post",
+      "clientId": "placeholder.client.quarrel-and-post",
+      "clientName": "Quarrel & Post",
+      "logoUrl": "/placeholders/logos/quarrel-and-post.svg",
+      "title": "Loomline",
+      "subtitle": "Weaving hardware telemetry into one thread",
+      "displayDate": "2017–2018",
+      "tags": ["Enterprise"],
+      "summary": "Loomline is a placeholder case study for Quarrel & Post: weaving hardware telemetry into one thread.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Loomline began as a narrow brief and widened into the core product. Working directly with the Quarrel & Post team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": "https://example.com/quarrel-and-post",
+      "hero": {
+        "url": "/placeholders/case-studies/quarrel-and-post/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Loomline: split colour fields with a floating disc on a light field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/quarrel-and-post/image-01.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Loomline interface study: a rhythmic dot grid on a light field",
+          "caption": "Loomline — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/quarrel-and-post/image-02.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Loomline interface study: split colour fields with a floating disc on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/quarrel-and-post/image-03.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Loomline interface study: concentric rings on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/quarrel-and-post/image-04.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Loomline interface study: split colour fields with a floating disc on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/quarrel-and-post/image-05.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Loomline interface study: diagonal bands on a light field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Loomline — Quarrel & Post",
+        "description": "Loomline is a placeholder case study for Quarrel & Post: weaving hardware telemetry into one thread.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "umbrelight",
+      "clientId": "placeholder.client.umbrelight",
+      "clientName": "Umbrelight",
+      "logoUrl": "/placeholders/logos/umbrelight.svg",
+      "title": "Softmarket",
+      "subtitle": "A calmer way to buy complicated things",
+      "displayDate": "2017–2019",
+      "tags": ["R&D", "Startup"],
+      "summary": "Softmarket is a placeholder case study for Umbrelight: a calmer way to buy complicated things.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Softmarket began as a narrow brief and widened into the core product. Working directly with the Umbrelight team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": null,
+      "hero": {
+        "url": "/placeholders/case-studies/umbrelight/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Softmarket: concentric rings on a dark field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/umbrelight/image-01.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Softmarket interface study: stacked rectangular blocks on a dark field",
+          "caption": "Softmarket — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/umbrelight/image-02.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Softmarket interface study: split colour fields with a floating disc on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/umbrelight/image-03.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Softmarket interface study: sweeping arcs on a dark field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/umbrelight/image-04.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Softmarket interface study: sweeping arcs on a dark field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Softmarket — Umbrelight",
+        "description": "Softmarket is a placeholder case study for Umbrelight: a calmer way to buy complicated things.",
+        "ogImageUrl": null
+      }
+    },
+    {
+      "slug": "xylograph",
+      "clientId": "placeholder.client.xylograph",
+      "clientName": "Xylograph",
+      "logoUrl": "/placeholders/logos/xylograph.svg",
+      "title": "Kilnworks",
+      "subtitle": "Prototyping tools for a materials lab",
+      "displayDate": "2010–2016",
+      "tags": ["R&D", "Startup"],
+      "summary": "Kilnworks is a placeholder case study for Xylograph: prototyping tools for a materials lab.",
+      "body": [
+        {
+          "_type": "block",
+          "_key": "p1",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p1s",
+              "text": "Kilnworks began as a narrow brief and widened into the core product. Working directly with the Xylograph team, the engagement covered interaction models, a component system, and the unglamorous edge cases that make an interface feel dependable.",
+              "marks": []
+            }
+          ]
+        },
+        {
+          "_type": "block",
+          "_key": "p2",
+          "style": "normal",
+          "markDefs": [],
+          "children": [
+            {
+              "_type": "span",
+              "_key": "p2s",
+              "text": "The final release shipped with a measurable drop in time-to-first-action and a design system the in-house team now extends without outside help. Placeholder copy — replace with the real case study narrative in Sanity Studio.",
+              "marks": []
+            }
+          ]
+        }
+      ],
+      "externalUrl": "https://example.com/xylograph",
+      "hero": {
+        "url": "/placeholders/case-studies/xylograph/hero.webp",
+        "width": 1920,
+        "height": 1080,
+        "aspect": "16:9",
+        "alt": "Placeholder hero image for Kilnworks: split colour fields with a floating disc on a light field",
+        "caption": null,
+        "lqip": null
+      },
+      "gallery": [
+        {
+          "url": "/placeholders/case-studies/xylograph/image-01.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Kilnworks interface study: concentric rings on a dark field",
+          "caption": "Kilnworks — placeholder frame 1",
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/xylograph/image-02.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Kilnworks interface study: concentric rings on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/xylograph/image-03.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Kilnworks interface study: split colour fields with a floating disc on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/xylograph/image-04.webp",
+          "width": 1920,
+          "height": 1080,
+          "aspect": "16:9",
+          "alt": "Placeholder Kilnworks interface study: split colour fields with a floating disc on a light field",
+          "caption": null,
+          "lqip": null
+        },
+        {
+          "url": "/placeholders/case-studies/xylograph/image-05.webp",
+          "width": 1440,
+          "height": 1440,
+          "aspect": "square",
+          "alt": "Placeholder Kilnworks interface study: sweeping arcs on a dark field",
+          "caption": null,
+          "lqip": null
+        }
+      ],
+      "seo": {
+        "title": "Kilnworks — Xylograph",
+        "description": "Kilnworks is a placeholder case study for Xylograph: prototyping tools for a materials lab.",
+        "ogImageUrl": null
+      }
+    }
+  ]
+}
