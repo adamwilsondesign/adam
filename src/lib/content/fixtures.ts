@@ -45,8 +45,7 @@ export function fixtureCaseStudy(slug: string): CaseStudy | null {
 
 export function fixtureCaseStudySlugs(): { slug: string; updatedAt: string }[] {
   assertFixtures();
-  return data.caseStudies.map((study) => ({
-    slug: study.slug,
-    updatedAt: new Date(0).toISOString(),
-  }));
+  // Fixtures carry no edit history; report build time so sitemaps look sane.
+  const updatedAt = new Date().toISOString();
+  return data.caseStudies.map((study) => ({ slug: study.slug, updatedAt }));
 }
