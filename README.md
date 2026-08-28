@@ -204,17 +204,32 @@ preinstalled browser, point it at the binary instead of downloading:
 
 ## Deployment (Vercel)
 
-1. Push the repository and import it into Vercel (defaults work — build
-   command `next build`).
-2. Set the environment variables from `.env.example`:
+The repo currently ships a `vercel.json` that sets
+`NEXT_PUBLIC_CONTENT_SOURCE=fixtures` at build time — the **explicit**
+opt-in that lets the site deploy on placeholder content before a Sanity
+project exists. It is inert once Sanity is configured (Sanity always takes
+precedence), but delete the file when you go live to restore the strict
+"no CMS, no build" guarantee.
+
+**Placeholder deploy (current default):** push and import into Vercel —
+no configuration needed. Canonical URLs fall back to the Vercel production
+domain; set `NEXT_PUBLIC_SITE_URL=https://your-domain` once you attach a
+custom domain.
+
+**Connecting Sanity:**
+
+1. Set the environment variables from `.env.example` in Vercel:
    `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`,
    `NEXT_PUBLIC_SANITY_API_VERSION`, `SANITY_API_READ_TOKEN`, and
    `NEXT_PUBLIC_SITE_URL=https://your-domain` (canonical URLs, sitemap,
    structured data).
+2. Seed or author content first (`npm run sanity:seed` locally) so the Work
+   grid isn't empty.
 3. Add the production URL to the Sanity project's CORS origins.
-4. Deploy. Published Sanity edits update the live site without redeploys;
-   `/studio` is served from the same deployment (and excluded from robots +
-   the sitemap).
+4. Redeploy (env vars are inlined at build time) and remove `vercel.json`'s
+   fixture opt-in. Published Sanity edits then update the live site without
+   redeploys; `/studio` is served from the same deployment (and excluded
+   from robots + the sitemap).
 
 Any Node host works the same way (`npm run build` + `npm run start`).
 
