@@ -21,18 +21,13 @@
 
 .card {
   position: absolute;
-  left: 12px;
-  right: 12px;
+  left: 0;
+  right: 0;
   bottom: 0;
   min-height: 46vh;
-  background: var(--color-surface);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--color-line);
-  border-bottom: none;
+  background: var(--color-surface-solid);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
-  padding: 24px 26px calc(24px + env(safe-area-inset-bottom, 0px));
-  box-shadow: var(--shadow-float);
+  padding: 26px 28px calc(26px + env(safe-area-inset-bottom, 0px));
 }
 
 .cardHeader {
@@ -44,11 +39,11 @@
 
 .name {
   margin: 0;
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 600;
   letter-spacing: -0.015em;
-  line-height: 1.25;
-  color: var(--color-fg-strong);
+  line-height: 1.2;
+  color: var(--color-fg);
 }
 
 .close {

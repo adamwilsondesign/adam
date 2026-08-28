@@ -11,7 +11,7 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "dark",
+  theme: "light",
   toggleTheme: () => undefined,
 });
 
@@ -25,9 +25,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // before hydration, so the initial state can adopt it directly. No visible
   // markup depends on this value during hydration (icons are CSS-driven).
   const [theme, setTheme] = useState<Theme>(() =>
-    typeof document !== "undefined" && document.documentElement.dataset.theme === "light"
-      ? "light"
-      : "dark",
+    typeof document !== "undefined" && document.documentElement.dataset.theme === "dark"
+      ? "dark"
+      : "light",
   );
 
   const toggleTheme = useCallback(() => {

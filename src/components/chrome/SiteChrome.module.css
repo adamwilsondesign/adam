@@ -29,38 +29,32 @@
 .controlGroup {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-/* Ghost pill: transparent fill, hairline border, quiet text. */
+/* Quiet text controls — no boxes, no borders; color carries the state. */
 .control {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
+  gap: 7px;
+  min-height: 44px;
   min-width: 44px;
-  padding: 0 16px;
+  padding: 0 12px;
   justify-content: center;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill);
-  color: var(--color-fg);
-  opacity: 0.85;
-  transition:
-    opacity 160ms var(--ease-precise),
-    border-color 160ms var(--ease-precise);
+  color: var(--color-fg-muted);
+  transition: color 160ms var(--ease-precise);
 }
 
 .control:hover,
 .control:focus-visible {
-  opacity: 1;
-  border-color: var(--color-line-strong);
+  color: var(--color-fg);
 }
 
 .controlLabel {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: var(--tracking-ui);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .logoButton {
@@ -69,15 +63,10 @@
   display: inline-flex;
   align-items: center;
   padding: 0 12px;
-  color: var(--color-fg-strong);
+  color: var(--color-fg);
 }
 
 @media (max-width: 767px) {
-  .control {
-    min-height: 40px;
-    padding: 0 12px;
-  }
-
   .controlLabel {
     display: none;
   }

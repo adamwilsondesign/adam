@@ -1,7 +1,8 @@
 .paragraph {
   margin: 0 0 1em;
-  font-size: 14.5px;
-  line-height: 1.65;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
   color: var(--color-fg-muted);
   max-width: 44ch;
 }
@@ -11,12 +12,12 @@
 }
 
 .link {
-  color: var(--color-fg);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--color-line-strong);
+  color: var(--color-link);
+  text-decoration: none;
 }
 
-.link:hover {
-  text-decoration-color: currentColor;
+.link:hover,
+.link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

@@ -77,7 +77,7 @@ export function HomeView({ intro }: HomeViewProps) {
                   <Link className={styles.navLink} href={section.href} onClick={openWork}>
                     {section.label}
                     <span className={styles.navArrow} aria-hidden>
-                      →
+                      ›
                     </span>
                   </Link>
                 ) : (
@@ -91,12 +91,6 @@ export function HomeView({ intro }: HomeViewProps) {
           </ul>
         </nav>
 
-        <motion.div
-          className={styles.accentRule}
-          aria-hidden
-          {...enter}
-          transition={{ duration: 0.6, delay: 0.42, ease: [0.32, 0.08, 0.24, 1] }}
-        />
         <motion.footer
           className={styles.footer}
           {...enter}

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Selected client work: interfaces, interaction and product strategy.",
     start_url: "/",
     display: "standalone",
-    background_color: "#000000",
-    theme_color: "#000000",
+    background_color: "#ffffff",
+    theme_color: "#ffffff",
     icons: [{ src: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
   };
 }

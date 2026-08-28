@@ -15,7 +15,7 @@
   left: 0;
   right: 0;
   height: calc(var(--chrome-header-height) + 18px);
-  background: linear-gradient(to bottom, var(--color-bg) 30%, transparent);
+  background: linear-gradient(to bottom, var(--color-band) 30%, transparent);
   pointer-events: none;
 }
 

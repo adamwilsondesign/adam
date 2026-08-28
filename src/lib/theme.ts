@@ -4,7 +4,7 @@ export const THEME_STORAGE_KEY = "aw:theme";
 
 /**
  * Runs before paint (inlined as the first element of <body>) so the stored or
- * system theme is applied without a hydration flash. Dark is the default.
+ * system theme is applied without a hydration flash. Light is the default.
  */
 export const THEME_INIT_SCRIPT = `(function () {
   try {
@@ -12,11 +12,11 @@ export const THEME_INIT_SCRIPT = `(function () {
     var theme =
       stored === "light" || stored === "dark"
         ? stored
-        : window.matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
     document.documentElement.dataset.theme = theme;
   } catch (error) {
-    document.documentElement.dataset.theme = "dark";
+    document.documentElement.dataset.theme = "light";
   }
 })();`;

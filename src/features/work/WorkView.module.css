@@ -1,4 +1,5 @@
 .root {
   position: fixed;
   inset: 0;
+  background: var(--color-band);
 }

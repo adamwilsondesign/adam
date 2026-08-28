@@ -41,7 +41,8 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg);
+  background: var(--color-surface-solid);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   touch-action: none;
 }
 
@@ -67,14 +68,16 @@
 .close {
   position: absolute;
   top: 12px;
-  left: 10px;
+  left: 12px;
   z-index: 3;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 40px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-fg-muted);
+  border-radius: var(--radius-pill);
+  background: var(--color-wash);
+  color: var(--color-fg);
 }
 
 .scroller {
@@ -101,12 +104,11 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-heading);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: -0.022em;
-  line-height: 1.14;
-  color: var(--color-fg-strong);
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.007em;
+  line-height: 1.12;
+  color: var(--color-fg);
 }
 
 .subtitle {
@@ -164,7 +166,7 @@
 .galleryImage {
   width: 100%;
   height: auto;
-  border-radius: var(--radius-ui);
+  border-radius: 18px;
 }
 
 .caption {

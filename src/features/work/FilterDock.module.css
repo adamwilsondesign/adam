@@ -1,5 +1,5 @@
-/* The signature floating frosted panel: translucent graphite, backdrop
-   blur, hairline border, detached from the viewport edge. */
+/* Floating frosted bar — borderless and shadowless; the blur and the
+   band-vs-paper contrast do the separating. */
 .dockDesktop,
 .dockMobile {
   position: fixed;
@@ -7,10 +7,8 @@
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--color-line);
-  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .dockDesktop {
@@ -18,8 +16,8 @@
   bottom: 24px;
   transform: translateX(-50%);
   width: min(680px, calc(100vw - 2 * var(--page-margin)));
-  border-radius: var(--radius-panel);
-  padding: 14px 22px 10px;
+  border-radius: var(--radius-card);
+  padding: 14px 24px 10px;
   gap: 2px;
 }
 
@@ -27,14 +25,14 @@
   left: 16px;
   right: 16px;
   bottom: max(12px, env(safe-area-inset-bottom, 0px));
-  border-radius: var(--radius-panel);
-  padding: 12px 16px 10px;
+  border-radius: var(--radius-card);
+  padding: 12px 18px 10px;
   gap: 2px;
 }
 
 .pillRow {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
 }
 
@@ -43,28 +41,29 @@
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  margin: 0 -16px;
-  padding: 2px 16px;
+  margin: 0 -18px;
+  padding: 2px 18px;
 }
 
 .dockMobile .pillRow::-webkit-scrollbar {
   display: none;
 }
 
+/* Quiet wash pills; the selected state is an ink fill. No borders. */
 .pill {
   flex: none;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: var(--tracking-ui);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
   min-height: 34px;
   padding: 0 14px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-line);
-  color: var(--color-fg-muted);
+  background: var(--color-wash);
+  color: var(--color-fg);
   transition:
     color 160ms var(--ease-precise),
     background-color 160ms var(--ease-precise),
-    border-color 160ms var(--ease-precise);
+    opacity 160ms var(--ease-precise);
 }
 
 .dockMobile .pill {
@@ -73,15 +72,12 @@
 }
 
 .pill:hover {
-  color: var(--color-fg);
-  border-color: var(--color-line-strong);
+  opacity: 0.8;
 }
 
-/* Active pills use the system's one filled treatment. */
 .pill[data-active] {
-  background: var(--color-action-bg);
-  border-color: var(--color-action-bg);
-  color: var(--color-action-fg);
+  background: var(--color-fill-active);
+  color: var(--color-fill-active-fg);
 }
 
 .sliderRow {

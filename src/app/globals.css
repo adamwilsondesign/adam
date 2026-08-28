@@ -1,56 +1,52 @@
 /* ------------------------------------------------------------------ */
-/* Design tokens — "dusk-lit workspace" system                         */
+/* Design tokens — "cathedral of white space"                          */
 /*                                                                     */
-/* Deep matte-black canvas, graphite frosted panels, hairline borders  */
-/* instead of shadows, pill-shaped controls, weight-500 headlines, and */
-/* a single dusk-violet gradient wash as the only chromatic accent.    */
+/* Near-white canvas, ink typography, alternating white/#f5f5f7 bands  */
+/* instead of borders or dividers, zero shadows, 28px card corners,    */
+/* pill buttons, and a single electric-blue accent reserved for        */
+/* filled CTA buttons (links use link-blue). Color otherwise lives in  */
+/* the imagery, never the UI.                                          */
 /* ------------------------------------------------------------------ */
 
 :root {
-  /* Dark is the default theme: void canvas, bone text. */
-  --color-bg: #0a0a0a;
-  --color-fg: #ededed; /* bone — body text, avoids pure-white glare */
-  --color-fg-strong: #ffffff; /* snow — headlines, primary action fills */
-  --color-fg-muted: #c2c2c2; /* ash — secondary copy */
-  --color-fg-faint: #686868; /* slate — metadata, timestamps */
-  --color-line: rgba(229, 229, 229, 0.18); /* hairline on dark surfaces */
-  --color-line-strong: rgba(229, 229, 229, 0.42);
-  --color-surface: rgba(22, 22, 22, 0.78); /* graphite, translucent */
-  --color-surface-solid: #161616; /* graphite, opaque */
-  --color-frost: rgba(212, 212, 212, 0.08); /* frosted-glass panel fill */
-  --color-scrim: rgba(0, 0, 0, 0.64);
-  --color-action-bg: #ffffff; /* the one filled (pill) treatment */
-  --color-action-fg: #161616;
+  /* Light is the default theme. */
+  --color-bg: #ffffff; /* paper — page canvas */
+  --color-band: #f5f5f7; /* alternating band — the Work state's canvas */
+  --color-fg: #1d1d1f; /* primary ink */
+  --color-fg-strong: #1d1d1f; /* headlines (same ink; weight does the work) */
+  --color-fg-muted: #707070; /* secondary text */
+  --color-fg-faint: #86868b; /* tertiary metadata */
+  --color-line: #d6d6d6; /* hairline — rarely used */
+  --color-line-strong: rgba(0, 0, 0, 0.8); /* ghost-pill borders */
+  --color-surface: rgba(250, 250, 252, 0.8); /* frosted nav/dock surface */
+  --color-surface-solid: #ffffff; /* card / sheet / modal surface */
+  --color-wash: #e8e8ed; /* subtle button fill, hover wash */
+  --color-scrim: rgba(0, 0, 0, 0.44);
+  --color-action-bg: #0071e3; /* the only chromatic UI element */
+  --color-action-bg-hover: #0077ed;
+  --color-action-fg: #ffffff;
+  --color-link: #0066cc; /* inline text links */
+  --color-fill-active: #1d1d1f; /* selected pills: ink fill */
+  --color-fill-active-fg: #ffffff;
 
-  /* The only chromatic accent — a gradient wash, never a solid fill. */
-  --gradient-dusk-violet: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0),
-    rgba(0, 0, 0, 0) 30%,
-    rgba(107, 98, 242, 0.565) 50%,
-    rgba(0, 0, 0, 0) 70%,
-    rgba(0, 0, 0, 0)
-  );
+  color-scheme: light;
 
-  /* Elevation: translucency + hairlines do the work; floating panels get
-     only this whisper of depth. */
-  --shadow-float:
-    rgba(255, 255, 255, 0.02) 0px 3px 4.5px, rgba(0, 0, 0, 0.04) 0px 10px 8px,
-    rgba(0, 0, 0, 0.1) 0px 4px 3px;
+  /* Type — one family, weight does the talking (600–700 headings, 400 body). */
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tracking-display: -0.015em;
+  --tracking-body: -0.022em;
 
-  color-scheme: dark;
-
-  /* Type */
-  --font-body: var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --tracking-display: -0.035em;
-  --tracking-ui: 0.025em;
-
-  /* Shape */
+  /* Shape — no radius below 10px on interactive elements; 28px cards. */
   --radius-ui: 10px;
-  --radius-card: 24px;
-  --radius-panel: 24px;
-  --radius-pill: 9999px;
+  --radius-card: 28px;
+  --radius-panel: 28px;
+  --radius-pill: 980px;
+
+  /* The system has no shadow elevation; kept as a hook for the rare
+     floating layer that would otherwise vanish against its background. */
+  --shadow-float: none;
 
   /* Motion */
   --ease-precise: cubic-bezier(0.32, 0.08, 0.24, 1);
@@ -58,31 +54,33 @@
   --duration-fade: 240ms;
 
   /* Chrome metrics */
-  --chrome-header-height: 76px;
+  --chrome-header-height: 64px;
   --chrome-dock-clearance: 136px;
   --page-margin: clamp(20px, 4vw, 56px);
   --page-max-width: 1200px;
 }
 
-:root[data-theme="light"] {
-  --color-bg: #f4f4f2;
-  --color-fg: #262626;
-  --color-fg-strong: #161616;
-  --color-fg-muted: #5f5f5c;
-  --color-fg-faint: #8f8f8a;
-  --color-line: rgba(22, 22, 22, 0.14);
-  --color-line-strong: rgba(22, 22, 22, 0.34);
-  --color-surface: rgba(255, 255, 255, 0.72);
-  --color-surface-solid: #ffffff;
-  --color-frost: rgba(255, 255, 255, 0.45);
-  --color-scrim: rgba(24, 24, 22, 0.38);
-  --color-action-bg: #161616;
+:root[data-theme="dark"] {
+  --color-bg: #000000;
+  --color-band: #101013;
+  --color-fg: #f5f5f7;
+  --color-fg-strong: #f5f5f7;
+  --color-fg-muted: #a1a1a6;
+  --color-fg-faint: #86868b;
+  --color-line: rgba(255, 255, 255, 0.18);
+  --color-line-strong: rgba(255, 255, 255, 0.72);
+  --color-surface: rgba(29, 29, 31, 0.78);
+  --color-surface-solid: #1d1d1f;
+  --color-wash: #2c2c2e;
+  --color-scrim: rgba(0, 0, 0, 0.6);
+  --color-action-bg: #0071e3;
+  --color-action-bg-hover: #0077ed;
   --color-action-fg: #ffffff;
-  --shadow-float:
-    rgba(0, 0, 0, 0.02) 0px 3px 4.5px, rgba(0, 0, 0, 0.05) 0px 10px 8px,
-    rgba(0, 0, 0, 0.07) 0px 4px 3px;
+  --color-link: #2997ff;
+  --color-fill-active: #f5f5f7;
+  --color-fill-active-fg: #1d1d1f;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ------------------------------------------------------------------ */
@@ -110,8 +108,9 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: var(--tracking-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -123,6 +122,7 @@ a {
 
 button {
   font: inherit;
+  letter-spacing: inherit;
   color: inherit;
   background: none;
   border: none;
@@ -138,13 +138,13 @@ svg {
 
 /* Visible focus for keyboard users, invisible for pointer users. */
 :focus-visible {
-  outline: 2px solid var(--color-fg-strong);
+  outline: 2px solid var(--color-action-bg);
   outline-offset: 3px;
-  border-radius: 3px;
+  border-radius: var(--radius-ui);
 }
 
 ::selection {
-  background: var(--color-fg-strong);
+  background: var(--color-fg);
   color: var(--color-bg);
 }
 
@@ -163,7 +163,7 @@ svg {
 
 @media (max-width: 767px) {
   :root {
-    --chrome-header-height: 60px;
+    --chrome-header-height: 56px;
     --chrome-dock-clearance: 152px;
   }
 }
