@@ -314,9 +314,9 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
         data-client-cell={client.id}
         data-case-cell={caseStudy.slug}
         aria-label={`${client.name} — open case study “${caseStudy.title}”`}
-        aria-hidden={isOrigin || undefined}
-        tabIndex={isOrigin ? -1 : undefined}
-        style={isOrigin ? { opacity: 0, pointerEvents: "none" } : undefined}
+        aria-hidden={isOrigin || hidden || undefined}
+        tabIndex={isOrigin || hidden ? -1 : undefined}
+        style={isOrigin || hidden ? { opacity: 0, pointerEvents: "none" } : undefined}
         onClick={() => {
           const rect = markRect();
           setCaseOrigin({
@@ -328,13 +328,9 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
+        <span className={styles.glow} aria-hidden />
         <span className={styles.logoBox} style={logoBoxStyle}>
-          <LogoMark
-            logoUrl={client.logoUrl}
-            treatment={client.logoTreatment}
-            compact={compact}
-            heroUrl={caseStudy.heroUrl}
-          />
+          <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} compact={compact} />
         </span>
       </Link>
     );

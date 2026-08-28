@@ -69,4 +69,25 @@ test.describe("mobile work canvas", () => {
     await page.goto("/work/auralith");
     await expect(page.locator("#case-sheet-title")).toHaveText("Field Console");
   });
+
+  test("sheet next/back buttons progress through case studies in place", async ({ page }) => {
+    // Arrive via the grid so history has a /work entry beneath the study.
+    await page.goto("/work");
+    await page.goto("/work/auralith");
+    await expect(page.locator("#case-sheet-title")).toHaveText("Field Console");
+
+    const nav = page.locator('nav[aria-label="More case studies"]');
+    await nav.scrollIntoViewIfNeeded();
+    const nextButton = nav.getByRole("button", { name: /^next/ });
+    await expect(nextButton).toBeVisible();
+    await nextButton.tap();
+
+    // The slug swaps in place; a different case study renders.
+    await expect(page).toHaveURL(/\/work\/(?!auralith$)[a-z-]+$/);
+    await expect(page.locator("#case-sheet-title")).not.toHaveText("Field Console");
+
+    // Back closes to the grid, never to the previous case study.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/work$/);
+  });
 });

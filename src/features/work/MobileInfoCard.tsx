@@ -1,15 +1,18 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useDrag } from "@use-gesture/react";
+import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
-import { CloseIcon } from "@/components/icons";
+import { ArrowRightIcon, CloseIcon } from "@/components/icons";
 import { clientTags, clientYearSpan, formatYearRange, type WorkClient } from "@/lib/content/model";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
 import styles from "./MobileInfoCard.module.css";
 import { LogoMark } from "./LogoMark";
+import { setCaseOrigin } from "./origin-store";
 
 export type InfoOverlayState = {
   client: WorkClient;
@@ -19,25 +22,53 @@ export type InfoOverlayState = {
 
 type MobileInfoCardProps = {
   state: InfoOverlayState | null;
+  /** Direction of the latest swipe step (drives the slide animation). */
+  direction: 0 | 1 | -1;
+  /** False when the filter leaves a single project — nothing to step to. */
+  canStep: boolean;
+  onStep: (direction: 1 | -1) => void;
   onClose: () => void;
+  /** Card CTA navigates to a case study: dismiss without touching history. */
+  onReleaseForNavigation: () => void;
 };
 
 import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
 
+/** Horizontal travel needed to step to the previous / next project. */
+const STEP_DISTANCE = 70;
+
+/** Directional slide for the per-client logo and card content. */
+const slideVariants = {
+  enter: (direction: number) => ({ x: direction * 44, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (direction: number) => ({ x: direction * -44, opacity: 0 }),
+};
+
+const slideTransition = { duration: 0.3, ease: EASE_OUT };
+
 /**
  * Mobile informational overlay: the tapped logo travels to the upper centre
- * of the screen, the canvas dims behind it, and a bottom card presents the
- * client's dates, tags and description. Dismissal returns the logo to its
- * cell and restores the untouched canvas beneath.
+ * of the screen, the canvas blurs behind it, and a bottom card presents the
+ * client's dates, tags and description (plus a case-study link when one
+ * exists). Swiping the card left or right steps through every project in
+ * the current filtered composition, wrapping at the ends. Dismissal returns
+ * the logo to its (possibly moved) cell and restores the untouched canvas.
  */
-export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
+export function MobileInfoCard({
+  state,
+  direction,
+  canStep,
+  onStep,
+  onClose,
+  onReleaseForNavigation,
+}: MobileInfoCardProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
   const [closing, setClosing] = useState(false);
+  const dragX = useMotionValue(0);
   // Hydration-safe client check: the overlay portals to <body> so its
-  // frosted scrim sits above the site header (the Work view's fixed root
-  // would otherwise trap it beneath, and an animated ancestor would also
-  // bound the backdrop blur's sampling region).
+  // frosted scrim sits above the site header.
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -83,12 +114,41 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
     };
   })();
 
+  // Swipe stepping: the card follows the finger with resistance; a decisive
+  // release advances to the neighbouring project (swipe left = next).
+  useDrag(
+    ({ last, movement: [mx] }) => {
+      if (!state || closing || !canStep) return;
+      if (last) {
+        if (mx < -STEP_DISTANCE) {
+          onStep(1);
+          animate(dragX, 0, { duration: 0.24, ease: EASE_OUT });
+        } else if (mx > STEP_DISTANCE) {
+          onStep(-1);
+          animate(dragX, 0, { duration: 0.24, ease: EASE_OUT });
+        } else {
+          animate(dragX, 0, { duration: 0.3, ease: EASE_OUT });
+        }
+        return;
+      }
+      dragX.set(Math.max(-120, Math.min(120, mx * 0.6)));
+    },
+    {
+      target: panelRef,
+      axis: "x",
+      pointer: { touch: true },
+      enabled: state !== null && !closing,
+    },
+  );
+
+  const slideDirection = reducedMotion ? 0 : direction;
+
   if (!mounted) return null;
 
   return createPortal(
     <AnimatePresence onExitComplete={handleExitComplete}>
       {state && !closing && (
-        <div className={styles.root} key={state.client.id}>
+        <div className={styles.root} key="info-overlay">
           <motion.button
             type="button"
             aria-label="Close details"
@@ -100,7 +160,12 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
             transition={{ duration: 0.36, ease: EASE_OUT }}
           />
 
+          {/* Travel container: cell → presentation on open, back on close.
+              Its `initial` is read once at mount (the opening client), so
+              stepping never replays the travel — the keyed inner swaps
+              logos with a directional slide instead. */}
           <motion.div
+            ref={logoRef}
             className={styles.floatingLogo}
             initial={
               reducedMotion ? { ...presentation, opacity: 0 } : { ...state.origin, opacity: 1 }
@@ -117,7 +182,20 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
             transition={{ duration: reducedMotion ? 0.16 : DUR.base, ease: EASE_INOUT }}
             aria-hidden
           >
-            <LogoMark logoUrl={state.client.logoUrl} />
+            <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
+              <motion.div
+                key={state.client.id}
+                className={styles.floatingLogoInner}
+                custom={slideDirection}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={slideTransition}
+              >
+                <LogoMark logoUrl={state.client.logoUrl} treatment={state.client.logoTreatment} />
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
 
           <motion.div
@@ -135,23 +213,65 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
             }
             transition={{ duration: 0.55, ease: EASE_OUT, delay: reducedMotion ? 0 : 0.06 }}
           >
-            <div className={styles.cardHeader}>
-              <h2 className={styles.name}>{state.client.name}</h2>
-              <button
-                type="button"
-                className={styles.close}
-                aria-label="Close details"
-                onClick={requestClose}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <p className={styles.meta}>
-              {formatYearRange(clientYearSpan(state.client))}
-              <span className={styles.metaSep}> · </span>
-              {clientTags(state.client).join(", ")}
-            </p>
-            <p className={styles.description}>{state.client.description}</p>
+            <button
+              type="button"
+              className={styles.close}
+              aria-label="Close details"
+              onClick={requestClose}
+            >
+              <CloseIcon />
+            </button>
+
+            <motion.div className={styles.cardSwipe} style={{ x: dragX }}>
+              <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
+                <motion.div
+                  key={state.client.id}
+                  className={styles.cardContent}
+                  custom={slideDirection}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={slideTransition}
+                >
+                  <h2 className={styles.name}>{state.client.name}</h2>
+                  <p className={styles.meta}>
+                    {formatYearRange(clientYearSpan(state.client))}
+                    <span className={styles.metaSep}> · </span>
+                    {clientTags(state.client).join(", ")}
+                  </p>
+                  <p className={styles.description}>{state.client.description}</p>
+                  {state.client.caseStudy ? (
+                    <Link
+                      href={`/work/${state.client.caseStudy.slug}`}
+                      className={styles.caseLink}
+                      onClick={() => {
+                        // The sheet's intro travels from the presented logo.
+                        const rect = logoRef.current?.getBoundingClientRect();
+                        setCaseOrigin({
+                          slug: state.client.caseStudy!.slug,
+                          rect: rect
+                            ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+                            : presentation,
+                          logoUrl: state.client.logoUrl,
+                          heroUrl: state.client.caseStudy!.heroUrl,
+                        });
+                        onReleaseForNavigation();
+                      }}
+                    >
+                      View case study
+                      <ArrowRightIcon size={16} />
+                    </Link>
+                  ) : null}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+
+            {canStep ? (
+              <p className={styles.swipeHint} aria-hidden>
+                swipe for more
+              </p>
+            ) : null}
           </motion.div>
         </div>
       )}

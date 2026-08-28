@@ -29,6 +29,7 @@
   --color-action-bg-hover: #2a2a2e;
   --color-action-fg: #f6f8f7;
   --color-link: #0071bb; /* whispered blue links */
+  --color-glow: rgba(0, 113, 187, 0.17); /* case-study halo */
   --color-fill-active: #000000; /* selected tags: ink fill */
   --color-fill-active-fg: #f6f8f7;
 
@@ -83,6 +84,7 @@
   --color-action-bg-hover: #dcdee0;
   --color-action-fg: #0f0e12;
   --color-link: #58a9dd;
+  --color-glow: rgba(88, 169, 221, 0.2);
   --color-fill-active: #f6f8f7;
   --color-fill-active-fg: #0f0e12;
 

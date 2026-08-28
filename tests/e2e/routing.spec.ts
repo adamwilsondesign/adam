@@ -100,11 +100,20 @@ test.describe("case-study routing", () => {
     await expect(page).toHaveURL(/\/work$/);
   });
 
-  test("home → work → home traversal", async ({ page }) => {
+  test("home → work → home traversal with persistent header controls", async ({ page }) => {
     await page.goto("/");
+    // The homepage index teases the unreleased sections without linking them.
+    await expect(page.getByText("About", { exact: false })).toBeVisible();
+    await expect(page.getByText("Side Quests", { exact: false })).toBeVisible();
+    expect(await page.getByRole("link", { name: /About/ }).count()).toBe(0);
+
     await page.getByRole("link", { name: /^Work/ }).click();
     await expect(page).toHaveURL(/\/work$/);
     await expect(page.locator("a[data-case-cell]").first()).toBeVisible();
+
+    // Theme and contact stay available on sub pages.
+    await expect(page.getByRole("button", { name: "Toggle colour theme" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Contact" })).toBeVisible();
 
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/$/);

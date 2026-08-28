@@ -32,7 +32,7 @@ export type AnalyticsEvent =
   | { name: "work_shuffled" }
   | { name: "work_years_changed"; start: number; end: number }
   | { name: "client_info_opened"; clientId: string }
-  | { name: "case_study_opened"; slug: string; source: "grid" | "direct" }
+  | { name: "case_study_opened"; slug: string; source: "grid" | "direct" | "sibling" }
   | { name: "case_study_media_viewed"; slug: string; index: number }
   | { name: "external_link_followed"; slug: string; url: string }
   | { name: "theme_changed"; theme: "light" | "dark" };

@@ -24,6 +24,11 @@
   pointer-events: none;
 }
 
+.floatingLogoInner {
+  position: absolute;
+  inset: 0;
+}
+
 .card {
   position: absolute;
   left: 0;
@@ -32,14 +37,31 @@
   min-height: 46vh;
   background: var(--color-bg);
   border-top: 1px solid var(--color-line-strong);
-  padding: 26px 22px calc(26px + env(safe-area-inset-bottom, 0px));
+  padding: 26px 22px calc(34px + env(safe-area-inset-bottom, 0px));
+  /* The card owns its horizontal swipe; nothing beneath should pan. */
+  touch-action: none;
 }
 
-.cardHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+.close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-muted);
+}
+
+/* Follows the finger with resistance while the keyed content slides. */
+.cardSwipe {
+  position: relative;
+}
+
+.cardContent {
+  padding-right: 44px;
 }
 
 .name {
@@ -48,17 +70,6 @@
   font-weight: var(--weight-light);
   line-height: 1.15;
   color: var(--color-fg);
-}
-
-.close {
-  flex: none;
-  min-width: 44px;
-  min-height: 44px;
-  margin: -8px -10px 0 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-fg-muted);
 }
 
 .meta {
@@ -81,4 +92,34 @@
   line-height: 1.5;
   color: var(--color-fg);
   max-width: 40ch;
+}
+
+/* The one solid action: a black plate into the case study. */
+.caseLink {
+  margin-top: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  color: var(--color-action-fg);
+  background: var(--color-action-bg);
+}
+
+.swipeHint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  margin: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  color: var(--color-fg-faint);
+  user-select: none;
+  pointer-events: none;
 }

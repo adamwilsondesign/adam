@@ -39,6 +39,8 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
 
   const [leaving, setLeaving] = useState(false);
   const [info, setInfo] = useState<InfoOverlayState | null>(null);
+  /** Direction of the latest card step (drives the slide animation). */
+  const [infoStep, setInfoStep] = useState<0 | 1 | -1>(0);
   const infoRef = useRef(info);
   useEffect(() => {
     infoRef.current = info;
@@ -93,6 +95,7 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   }, [clients]);
 
   const openInfo = (client: WorkClient, rect: DOMRect) => {
+    setInfoStep(0);
     setInfo({
       client,
       origin: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
@@ -109,6 +112,56 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
     setInfo(null);
     const historyState = window.history.state as { awInfo?: string } | null;
     if (historyState?.awInfo) window.history.back();
+  };
+
+  /**
+   * Swipe progression on the info card: steps through every filtered
+   * project (wrap-around) in the current display order. The history entry
+   * is replaced, not pushed — one back gesture always dismisses the card.
+   */
+  const stepInfo = (direction: 1 | -1) => {
+    const current = infoRef.current;
+    if (!current) return;
+    const list = state.visibleClients;
+    if (list.length < 2) return;
+    const index = list.findIndex((candidate) => candidate.id === current.client.id);
+    const neighbor = list[(index + direction + list.length) % list.length];
+    if (!neighbor || neighbor.id === current.client.id) return;
+    const mask = document.querySelector(`[data-client-cell="${neighbor.id}"] [data-logo-mask]`);
+    const rect = mask?.getBoundingClientRect();
+    setInfoStep(direction);
+    setInfo({
+      client: neighbor,
+      origin: rect
+        ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+        : { x: window.innerWidth / 2, y: window.innerHeight / 2, width: 0, height: 0 },
+    });
+    try {
+      const historyState = (window.history.state ?? {}) as Record<string, unknown>;
+      window.history.replaceState({ ...historyState, awInfo: neighbor.id }, "");
+    } catch {
+      // Non-fatal: the card still shows the neighbor.
+    }
+    track({ name: "client_info_opened", clientId: neighbor.id });
+  };
+
+  /**
+   * A case-study CTA inside the card navigates away: dismiss the card and
+   * strip the awInfo marker in place so Back from the sheet lands on the
+   * canvas, not on a resurrected card.
+   */
+  const releaseInfoForNavigation = () => {
+    setInfo(null);
+    try {
+      const historyState = window.history.state as { awInfo?: string } | null;
+      if (historyState?.awInfo) {
+        const rest = { ...historyState };
+        delete rest.awInfo;
+        window.history.replaceState(rest, "");
+      }
+    } catch {
+      // Non-fatal.
+    }
   };
 
   const dockEntrance = reducedMotion
@@ -154,7 +207,14 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
           <motion.div className={styles.dockLayer} {...dockEntrance}>
             <FilterDock state={state} variant="mobile" />
           </motion.div>
-          <MobileInfoCard state={info} onClose={closeInfo} />
+          <MobileInfoCard
+            state={info}
+            direction={infoStep}
+            canStep={state.visibleClients.length > 1}
+            onStep={stepInfo}
+            onClose={closeInfo}
+            onReleaseForNavigation={releaseInfoForNavigation}
+          />
         </>
       ) : (
         <>

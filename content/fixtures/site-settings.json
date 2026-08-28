@@ -2,7 +2,7 @@
   "title": "Adam Wilson",
   "description": "Independent designer working on interfaces, interaction and product strategy across AI, hardware and consumer software.",
   "logoUrl": null,
-  "contactUrl": null,
+  "contactUrl": "mailto:adamwilson@lazertechnologies.com",
   "navigation": [
     {
       "label": "Work",
@@ -15,13 +15,8 @@
       "available": false
     },
     {
-      "label": "Blog",
-      "href": "/blog",
-      "available": false
-    },
-    {
-      "label": "Experiments",
-      "href": "/experiments",
+      "label": "Side Quests",
+      "href": "/side-quests",
       "available": false
     }
   ],

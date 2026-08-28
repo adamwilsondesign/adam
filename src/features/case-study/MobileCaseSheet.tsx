@@ -3,9 +3,9 @@
 import { useDrag } from "@use-gesture/react";
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-import { ArrowUpRightIcon, CloseIcon } from "@/components/icons";
+import { ArrowLeftIcon, ArrowRightIcon, ArrowUpRightIcon, CloseIcon } from "@/components/icons";
 import { LogoMark } from "@/features/work/LogoMark";
 import { findCaseCellRect, type CaseOrigin } from "@/features/work/origin-store";
 import { track } from "@/lib/analytics";
@@ -14,6 +14,7 @@ import { useFocusTrap } from "@/lib/use-focus-trap";
 
 import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
 
+import { orderedCaseSiblings, resolveSiblings, type CaseSibling } from "./case-siblings";
 import styles from "./MobileCaseSheet.module.css";
 import { PortableTextBody } from "./PortableTextBody";
 
@@ -27,6 +28,8 @@ const SHEET_AT_MS = TRAVEL_MS + PAN_MS - 120;
 /** Native-feeling dismissal thresholds (distance px, velocity px/ms). */
 const DISMISS_DISTANCE = 140;
 const DISMISS_VELOCITY = 0.55;
+/** Horizontal travel needed to swipe to the previous / next case study. */
+const SWIPE_DISTANCE = 90;
 
 type Phase = "intro" | "sheet" | "closing";
 
@@ -34,7 +37,10 @@ type MobileCaseSheetProps = {
   study: CaseStudy;
   origin: CaseOrigin | null;
   active: boolean;
+  /** All case studies (index order); the filtered composition refines it. */
+  siblings: CaseSibling[];
   onNavigateClose: () => void;
+  onNavigateSibling: (slug: string) => void;
 };
 
 /**
@@ -43,7 +49,14 @@ type MobileCaseSheetProps = {
  * aligned), pans the image through the mask for about two seconds, then
  * raises the full-screen sheet. Reduced motion skips the pan entirely.
  */
-export function MobileCaseSheet({ study, origin, active, onNavigateClose }: MobileCaseSheetProps) {
+export function MobileCaseSheet({
+  study,
+  origin,
+  active,
+  siblings,
+  onNavigateClose,
+  onNavigateSibling,
+}: MobileCaseSheetProps) {
   const reducedMotion = useReducedMotion();
   const sheetRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,6 +64,23 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
   const [phase, setPhase] = useState<Phase>(hasIntro ? "intro" : "sheet");
   const startedRef = useRef(false);
   const sheetY = useMotionValue(0);
+  const sheetX = useMotionValue(0);
+
+  // Prev/next follow the filtered composition once the client session state
+  // is readable; the server (and first client render) use the full index
+  // order so hydration stays consistent.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const pair = useMemo(
+    () =>
+      mounted
+        ? orderedCaseSiblings(siblings, study.slug)
+        : resolveSiblings(siblings, null, study.slug),
+    [mounted, siblings, study.slug],
+  );
 
   useFocusTrap(sheetRef, active && phase === "sheet", {
     initialFocus: "container",
@@ -68,6 +98,45 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
     if (phase === "closing") return;
     setPhase("closing");
   };
+
+  // Horizontal swipe anywhere on the sheet progresses through the filtered
+  // case studies: content follows the finger with resistance, and a decisive
+  // swipe replaces the slug in place (Back still closes to the grid).
+  useDrag(
+    ({ first, last, movement: [mx], cancel, event }) => {
+      if (phase !== "sheet" || !active) return;
+      if (first) {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest("[data-sheet-grip]")) {
+          cancel();
+          return;
+        }
+      }
+      if (last) {
+        const destination =
+          mx < -SWIPE_DISTANCE && pair.next
+            ? pair.next
+            : mx > SWIPE_DISTANCE && pair.prev
+              ? pair.prev
+              : null;
+        if (destination) {
+          animate(sheetX, mx < 0 ? -72 : 72, { duration: 0.18, ease: EASE_EXIT });
+          onNavigateSibling(destination.slug);
+        } else {
+          animate(sheetX, 0, { duration: 0.32, ease: EASE_OUT });
+        }
+        return;
+      }
+      // Follow with resistance, hard-capped so content stays legible.
+      sheetX.set(Math.max(-110, Math.min(110, mx * 0.45)));
+    },
+    {
+      target: sheetRef,
+      axis: "x",
+      pointer: { touch: true },
+      enabled: active,
+    },
+  );
 
   // Drag-to-dismiss from the deliberate top gesture region only (the drag
   // handle and close strip) — scrolling the content can never accidentally
@@ -199,7 +268,7 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
         aria-labelledby="case-sheet-title"
         tabIndex={-1}
         className={styles.sheet}
-        style={{ y: sheetY }}
+        style={{ x: sheetX, y: sheetY }}
         initial={origin ? { y: "104%" } : false}
         animate={phase === "sheet" ? { y: 0 } : undefined}
         transition={{ duration: reducedMotion ? 0.2 : DUR.slow, ease: EASE_OUT }}
@@ -277,6 +346,41 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
               </figure>
             ))}
           </div>
+
+          {pair.prev || pair.next ? (
+            <nav className={styles.siblingNav} aria-label="More case studies">
+              {pair.prev ? (
+                <button
+                  type="button"
+                  className={styles.siblingLink}
+                  onClick={() => onNavigateSibling(pair.prev!.slug)}
+                >
+                  <ArrowLeftIcon size={16} />
+                  <span className={styles.siblingText}>
+                    <span className={styles.siblingKicker}>previous</span>
+                    {pair.prev.title}
+                  </span>
+                </button>
+              ) : (
+                <span />
+              )}
+              {pair.next ? (
+                <button
+                  type="button"
+                  className={`${styles.siblingLink} ${styles.siblingNext}`}
+                  onClick={() => onNavigateSibling(pair.next!.slug)}
+                >
+                  <span className={styles.siblingText}>
+                    <span className={styles.siblingKicker}>next</span>
+                    {pair.next.title}
+                  </span>
+                  <ArrowRightIcon size={16} />
+                </button>
+              ) : (
+                <span />
+              )}
+            </nav>
+          ) : null}
         </div>
       </motion.div>
     </div>

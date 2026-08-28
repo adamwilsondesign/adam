@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { preload } from "react-dom";
 
 import { track } from "@/lib/analytics";
@@ -36,10 +36,10 @@ type LogoCellProps = {
 };
 
 /**
- * One desktop grid cell. Case-study clients are real links whose logo mask
- * fills with the hero image on hover and focus; informational clients open
- * the anchored tooltip on hover and focus, and pin it sticky on click. The
- * two behaviours are also distinguished by a contextual cursor label.
+ * One desktop grid cell. Case-study clients are real links carrying a soft
+ * animated glow that tracks the cursor; informational clients open the
+ * anchored tooltip on hover and focus, and pin it sticky on click. The two
+ * behaviours are also distinguished by a contextual cursor label.
  */
 export function LogoCell({
   client,
@@ -52,15 +52,20 @@ export function LogoCell({
   tooltip,
 }: LogoCellProps) {
   const cellRef = useRef<HTMLElement | null>(null);
-  const [hovered, setHovered] = useState(false);
+  const glowRef = useRef<HTMLSpanElement>(null);
+  const heroPreloaded = useRef(false);
 
   const caseStudy = client.caseStudy;
   const isOrigin = caseStudy !== null && caseStudy.slug === openSlug;
   const optical = opticalLogoBox(client.logoAspect, client.logoTreatment);
 
-  useEffect(() => {
-    if (caseStudy) preload(caseStudy.heroUrl, { as: "image" });
-  }, [caseStudy]);
+  // The hero is fetched on intent (hover/focus), not on grid load — it is
+  // needed the moment the overlay's shared-element morph begins.
+  const preloadHero = () => {
+    if (!caseStudy || heroPreloaded.current) return;
+    heroPreloaded.current = true;
+    preload(caseStudy.heroUrl, { as: "image" });
+  };
 
   const markRect = (): DOMRect => {
     const mask = cellRef.current?.querySelector("[data-logo-mask]");
@@ -70,6 +75,22 @@ export function LogoCell({
   const logoBoxStyle: React.CSSProperties = {
     width: `${optical.widthPct}%`,
     height: `${optical.heightPct}%`,
+  };
+
+  // The glow centre follows the cursor: direct style writes, no re-renders.
+  const moveGlow = (event: React.PointerEvent) => {
+    const glow = glowRef.current;
+    if (!glow) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    glow.style.setProperty("--glow-x", `${((event.clientX - rect.left) / rect.width) * 100}%`);
+    glow.style.setProperty("--glow-y", `${((event.clientY - rect.top) / rect.height) * 100}%`);
+  };
+
+  const resetGlow = () => {
+    const glow = glowRef.current;
+    if (!glow) return;
+    glow.style.removeProperty("--glow-x");
+    glow.style.removeProperty("--glow-y");
   };
 
   if (caseStudy) {
@@ -88,18 +109,18 @@ export function LogoCell({
         tabIndex={isOrigin ? -1 : tabIndex}
         data-origin={isOrigin || undefined}
         onPointerEnter={() => {
-          setHovered(true);
           onCursorLabel("view project");
+          preloadHero();
         }}
+        onPointerMove={moveGlow}
         onPointerLeave={() => {
-          setHovered(false);
           onCursorLabel(null);
+          resetGlow();
         }}
         onFocus={() => {
-          setHovered(true);
           onFocusIndex(gridIndex);
+          preloadHero();
         }}
-        onBlur={() => setHovered(false)}
         onClick={() => {
           const rect = markRect();
           setCaseOrigin({
@@ -108,21 +129,13 @@ export function LogoCell({
             logoUrl: client.logoUrl,
             heroUrl: caseStudy.heroUrl,
           });
-          // The overlay swallows pointerleave, so drop the hover fill now —
-          // the cell must be plain monochrome when the overlay hands back.
-          setHovered(false);
           onCursorLabel(null);
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
+        <span ref={glowRef} className={styles.glow} aria-hidden />
         <span className={styles.logoBox} style={logoBoxStyle}>
-          <LogoMark
-            logoUrl={client.logoUrl}
-            treatment={client.logoTreatment}
-            heroUrl={caseStudy.heroUrl}
-            heroVisible={hovered}
-            parallax
-          />
+          <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} />
         </span>
       </Link>
     );

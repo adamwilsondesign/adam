@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { ArrowLeftIcon, MenuIcon, ThemeIcon } from "@/components/icons";
+import { ArrowLeftIcon, MailIcon, MenuIcon, ThemeIcon } from "@/components/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import type { NavSection } from "@/lib/content/model";
 import { interceptShellNavigation } from "@/lib/shell-navigation";
@@ -24,14 +24,13 @@ const slotTransition = { duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
 
 /**
  * The persistent shell chrome: back (or menu) at top left, the personal logo
- * centred, theme and contact at top right (homepage only). It stays mounted
+ * centred, theme and contact at top right on every route. It stays mounted
  * across routes so the shell reads as one continuous interface.
  *
- * The header resolves instantly per route: Work shows only Back and the
- * centred home control (the left-slot swap crossfades in place, so no
- * impossible combination ever renders); the homepage shows the menu — and
- * only when more than one section exists for it to navigate, since a menu
- * that duplicates the visible homepage index adds nothing.
+ * The header resolves instantly per route (the left-slot swap crossfades in
+ * place, so no impossible combination ever renders); the menu appears only
+ * when more than one section exists for it to navigate, since a menu that
+ * duplicates the visible homepage index adds nothing.
  */
 export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChromeProps) {
   const pathname = usePathname();
@@ -107,35 +106,23 @@ export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChrom
           </button>
         </div>
 
+        {/* Theme and contact stay available on every route. */}
         <div className={`${styles.slot} ${styles.rightSlot}`}>
-          <AnimatePresence initial={false}>
-            {mode !== "work" && (
-              <motion.div
-                key="home-controls"
-                className={`${styles.slotItem} ${styles.controlGroup}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={slotTransition}
-              >
-                <button
-                  type="button"
-                  className={styles.control}
-                  aria-label="Toggle colour theme"
-                  onClick={toggleTheme}
-                >
-                  <ThemeIcon />
-                </button>
-                {contactUrl ? (
-                  <a className={styles.control} href={contactUrl}>
-                    <span className={`${styles.controlLabel} ${styles.controlLabelKeep}`}>
-                      Contact
-                    </span>
-                  </a>
-                ) : null}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className={`${styles.slotItem} ${styles.controlGroup}`}>
+            <button
+              type="button"
+              className={styles.control}
+              aria-label="Toggle colour theme"
+              onClick={toggleTheme}
+            >
+              <ThemeIcon />
+            </button>
+            {contactUrl ? (
+              <a className={styles.control} href={contactUrl} aria-label="Contact">
+                <MailIcon />
+              </a>
+            ) : null}
+          </div>
         </div>
       </header>
 

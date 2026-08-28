@@ -90,9 +90,4 @@
   .controlLabel {
     display: none;
   }
-
-  /* Text-only controls (Contact) keep their label on mobile. */
-  .controlLabelKeep {
-    display: inline;
-  }
 }

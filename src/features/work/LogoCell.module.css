@@ -45,8 +45,8 @@
   /* width/height set inline from the optical normalization. */
 }
 
-/* Case-study cells lift slightly under hover and focus, strengthening the
-   hero reveal on thin wordmark masks without touching layout. */
+/* Case-study cells lift slightly under hover and focus — a quiet cue on
+   top of the glow, without touching layout. */
 @media (prefers-reduced-motion: no-preference) {
   a.cell .logoBox {
     transition: transform 240ms var(--ease-precise);
@@ -55,5 +55,42 @@
   a.cell:hover .logoBox,
   a.cell:focus-visible .logoBox {
     transform: scale(1.05);
+  }
+}
+
+/* The case-study signature: a soft radial glow breathing behind the mark.
+   Its centre follows the cursor via --glow-x/--glow-y (set from JS on
+   pointer movement; defaults keep it centred for touch and keyboard). */
+.glow {
+  position: absolute;
+  inset: -6%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--glow-x, 50%) var(--glow-y, 50%),
+    var(--color-glow),
+    transparent 62%
+  );
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glow {
+    animation: glow-breathe 4.2s var(--ease-precise) infinite;
+  }
+
+  a.cell:hover .glow,
+  a.cell:focus-visible .glow {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
   }
 }

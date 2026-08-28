@@ -13,7 +13,7 @@ import styles from "./HomeView.module.css";
 type HomeViewProps = {
   /** The introductory statement, from site settings (Sanity-editable later). */
   intro: string;
-  /** Site sections; unavailable ones are hidden entirely, never teased. */
+  /** Site sections; unavailable ones render as quiet "soon" placeholders. */
   sections: NavSection[];
   workRange: YearRange;
 };
@@ -72,10 +72,9 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
 
         <nav className={styles.nav} aria-label="Site sections">
           <ul className={styles.navList}>
-            {sections
-              .filter((section) => section.available)
-              .map((section, index) => (
-                <motion.li key={section.href} {...enter(0.16 + index * 0.07)}>
+            {sections.map((section, index) => (
+              <motion.li key={section.href} {...enter(0.16 + index * 0.07)}>
+                {section.available ? (
                   <Link
                     className={styles.navLink}
                     href={section.href}
@@ -83,8 +82,14 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
                   >
                     {section.label}
                   </Link>
-                </motion.li>
-              ))}
+                ) : (
+                  <span className={styles.navDisabled}>
+                    {section.label}
+                    <span className={styles.soon}>soon</span>
+                  </span>
+                )}
+              </motion.li>
+            ))}
           </ul>
         </nav>
 

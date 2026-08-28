@@ -157,3 +157,15 @@ export async function getCaseStudySlugs(): Promise<{ slug: string; updatedAt: st
   await ensureValidated();
   return resolveContentSource() === "sanity" ? sanityCaseStudySlugs() : fixtureCaseStudySlugs();
 }
+
+/** The case-study sibling list (index order) for prev/next navigation. */
+export async function getCaseSiblings(): Promise<
+  { slug: string; title: string; clientId: string }[]
+> {
+  const clients = await getWorkIndex();
+  return clients.flatMap((client) =>
+    client.caseStudy
+      ? [{ slug: client.caseStudy.slug, title: client.caseStudy.title, clientId: client.id }]
+      : [],
+  );
+}

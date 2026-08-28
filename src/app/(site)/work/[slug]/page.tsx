@@ -3,7 +3,13 @@ import { notFound } from "next/navigation";
 
 import { CaseStudyOverlay } from "@/features/case-study/CaseStudyOverlay";
 import { WorkView } from "@/features/work/WorkView";
-import { getCaseStudy, getCaseStudySlugs, getSiteSettings, getWorkIndex } from "@/lib/content";
+import {
+  getCaseSiblings,
+  getCaseStudy,
+  getCaseStudySlugs,
+  getSiteSettings,
+  getWorkIndex,
+} from "@/lib/content";
 import { siteUrl } from "@/lib/site-url";
 
 type CaseStudyParams = { params: Promise<{ slug: string }> };
@@ -49,10 +55,11 @@ export async function generateMetadata({ params }: CaseStudyParams): Promise<Met
  */
 export default async function CaseStudyPage({ params }: CaseStudyParams) {
   const { slug } = await params;
-  const [settings, clients, study] = await Promise.all([
+  const [settings, clients, study, siblings] = await Promise.all([
     getSiteSettings(),
     getWorkIndex(),
     getCaseStudy(slug),
+    getCaseSiblings(),
   ]);
   if (!study) notFound();
 
@@ -79,7 +86,7 @@ export default async function CaseStudyPage({ params }: CaseStudyParams) {
         clients={clients}
         bounds={{ start: settings.workStartYear, end: settings.workEndYear }}
       />
-      <CaseStudyOverlay study={study} mode="direct" />
+      <CaseStudyOverlay study={study} mode="direct" siblings={siblings} />
     </>
   );
 }

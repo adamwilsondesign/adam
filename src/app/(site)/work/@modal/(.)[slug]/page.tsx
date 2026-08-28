@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { CaseStudyOverlay } from "@/features/case-study/CaseStudyOverlay";
-import { getCaseStudy } from "@/lib/content";
+import { getCaseSiblings, getCaseStudy } from "@/lib/content";
 
 /**
  * Intercepted case-study overlay: renders above the still-mounted Work grid
@@ -14,7 +14,7 @@ export default async function CaseStudyModalPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const study = await getCaseStudy(slug);
+  const [study, siblings] = await Promise.all([getCaseStudy(slug), getCaseSiblings()]);
   if (!study) notFound();
-  return <CaseStudyOverlay study={study} mode="overlay" />;
+  return <CaseStudyOverlay study={study} mode="overlay" siblings={siblings} />;
 }

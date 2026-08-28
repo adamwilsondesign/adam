@@ -37,6 +37,31 @@
   opacity: 1;
 }
 
+/* Case-study cells carry the soft breathing halo (centred; no cursor on touch). */
+.glow {
+  position: absolute;
+  inset: -4%;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, var(--color-glow), transparent 62%);
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glow {
+    animation: glow-breathe 4.2s var(--ease-precise) infinite;
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
 .logoBox {
   position: relative;
   display: block;

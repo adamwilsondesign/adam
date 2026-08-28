@@ -50,6 +50,24 @@ export function ArrowUpRightIcon({ size = 16 }: IconProps) {
   );
 }
 
+export function ArrowRightIcon({ size = 20 }: IconProps) {
+  return (
+    <svg {...iconAttributes(size)}>
+      <path d="M17 10H3M11 4l6 6-6 6" />
+    </svg>
+  );
+}
+
+/** Envelope — the contact control. */
+export function MailIcon({ size = 20 }: IconProps) {
+  return (
+    <svg {...iconAttributes(size)}>
+      <rect x="2.5" y="4.5" width="15" height="11" />
+      <path d="M3 5.5l7 5.5 7-5.5" />
+    </svg>
+  );
+}
+
 /** Crossing paths — shuffle the grid composition. */
 export function ShuffleIcon({ size = 16 }: IconProps) {
   return (

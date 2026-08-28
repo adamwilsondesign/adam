@@ -849,14 +849,14 @@ async function main() {
     description:
       "Independent designer working on interfaces, interaction and product strategy across AI, hardware and consumer software.",
     logoUrl: null,
-    // No invented address: the Contact control stays hidden until a real one
-    // is configured (Sanity site settings, or NEXT_PUBLIC_CONTACT_URL).
-    contactUrl: null,
+    // The site owner's real address (placeholder-guard would hide anything
+    // invented). Editable later in Sanity site settings → Contact, or via
+    // NEXT_PUBLIC_CONTACT_URL while running on fixtures.
+    contactUrl: "mailto:adamwilson@lazertechnologies.com",
     navigation: [
       { label: "Work", href: "/work", available: true },
       { label: "About", href: "/about", available: false },
-      { label: "Blog", href: "/blog", available: false },
-      { label: "Experiments", href: "/experiments", available: false },
+      { label: "Side Quests", href: "/side-quests", available: false },
     ],
     workStartYear: 2010,
     workEndYear: 2026,

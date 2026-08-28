@@ -186,6 +186,48 @@
   color: var(--color-fg-muted);
 }
 
+/* Progression between case studies: a ruled row at the end of the scroll. */
+.siblingNav {
+  margin-top: 33px;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 15px;
+  border-top: 1px solid var(--color-line-strong);
+  padding-top: 15px;
+}
+
+.siblingLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  max-width: 48%;
+  padding: 4px 2px;
+  text-align: left;
+  color: var(--color-fg);
+}
+
+.siblingNext {
+  text-align: right;
+}
+
+.siblingText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: var(--weight-light);
+  text-transform: lowercase;
+  line-height: 1.25;
+}
+
+.siblingKicker {
+  font-size: 11px;
+  font-weight: var(--weight-thin);
+  color: var(--color-fg-muted);
+}
+
 /* The canvas falls out of focus behind the presented logo during the
    cinematic intro — same register as the info overlay. */
 .introScrim {
