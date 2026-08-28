@@ -1,7 +1,9 @@
 /**
  * Imports the generated placeholder content into a Sanity dataset.
  *
- *   npm run sanity:seed            create/update placeholder documents
+ *   npm run sanity:seed              create/update placeholder documents
+ *   npm run sanity:seed -- --dry-run validate fixtures + assets and print the
+ *                                    plan without touching any network
  *   npm run sanity:seed -- --remove  delete every placeholder document
  *
  * Requirements (read from the environment or .env.local):
@@ -80,21 +82,26 @@ type FixtureClient = {
   caseStudy: { slug: string } | null;
 };
 
-async function main(): Promise<void> {
-  await loadDotEnvLocal();
+/**
+ * The write surface. The real implementation wraps @sanity/client; the
+ * dry-run implementation validates every local asset and mutation shape
+ * without any network access, so the full seed path can be exercised in CI
+ * and credential-less environments.
+ */
+type Writer = {
+  findAsset(assetType: string, filename: string): Promise<string | null>;
+  uploadAsset(
+    kind: "file" | "image",
+    filename: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<string>;
+  createIfNotExists(doc: Record<string, unknown> & { _id: string; _type: string }): Promise<void>;
+  createOrReplace(doc: Record<string, unknown> & { _id: string; _type: string }): Promise<void>;
+  deletePlaceholders(): Promise<void>;
+};
 
-  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
-  const token = process.env.SANITY_API_WRITE_TOKEN;
-
-  if (!projectId || !token) {
-    console.error(
-      "Missing configuration. Set NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_WRITE_TOKEN " +
-        "(in the environment or .env.local) before seeding. See README → Sanity setup.",
-    );
-    process.exit(1);
-  }
-
+function realWriter(projectId: string, dataset: string, token: string): Writer {
   const client = createClient({
     projectId,
     dataset,
@@ -102,10 +109,74 @@ async function main(): Promise<void> {
     apiVersion: "2025-08-01",
     useCdn: false,
   });
+  return {
+    findAsset: (assetType, filename) =>
+      client.fetch<string | null>(`*[_type == $type && originalFilename == $filename][0]._id`, {
+        type: assetType,
+        filename,
+      }),
+    uploadAsset: async (kind, filename, buffer, contentType) => {
+      const asset = await client.assets.upload(kind, buffer, { filename, contentType });
+      return asset._id;
+    },
+    createIfNotExists: async (doc) => {
+      await client.createIfNotExists(doc);
+    },
+    createOrReplace: async (doc) => {
+      await client.createOrReplace(doc);
+    },
+    deletePlaceholders: async () => {
+      await client.delete({ query: `*[_id in path("placeholder.**")]` });
+    },
+  };
+}
+
+function dryWriter(counters: { assets: number; documents: string[] }): Writer {
+  return {
+    findAsset: async () => null,
+    uploadAsset: async (kind, filename, buffer) => {
+      if (buffer.length === 0) throw new Error(`Asset ${filename} is empty.`);
+      counters.assets += 1;
+      return `${kind === "file" ? "file" : "image"}-dryrun-${counters.assets}`;
+    },
+    createIfNotExists: async (doc) => {
+      counters.documents.push(`${doc._id} (create-if-missing)`);
+    },
+    createOrReplace: async (doc) => {
+      if (!doc._id.startsWith("placeholder.") && doc._id !== "siteSettings") {
+        throw new Error(`Refusing non-placeholder id: ${doc._id}`);
+      }
+      counters.documents.push(doc._id);
+    },
+    deletePlaceholders: async () => {
+      counters.documents.push("(delete placeholder.**)");
+    },
+  };
+}
+
+async function main(): Promise<void> {
+  await loadDotEnvLocal();
+  const dryRun = process.argv.includes("--dry-run");
+
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
+  const token = process.env.SANITY_API_WRITE_TOKEN;
+
+  if (!dryRun && (!projectId || !token)) {
+    console.error(
+      "Missing configuration. Set NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_WRITE_TOKEN " +
+        "(in the environment or .env.local) before seeding — `npm run sanity:setup` creates " +
+        "both. See README → Sanity setup. (Use --dry-run to validate without credentials.)",
+    );
+    process.exit(1);
+  }
+
+  const counters = { assets: 0, documents: [] as string[] };
+  const writer = dryRun ? dryWriter(counters) : realWriter(projectId!, dataset, token!);
 
   if (process.argv.includes("--remove")) {
     console.log(`Removing placeholder documents from ${projectId}/${dataset}…`);
-    await client.delete({ query: `*[_id in path("placeholder.**")]` });
+    await writer.deletePlaceholders();
     console.log(
       "Placeholder documents removed. Uploaded placeholder assets can be pruned in Studio → Media.",
     );
@@ -129,7 +200,9 @@ async function main(): Promise<void> {
   };
 
   console.log(
-    `Seeding ${fixtures.clients.length} placeholder clients (${fixtures.caseStudies.length} case studies) into ${projectId}/${dataset}…`,
+    dryRun
+      ? `Dry run: validating ${fixtures.clients.length} placeholder clients (${fixtures.caseStudies.length} case studies)…`
+      : `Seeding ${fixtures.clients.length} placeholder clients (${fixtures.caseStudies.length} case studies) into ${projectId}/${dataset}…`,
   );
 
   const assetCache = new Map<string, string>();
@@ -141,25 +214,24 @@ async function main(): Promise<void> {
 
     const filename = `placeholder--${publicPath.split("/").slice(-2).join("--")}`;
     const assetType = kind === "file" ? "sanity.fileAsset" : "sanity.imageAsset";
-    const existing = await client.fetch<string | null>(
-      `*[_type == $type && originalFilename == $filename][0]._id`,
-      { type: assetType, filename },
-    );
+    const existing = await writer.findAsset(assetType, filename);
     if (existing) {
       assetCache.set(cacheKey, existing);
       return existing;
     }
 
     const buffer = await readFile(path.join(root, "public", publicPath.replace(/^\//, "")));
-    const asset = await client.assets.upload(kind, buffer, {
+    const id = await writer.uploadAsset(
+      kind,
       filename,
-      contentType: publicPath.endsWith(".svg") ? "image/svg+xml" : "image/webp",
-    });
-    assetCache.set(cacheKey, asset._id);
-    return asset._id;
+      buffer,
+      publicPath.endsWith(".svg") ? "image/svg+xml" : "image/webp",
+    );
+    assetCache.set(cacheKey, id);
+    return id;
   }
 
-  await client.createIfNotExists({
+  await writer.createIfNotExists({
     _id: "siteSettings",
     _type: "siteSettings",
     title: settings.title,
@@ -177,7 +249,7 @@ async function main(): Promise<void> {
     seoTitle: settings.seo.title,
     seoDescription: settings.seo.description,
   });
-  console.log("Site settings ensured (existing settings are never overwritten).");
+  if (!dryRun) console.log("Site settings ensured (existing settings are never overwritten).");
 
   const studiesBySlug = new Map(fixtures.caseStudies.map((study) => [study.slug, study]));
 
@@ -206,6 +278,7 @@ async function main(): Promise<void> {
         slug: { _type: "slug", current: study.slug },
         title: study.title,
         subtitle: study.subtitle ?? undefined,
+        displayDate: study.displayDate,
         shortDescription: study.summary,
         body: study.body,
         externalUrl: study.externalUrl ?? undefined,
@@ -220,7 +293,7 @@ async function main(): Promise<void> {
       };
     }
 
-    await client.createOrReplace({
+    await writer.createOrReplace({
       _id: fixture.id,
       _type: "client",
       name: fixture.name,
@@ -239,9 +312,15 @@ async function main(): Promise<void> {
       })),
       ...(caseStudy ? { caseStudy } : {}),
     });
-    console.log(`  ✓ ${fixture.name}${study ? " (case study)" : ""}`);
+    if (!dryRun) console.log(`  ✓ ${fixture.name}${study ? " (case study)" : ""}`);
   }
 
+  if (dryRun) {
+    console.log(
+      `Dry run OK: ${counters.documents.length} documents (${counters.documents.filter((d) => d.startsWith("placeholder.")).length} placeholder-scoped), ${counters.assets} assets readable and ready to upload.`,
+    );
+    return;
+  }
   console.log("Seed complete. Remove placeholders later with: npm run sanity:seed -- --remove");
 }
 

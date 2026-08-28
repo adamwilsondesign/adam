@@ -29,26 +29,49 @@ uses — every feature works, including case-study deep links.
 
 ## Scripts
 
-| Script                   | Purpose                                                             |
-| ------------------------ | ------------------------------------------------------------------- |
-| `npm run dev`            | Dev server (fixtures or Sanity, depending on env)                   |
-| `npm run build`          | Production build (requires Sanity, or the explicit opt-in)          |
-| `npm run build:test`     | Production build pinned to fixture content                          |
-| `npm run start`          | Serve the production build                                          |
-| `npm run lint`           | ESLint                                                              |
-| `npm run format`         | Prettier (write) — `format:check` to verify                         |
-| `npm run typecheck`      | `tsc --noEmit`                                                      |
-| `npm test`               | Vitest unit tests (filtering, grid math, normalization)             |
-| `npm run test:e2e`       | Playwright tests (routing, state restoration, theme, mobile)        |
-| `npm run placeholders`   | Regenerate fixture data, SVG logos, WebP imagery, icons             |
-| `npm run sanity:studio`  | Standalone Studio dev server (Studio is also embedded at `/studio`) |
-| `npm run sanity:schema`  | Extract `schema.json` from the Studio schema                        |
-| `npm run sanity:typegen` | Extract schema **and** regenerate `src/sanity/types.generated.ts`   |
-| `npm run sanity:seed`    | Import placeholder content into your Sanity dataset                 |
+| Script                   | Purpose                                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `npm run dev`            | Dev server (fixtures or Sanity, depending on env)                                                    |
+| `npm run build`          | Production build (requires Sanity, or the explicit opt-in)                                           |
+| `npm run build:test`     | Production build pinned to fixture content                                                           |
+| `npm run start`          | Serve the production build                                                                           |
+| `npm run lint`           | ESLint                                                                                               |
+| `npm run format`         | Prettier (write) — `format:check` to verify                                                          |
+| `npm run typecheck`      | `tsc --noEmit`                                                                                       |
+| `npm test`               | Vitest unit tests (filtering, grid math, normalization)                                              |
+| `npm run test:e2e`       | Playwright tests (routing, state restoration, theme, mobile)                                         |
+| `npm run placeholders`   | Regenerate fixture data, SVG logos, WebP imagery, icons                                              |
+| `npm run sanity:studio`  | Standalone Studio dev server (Studio is also embedded at `/studio`)                                  |
+| `npm run sanity:schema`  | Extract `schema.json` from the Studio schema                                                         |
+| `npm run sanity:typegen` | Extract schema **and** regenerate `src/sanity/types.generated.ts`                                    |
+| `npm run sanity:setup`   | Create the Sanity project + dataset + tokens, write `.env.local`, seed                               |
+| `npm run sanity:seed`    | Import placeholder content into your Sanity dataset (`-- --dry-run` to validate without credentials) |
 
 ---
 
 ## Sanity setup
+
+### One command (recommended)
+
+```bash
+npx sanity login     # once — or export SANITY_AUTH_TOKEN (sanity.io/manage → API → Tokens)
+npm run sanity:setup
+```
+
+`sanity:setup` talks to the Sanity Management API and does everything below in
+one pass: creates the project (or reuses `NEXT_PUBLIC_SANITY_PROJECT_ID` if
+already configured), ensures the `production` dataset, mints an Editor and a
+Viewer token, adds `http://localhost:3000` (plus `--site-url <url>`) as CORS
+origins, writes all five values into `.env.local`, and runs the placeholder
+seed. It is idempotent — re-running never duplicates projects, overwrites
+existing tokens in `.env.local`, or clobbers non-placeholder content. Flags:
+`--name`, `--dataset`, `--org <id>` (when your account has several
+organizations), `--site-url <url>`, `--skip-seed`.
+
+Then restart `npm run dev` — the Work section switches from fixtures to the
+Content Lake automatically, and `/studio` mounts the Studio.
+
+### Manual steps (equivalent)
 
 1. **Create a project** at [sanity.io](https://www.sanity.io/) (or
    `npx sanity init` and note the project id — the schema in this repo is

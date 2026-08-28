@@ -18,6 +18,7 @@
     "sanity:studio": "sanity dev",
     "sanity:schema": "sanity schema extract",
     "sanity:typegen": "sanity schema extract && sanity typegen generate",
+    "sanity:setup": "tsx scripts/setup-sanity.ts",
     "sanity:seed": "tsx scripts/seed-sanity.ts"
   },
   "dependencies": {
