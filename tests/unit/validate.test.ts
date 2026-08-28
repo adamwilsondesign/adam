@@ -63,6 +63,7 @@ function settings(overrides: Partial<SiteSettings> = {}): SiteSettings {
     description: "Intro.",
     logoUrl: null,
     contactUrl: null,
+    linkedinUrl: null,
     navigation: [{ label: "Work", href: "/work", available: true }],
     workStartYear: 2010,
     workEndYear: 2026,

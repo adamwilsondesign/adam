@@ -250,6 +250,7 @@ export function normalizeSiteSettings(raw: SITE_SETTINGS_QUERY_RESULT): SiteSett
     description,
     logoUrl: raw?.logoUrl ?? null,
     contactUrl: stegaClean(raw?.contactUrl) ?? null,
+    linkedinUrl: stegaClean(raw?.linkedinUrl) ?? null,
     navigation: normalizeNavigation(raw?.navigation ?? null),
     workStartYear: Math.min(start, end),
     workEndYear: Math.max(start, end),

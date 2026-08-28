@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { preload } from "react-dom";
 
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
@@ -36,8 +35,8 @@ type LogoCellProps = {
 };
 
 /**
- * One desktop grid cell. Case-study clients are real links carrying a soft
- * animated glow that tracks the cursor; informational clients open the
+ * One desktop grid cell. Case-study clients are real links with a soft
+ * glow radiating from behind the mark; informational clients open the
  * anchored tooltip on hover and focus, and pin it sticky on click. The two
  * behaviours are also distinguished by a contextual cursor label.
  */
@@ -52,20 +51,10 @@ export function LogoCell({
   tooltip,
 }: LogoCellProps) {
   const cellRef = useRef<HTMLElement | null>(null);
-  const glowRef = useRef<HTMLSpanElement>(null);
-  const heroPreloaded = useRef(false);
 
   const caseStudy = client.caseStudy;
   const isOrigin = caseStudy !== null && caseStudy.slug === openSlug;
   const optical = opticalLogoBox(client.logoAspect, client.logoTreatment);
-
-  // The hero is fetched on intent (hover/focus), not on grid load — it is
-  // needed the moment the overlay's shared-element morph begins.
-  const preloadHero = () => {
-    if (!caseStudy || heroPreloaded.current) return;
-    heroPreloaded.current = true;
-    preload(caseStudy.heroUrl, { as: "image" });
-  };
 
   const markRect = (): DOMRect => {
     const mask = cellRef.current?.querySelector("[data-logo-mask]");
@@ -75,22 +64,6 @@ export function LogoCell({
   const logoBoxStyle: React.CSSProperties = {
     width: `${optical.widthPct}%`,
     height: `${optical.heightPct}%`,
-  };
-
-  // The glow centre follows the cursor: direct style writes, no re-renders.
-  const moveGlow = (event: React.PointerEvent) => {
-    const glow = glowRef.current;
-    if (!glow) return;
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    glow.style.setProperty("--glow-x", `${((event.clientX - rect.left) / rect.width) * 100}%`);
-    glow.style.setProperty("--glow-y", `${((event.clientY - rect.top) / rect.height) * 100}%`);
-  };
-
-  const resetGlow = () => {
-    const glow = glowRef.current;
-    if (!glow) return;
-    glow.style.removeProperty("--glow-x");
-    glow.style.removeProperty("--glow-y");
   };
 
   if (caseStudy) {
@@ -108,33 +81,22 @@ export function LogoCell({
         aria-hidden={isOrigin || undefined}
         tabIndex={isOrigin ? -1 : tabIndex}
         data-origin={isOrigin || undefined}
-        onPointerEnter={() => {
-          onCursorLabel("view project");
-          preloadHero();
-        }}
-        onPointerMove={moveGlow}
-        onPointerLeave={() => {
-          onCursorLabel(null);
-          resetGlow();
-        }}
-        onFocus={() => {
-          onFocusIndex(gridIndex);
-          preloadHero();
-        }}
+        onPointerEnter={() => onCursorLabel("view project")}
+        onPointerLeave={() => onCursorLabel(null)}
+        onFocus={() => onFocusIndex(gridIndex)}
         onClick={() => {
           const rect = markRect();
           setCaseOrigin({
             slug: caseStudy.slug,
             rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
             logoUrl: client.logoUrl,
-            heroUrl: caseStudy.heroUrl,
           });
           onCursorLabel(null);
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
-        <span ref={glowRef} className={styles.glow} aria-hidden />
         <span className={styles.logoBox} style={logoBoxStyle}>
+          <span className={styles.glow} aria-hidden />
           <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} />
         </span>
       </Link>

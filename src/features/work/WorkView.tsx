@@ -1,9 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { TunnelTransition } from "@/components/secret/TunnelTransition";
 import { track } from "@/lib/analytics";
 import type { WorkClient, YearRange } from "@/lib/content/model";
 import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
@@ -11,6 +12,7 @@ import { setShellNavigationInterceptor } from "@/lib/shell-navigation";
 import { MOBILE_WORK_QUERY, useMediaQuery } from "@/lib/use-media-query";
 
 import { DesktopGrid } from "./DesktopGrid";
+import { EmptyState } from "./EmptyState";
 import { FilterDock } from "./FilterDock";
 import { MobileCanvas } from "./MobileCanvas";
 import { MobileInfoCard, type InfoOverlayState } from "./MobileInfoCard";
@@ -38,6 +40,8 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   const state = useWorkState(clients, bounds);
 
   const [leaving, setLeaving] = useState(false);
+  /** True while falling through the secret doorway. */
+  const [falling, setFalling] = useState(false);
   const [info, setInfo] = useState<InfoOverlayState | null>(null);
   /** Direction of the latest card step (drives the slide animation). */
   const [infoStep, setInfoStep] = useState<0 | 1 | -1>(0);
@@ -181,6 +185,13 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
     document.getElementById("work-filters")?.focus();
   };
 
+  const enterDoor = () => {
+    setFalling(true);
+    track({ name: "secret_door_entered" });
+  };
+
+  const emptySelection = state.visibleClients.length === 0;
+
   return (
     <motion.div
       className={styles.root}
@@ -224,6 +235,12 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
           </motion.div>
         </>
       )}
+
+      {/* The deliberate void: everything filtered away leaves a doorway. */}
+      <AnimatePresence>
+        {emptySelection && isMobile !== null ? <EmptyState onEnterDoor={enterDoor} /> : null}
+      </AnimatePresence>
+      {falling ? <TunnelTransition onComplete={() => router.push("/secret")} /> : null}
     </motion.div>
   );
 }

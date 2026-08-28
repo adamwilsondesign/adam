@@ -111,13 +111,36 @@ test.describe("case-study routing", () => {
     await expect(page).toHaveURL(/\/work$/);
     await expect(page.locator("a[data-case-cell]").first()).toBeVisible();
 
-    // Theme and contact stay available on sub pages.
+    // Theme, contact and LinkedIn stay available on sub pages.
     await expect(page.getByRole("button", { name: "Toggle colour theme" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Contact" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Contact" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
 
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("link", { name: /^Work/ })).toBeVisible();
+  });
+
+  test("the contact icon opens the form dialog; Escape closes it", async ({ page }) => {
+    await page.goto("/work");
+    await page.getByRole("button", { name: "Contact" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Get in touch" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByLabel(/name \*/)).toHaveAttribute("required", "");
+    await expect(dialog.getByLabel(/email \*/)).toHaveAttribute("required", "");
+    await expect(dialog.getByLabel(/message \*/)).toHaveAttribute("required", "");
+    await expect(dialog.getByLabel("company")).not.toHaveAttribute("required", "");
+    await expect(dialog.getByRole("button", { name: "send message" })).toBeEnabled();
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+
+    // The X control closes it too.
+    await page.getByRole("button", { name: "Contact" }).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Close", exact: true }).click();
+    await expect(dialog).toBeHidden();
   });
 
   test("work exploration state survives a home round trip in-session", async ({ page }) => {

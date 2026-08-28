@@ -14,7 +14,6 @@ export type CaseOrigin = {
   slug: string;
   rect: { x: number; y: number; width: number; height: number };
   logoUrl: string;
-  heroUrl: string;
 };
 
 let origin: CaseOrigin | null = null;

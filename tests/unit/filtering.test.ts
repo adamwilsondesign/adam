@@ -9,7 +9,9 @@ import {
   engagementMatches,
   filterClients,
   isAllSelected,
+  isEmptySelection,
   selectAll,
+  toggleAll,
   toggleTag,
   type WorkFilter,
 } from "@/features/work/filtering";
@@ -32,6 +34,8 @@ function client(id: string, engagements: WorkClient["engagements"]): WorkClient 
 
 const filterWith = (overrides: Partial<WorkFilter>): WorkFilter => ({
   ...defaultFilter(BOUNDS),
+  // Overriding tags implies leaving the All state unless said otherwise.
+  all: overrides.all ?? !(overrides.tags && overrides.tags.length > 0),
   ...overrides,
 });
 
@@ -40,6 +44,7 @@ describe("the All selection", () => {
     const filter = defaultFilter(BOUNDS);
     expect(filter.tags).toEqual([]);
     expect(isAllSelected(filter)).toBe(true);
+    expect(isEmptySelection(filter)).toBe(false);
   });
 
   it("matches every tagged engagement in range", () => {
@@ -54,7 +59,35 @@ describe("the All selection", () => {
     const filter = filterWith({ tags: ["AI", "Crypto"] });
     const restored = selectAll(filter);
     expect(isAllSelected(restored)).toBe(true);
+    expect(restored.tags).toEqual([]);
     expect(restored.years).toEqual(filter.years);
+  });
+
+  it("toggles off into the deliberate empty selection and back", () => {
+    const clients = [client("a", [{ startYear: 2015, endYear: 2018, tags: ["AI"] }])];
+    const emptied = toggleAll(defaultFilter(BOUNDS));
+    expect(isEmptySelection(emptied)).toBe(true);
+    expect(filterClients(clients, emptied)).toEqual([]);
+
+    const restored = toggleAll(emptied);
+    expect(isAllSelected(restored)).toBe(true);
+    expect(filterClients(clients, restored)).toHaveLength(1);
+  });
+
+  it("selecting a tag escapes the empty selection", () => {
+    const clients = [client("a", [{ startYear: 2015, endYear: 2018, tags: ["AI"] }])];
+    const emptied = toggleAll(defaultFilter(BOUNDS));
+    const result = toggleTag(clients, emptied, "AI");
+    expect(result.rejected).toBe(false);
+    expect(result.filter.tags).toEqual(["AI"]);
+    expect(filterClients(clients, result.filter)).toHaveLength(1);
+  });
+
+  it("keeps the slider freely adjustable inside the empty selection", () => {
+    const clients = [client("a", [{ startYear: 2015, endYear: 2018, tags: ["AI"] }])];
+    const emptied = toggleAll(defaultFilter(BOUNDS));
+    const moved = clampYearRange(clients, emptied, { start: 2020, end: 2026 }, "start", BOUNDS);
+    expect(moved).toEqual({ years: { start: 2020, end: 2026 }, adjusted: false });
   });
 });
 

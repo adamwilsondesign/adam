@@ -58,6 +58,16 @@ export function ArrowRightIcon({ size = 20 }: IconProps) {
   );
 }
 
+/** LinkedIn mark, drawn in the shared stroke register. */
+export function LinkedInIcon({ size = 20 }: IconProps) {
+  return (
+    <svg {...iconAttributes(size)}>
+      <rect x="3" y="3" width="14" height="14" />
+      <path d="M6.5 9v4.5M6.5 6.4v.1M9.5 13.5V9m0 1.6c.4-1 1.3-1.6 2.2-1.6 1.2 0 1.8.8 1.8 2.1v2.4" />
+    </svg>
+  );
+}
+
 /** Envelope — the contact control. */
 export function MailIcon({ size = 20 }: IconProps) {
   return (

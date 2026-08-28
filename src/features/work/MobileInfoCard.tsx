@@ -254,7 +254,6 @@ export function MobileInfoCard({
                             ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
                             : presentation,
                           logoUrl: state.client.logoUrl,
-                          heroUrl: state.client.caseStudy!.heroUrl,
                         });
                         onReleaseForNavigation();
                       }}

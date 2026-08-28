@@ -121,6 +121,7 @@ async function main(): Promise<void> {
     title: string;
     description: string;
     contactUrl: string | null;
+    linkedinUrl?: string | null;
     navigation?: { label: string; href: string; available: boolean }[];
     workStartYear: number;
     workEndYear: number;
@@ -164,6 +165,7 @@ async function main(): Promise<void> {
     title: settings.title,
     description: settings.description,
     contactUrl: settings.contactUrl ?? undefined,
+    linkedinUrl: settings.linkedinUrl ?? undefined,
     navigation: (settings.navigation ?? []).map((section, index) => ({
       _key: `section-${index}`,
       label: section.label,

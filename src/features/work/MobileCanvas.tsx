@@ -4,7 +4,6 @@ import { useGesture } from "@use-gesture/react";
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { preload } from "react-dom";
 
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
@@ -294,10 +293,6 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
     height: `${optical.heightPct}%`,
   };
 
-  useEffect(() => {
-    if (caseStudy) preload(caseStudy.heroUrl, { as: "image" });
-  }, [caseStudy]);
-
   const markRect = (): DOMRect => {
     const mask = ref.current?.querySelector("[data-logo-mask]");
     return (mask ?? ref.current!).getBoundingClientRect();
@@ -323,13 +318,12 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
             slug: caseStudy.slug,
             rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
             logoUrl: client.logoUrl,
-            heroUrl: caseStudy.heroUrl,
           });
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
-        <span className={styles.glow} aria-hidden />
         <span className={styles.logoBox} style={logoBoxStyle}>
+          <span className={styles.glow} aria-hidden />
           <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} compact={compact} />
         </span>
       </Link>

@@ -1021,6 +1021,13 @@
         },
         "optional": true
       },
+      "linkedinUrl": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "navigation": {
         "type": "objectAttribute",
         "value": {

@@ -11,7 +11,8 @@ import {
   defaultFilter,
   filterClients,
   isAllSelected,
-  selectAll,
+  isEmptySelection,
+  toggleAll,
   toggleTag as applyTagToggle,
   type WorkFilter,
 } from "./filtering";
@@ -39,7 +40,7 @@ export type WorkState = {
   announcement: string;
   rejectionPulse: RejectionPulse | null;
   onToggleTag: (tag: WorkTag) => void;
-  onSelectAll: () => void;
+  onToggleAll: () => void;
   onShuffle: () => void;
   onYearsChange: (candidate: YearRange, moved: "start" | "end") => void;
   onYearsInteractionEnd: () => void;
@@ -48,7 +49,10 @@ export type WorkState = {
 type InitialState = {
   filter: WorkFilter;
   seed: number;
+  /** The displayed composition (empty in the deliberate void). */
   order: string[];
+  /** The last non-empty composition, seeding continuity across remounts. */
+  baseOrder: string[];
 };
 
 function buildInitialState(clients: WorkClient[], bounds: YearRange): InitialState {
@@ -60,24 +64,25 @@ function buildInitialState(clients: WorkClient[], bounds: YearRange): InitialSta
       start: Math.max(bounds.start, Math.min(stored.years.start, bounds.end)),
       end: Math.max(bounds.start, Math.min(stored.years.end, bounds.end)),
     };
-    const filter: WorkFilter = { tags, years };
+    const filter: WorkFilter = { all: stored.all, tags: stored.all ? [] : tags, years };
     const visible = new Set(filterClients(clients, filter).map((client) => client.id));
-    const order = stored.order.filter((id) => known.has(id) && visible.has(id));
-    if (order.length === visible.size && filterClients(clients, filter).length > 0) {
-      return { filter, seed: stored.seed, order };
+    // The snapshot stores the last NON-empty composition; the display order
+    // is its visible projection (empty in the deliberate void).
+    const baseOrder = stored.order.filter((id) => known.has(id));
+    const order = baseOrder.filter((id) => visible.has(id));
+    // A faithful snapshot restores, the deliberate empty state included.
+    if (order.length === visible.size && (visible.size > 0 || isEmptySelection(filter))) {
+      return { filter, seed: stored.seed, order, baseOrder };
     }
   }
   // Fresh entrance: randomized composition for the full (or default) set.
   const filter = defaultFilter(bounds);
   const seed = newSeed();
-  return {
-    filter,
+  const order = shuffleWithSeed(
+    filterClients(clients, filter).map((client) => client.id),
     seed,
-    order: shuffleWithSeed(
-      filterClients(clients, filter).map((client) => client.id),
-      seed,
-    ),
-  };
+  );
+  return { filter, seed, order, baseOrder: order };
 }
 
 /**
@@ -101,11 +106,12 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
   const settleTimer = useRef<number | null>(null);
   const pendingYears = useRef<YearRange | null>(null);
   const filterRef = useRef(filter);
-  const orderRef = useRef(displayOrder);
+  // The last NON-empty composition: emptying the grid keeps it, so toggling
+  // All back restores the exact previous arrangement.
+  const orderRef = useRef(initial.baseOrder);
   useEffect(() => {
     filterRef.current = filter;
-    orderRef.current = displayOrder;
-  }, [filter, displayOrder]);
+  }, [filter]);
 
   /** Canonical per-session order used to place newcomers deterministically. */
   const canonicalOrder = useMemo(
@@ -128,6 +134,7 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
   const persist = useCallback(
     (nextFilter: WorkFilter, order: string[]) => {
       saveWorkSnapshot({
+        all: nextFilter.all,
         tags: nextFilter.tags,
         years: nextFilter.years,
         order,
@@ -141,12 +148,15 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
   const commitFilter = useCallback(
     (nextFilter: WorkFilter) => {
       const visibleIds = filterClients(clients, nextFilter).map((client) => client.id);
-      const order = nextOrder(orderRef.current, visibleIds, canonicalOrder);
-      orderRef.current = order;
+      // The deliberate empty state renders nothing but keeps the previous
+      // composition in orderRef, so restoring brings every survivor home.
+      const order =
+        visibleIds.length === 0 ? [] : nextOrder(orderRef.current, visibleIds, canonicalOrder);
+      if (visibleIds.length > 0) orderRef.current = order;
       filterRef.current = nextFilter;
       setFilter(nextFilter);
       setDisplayOrder(order);
-      persist(nextFilter, order);
+      persist(nextFilter, orderRef.current);
       return visibleIds.length;
     },
     [clients, canonicalOrder, persist],
@@ -175,15 +185,23 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
     [clients, commitFilter],
   );
 
-  const onSelectAll = useCallback(() => {
+  const onToggleAll = useCallback(() => {
     const current = filterRef.current;
-    if (isAllSelected(current)) return;
-    track({ name: "work_tags_cleared" });
-    const count = commitFilter(selectAll(current));
-    setAnnouncement(`All tags — ${count} of ${clients.length} clients shown.`);
+    const next = toggleAll(current);
+    const count = commitFilter(next);
+    if (isEmptySelection(next)) {
+      track({ name: "work_emptied" });
+      setAnnouncement(
+        "Nothing to see here — every project is filtered out. Select All or a tag to bring the work back.",
+      );
+    } else {
+      track({ name: "work_tags_cleared" });
+      setAnnouncement(`All tags — ${count} of ${clients.length} clients shown.`);
+    }
   }, [clients.length, commitFilter]);
 
   const onShuffle = useCallback(() => {
+    if (isEmptySelection(filterRef.current)) return;
     const shuffled = shuffleWithSeed(orderRef.current, newSeed());
     orderRef.current = shuffled;
     setDisplayOrder(shuffled);
@@ -283,7 +301,7 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
     announcement,
     rejectionPulse,
     onToggleTag,
-    onSelectAll,
+    onToggleAll,
     onShuffle,
     onYearsChange,
     onYearsInteractionEnd,

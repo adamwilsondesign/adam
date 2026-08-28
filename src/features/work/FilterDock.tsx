@@ -34,7 +34,7 @@ export function FilterDock({ state, variant }: FilterDockProps) {
           className={`${styles.pill} ${styles.pillAll}`}
           data-active={state.allSelected || undefined}
           aria-pressed={state.allSelected}
-          onClick={state.onSelectAll}
+          onClick={state.onToggleAll}
         >
           All
         </button>

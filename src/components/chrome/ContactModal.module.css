@@ -1,0 +1,168 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+/* Frosted page behind the plate. (Unprefixed only — the compiler adds
+   -webkit-; a hand-written prefix makes the minifier drop the unprefixed
+   declaration.) */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--color-scrim);
+  backdrop-filter: blur(14px) saturate(0.9);
+  cursor: default;
+}
+
+/* A ruled instrument plate, straight cuts. */
+.panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line-strong);
+  padding: 33px 33px calc(26px + env(safe-area-inset-bottom, 0px));
+}
+
+.close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-muted);
+  transition: color 160ms var(--ease-precise);
+}
+
+.close:hover,
+.close:focus-visible {
+  color: var(--color-fg);
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: var(--weight-light);
+  line-height: 1.15;
+  color: var(--color-fg);
+  padding-right: 44px;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: var(--weight-thin);
+  line-height: 1.5;
+  color: var(--color-fg-muted);
+}
+
+.form {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  color: var(--color-fg-muted);
+}
+
+.input {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: var(--weight-light);
+  font-family: inherit;
+  color: var(--color-fg);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-line);
+  border-radius: 0;
+  transition: border-color 160ms var(--ease-precise);
+}
+
+.input:hover {
+  border-color: var(--color-fg-faint);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--color-fg);
+}
+
+.textarea {
+  padding: 10px 12px;
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+/* The one solid action: a black plate. */
+.submit {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 22px;
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  color: var(--color-action-fg);
+  background: var(--color-action-bg);
+  transition: background-color 160ms var(--ease-precise);
+}
+
+.submit:hover:not(:disabled),
+.submit:focus-visible:not(:disabled) {
+  background: var(--color-action-bg-hover);
+}
+
+.submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.note {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  color: var(--color-fg-faint);
+}

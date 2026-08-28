@@ -148,6 +148,8 @@ export type SiteSettings = {
    * NEXT_PUBLIC_CONTACT_URL while running on fixtures.
    */
   contactUrl: string | null;
+  /** Public LinkedIn profile URL; null hides the LinkedIn control. */
+  linkedinUrl: string | null;
   /** Site sections in display order; unavailable ones stay hidden. */
   navigation: NavSection[];
   workStartYear: number;

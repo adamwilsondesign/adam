@@ -106,16 +106,13 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
     };
   }, [clients, clearTimers, openTooltip]);
 
-  /** Pointer entering the tooltip itself keeps it open (safe corridor). */
-  const holdTooltip = useCallback(() => {
+  /** The card dodged away from the cursor: hold it readable for a while,
+   *  then let it close unless the logo (or card) is re-engaged. */
+  const dodgeTooltip = useCallback(() => {
     if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    closeTimer.current = null;
-  }, []);
-
-  const releaseTooltip = useCallback(() => {
     closeTimer.current = window.setTimeout(() => {
       setTooltip((current) => (current?.sticky ? current : null));
-    }, TOOLTIP_CLOSE_GRACE_MS);
+    }, 1500);
   }, []);
 
   // The tooltip only shows for the composition it was opened against.
@@ -300,11 +297,7 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
             })}
         </AnimatePresence>
       </ul>
-      <WorkTooltip
-        anchor={activeTooltip}
-        onPointerHold={holdTooltip}
-        onPointerRelease={releaseTooltip}
-      />
+      <WorkTooltip anchor={activeTooltip} onDodge={dodgeTooltip} />
       <AnimatePresence>
         {/* The "details" label yields once its tooltip is actually open. */}
         {cursorLabel && !(cursorLabel === "details" && activeTooltip) ? (

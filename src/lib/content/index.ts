@@ -132,10 +132,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   const settings =
     resolveContentSource() === "sanity" ? await sanitySiteSettings() : fixtureSiteSettings();
   const envContact = process.env.NEXT_PUBLIC_CONTACT_URL || null;
+  const envLinkedin = process.env.NEXT_PUBLIC_LINKEDIN_URL || null;
   return {
     ...settings,
-    // A placeholder contact address can never render; the control hides.
+    // Placeholder addresses / URLs can never render; the controls hide.
     contactUrl: sanitizeContactUrl(settings.contactUrl ?? envContact),
+    linkedinUrl: sanitizeExternalUrl(settings.linkedinUrl ?? envLinkedin),
   };
 }
 

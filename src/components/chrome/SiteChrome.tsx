@@ -4,11 +4,12 @@ import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { ArrowLeftIcon, MailIcon, MenuIcon, ThemeIcon } from "@/components/icons";
+import { ArrowLeftIcon, LinkedInIcon, MailIcon, MenuIcon, ThemeIcon } from "@/components/icons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import type { NavSection } from "@/lib/content/model";
 import { interceptShellNavigation } from "@/lib/shell-navigation";
 
+import { ContactModal } from "./ContactModal";
 import { MenuOverlay } from "./MenuOverlay";
 import { PersonalLogo } from "./PersonalLogo";
 import styles from "./SiteChrome.module.css";
@@ -17,6 +18,7 @@ type SiteChromeProps = {
   title: string;
   logoUrl: string | null;
   contactUrl: string | null;
+  linkedinUrl: string | null;
   navigation: NavSection[];
 };
 
@@ -32,13 +34,27 @@ const slotTransition = { duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
  * when more than one section exists for it to navigate, since a menu that
  * duplicates the visible homepage index adds nothing.
  */
-export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChromeProps) {
+export function SiteChrome({
+  title,
+  logoUrl,
+  contactUrl,
+  linkedinUrl,
+  navigation,
+}: SiteChromeProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
 
-  const mode = pathname === "/" ? "home" : pathname.startsWith("/work") ? "work" : "other";
+  const mode =
+    pathname === "/"
+      ? "home"
+      : pathname === "/secret"
+        ? "secret"
+        : pathname.startsWith("/work")
+          ? "work"
+          : "other";
   const availableSections = navigation.filter((section) => section.available);
   const showMenu = availableSections.length > 1;
 
@@ -51,6 +67,24 @@ export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChrom
     if (pathname === href) return;
     if (!interceptShellNavigation(href)) router.push(href);
   };
+
+  // Down the secret hole every piece of normal chrome disappears; only a
+  // way back remains.
+  if (mode === "secret") {
+    return (
+      <button
+        type="button"
+        className={styles.secretBack}
+        onClick={() => {
+          if (window.history.length > 1) router.back();
+          else router.push("/");
+        }}
+      >
+        <ArrowLeftIcon />
+        <span>back</span>
+      </button>
+    );
+  }
 
   return (
     <>
@@ -106,7 +140,7 @@ export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChrom
           </button>
         </div>
 
-        {/* Theme and contact stay available on every route. */}
+        {/* Theme, contact and LinkedIn stay available on every route. */}
         <div className={`${styles.slot} ${styles.rightSlot}`}>
           <div className={`${styles.slotItem} ${styles.controlGroup}`}>
             <button
@@ -118,13 +152,37 @@ export function SiteChrome({ title, logoUrl, contactUrl, navigation }: SiteChrom
               <ThemeIcon />
             </button>
             {contactUrl ? (
-              <a className={styles.control} href={contactUrl} aria-label="Contact">
+              <button
+                type="button"
+                className={styles.control}
+                aria-label="Contact"
+                aria-haspopup="dialog"
+                aria-expanded={contactOpen}
+                onClick={() => setContactOpen(true)}
+              >
                 <MailIcon />
+              </button>
+            ) : null}
+            {linkedinUrl ? (
+              <a
+                className={styles.control}
+                href={linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn (opens in a new tab)"
+              >
+                <LinkedInIcon />
               </a>
             ) : null}
           </div>
         </div>
       </header>
+
+      <ContactModal
+        open={contactOpen}
+        contactUrl={contactUrl}
+        onClose={() => setContactOpen(false)}
+      />
 
       {showMenu ? (
         <MenuOverlay

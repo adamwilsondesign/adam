@@ -152,15 +152,52 @@ test.describe("work filtering", () => {
     const restored = await readOrder(page);
     expect(restored.slice(0, narrowed.length)).toEqual(narrowed);
 
-    // An identical result set produces no reshuffle at all.
+    // Toggling All off empties the grid deliberately (the doorway appears)…
     await page.getByRole("button", { name: "All", exact: true }).click();
-    await page.waitForTimeout(300);
+    await expect(page.locator(anyCell)).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "nothing to see here" })).toBeVisible();
+    await expect(page.locator("#work-filters")).toContainText("00 / 40");
+
+    // …and toggling it back restores the exact previous composition.
+    await page.getByRole("button", { name: "All", exact: true }).click();
+    await expect(page.locator(anyCell)).toHaveCount(40);
+    await page.waitForTimeout(500);
     expect(await readOrder(page)).toEqual(restored);
 
     // The explicit Shuffle control is the one way to re-randomize.
     await page.getByRole("button", { name: "Shuffle the composition" }).click();
     await page.waitForTimeout(600);
     expect(await readOrder(page)).not.toEqual(restored);
+  });
+
+  test("the doorway falls through a tunnel to the secret page and back", async ({ page }) => {
+    await page.goto("/work");
+    await expect(page.locator(anyCell)).toHaveCount(40);
+    const order = await readOrder(page);
+
+    await page.getByRole("button", { name: "All", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "nothing to see here" })).toBeVisible();
+
+    await page.getByRole("button", { name: "A door. Enter it." }).click();
+    // The monochrome tunnel covers everything for ~4 seconds…
+    await expect(page.locator('[role="presentation"][class*="TunnelTransition"]')).toBeVisible();
+    await expect(page).toHaveURL(/\/secret$/, { timeout: 8000 });
+    await expect(page.getByText("you found the door.")).toBeVisible();
+
+    // All normal chrome is gone; only the way back remains.
+    await expect(page.getByRole("button", { name: "back" })).toBeVisible();
+    expect(await page.getByRole("button", { name: "Toggle colour theme" }).count()).toBe(0);
+    expect(await page.getByRole("button", { name: "Menu" }).count()).toBe(0);
+
+    await page.getByRole("button", { name: "back" }).click();
+    await expect(page).toHaveURL(/\/work$/);
+    await expect(page.getByRole("heading", { name: "nothing to see here" })).toBeVisible();
+
+    // Toggling All back restores the pre-void composition exactly.
+    await page.getByRole("button", { name: "All", exact: true }).click();
+    await expect(page.locator(anyCell)).toHaveCount(40);
+    await page.waitForTimeout(600);
+    expect(await readOrder(page)).toEqual(order);
   });
 
   test("rapid filter input settles on one consistent result", async ({ page }) => {
@@ -248,25 +285,48 @@ test.describe("work filtering", () => {
 });
 
 test.describe("informational tooltip", () => {
-  test("opens on hover with intent delay, survives the corridor, closes on exit", async ({
+  test("opens on hover, dodges to the opposite side when hovered, then closes", async ({
     page,
   }) => {
     await page.goto("/work");
-    const info = page.locator("button[data-client-cell]").first();
     const tooltip = page.locator("#work-tooltip");
+
+    // Pick an informational cell in the middle third of the viewport, so
+    // both horizontal placements genuinely fit and the dodge can flip.
+    const viewport = page.viewportSize()!;
+    const cells = page.locator("button[data-client-cell]");
+    let info = cells.first();
+    for (const candidate of await cells.all()) {
+      const box = await candidate.boundingBox();
+      if (!box) continue;
+      const center = box.x + box.width / 2;
+      if (center > viewport.width / 3 && center < (viewport.width * 2) / 3) {
+        info = candidate;
+        break;
+      }
+    }
 
     await info.hover();
     await expect(tooltip).toBeVisible();
 
-    // Crossing from the logo onto the tooltip must not dismiss it.
-    const tipBox = (await tooltip.boundingBox())!;
-    await page.mouse.move(tipBox.x + tipBox.width / 2, tipBox.y + tipBox.height / 2);
-    await page.waitForTimeout(300);
+    // Hovering the card itself flips it to the horizontally opposite edge
+    // of the logo. (Assert inside the hover-intent window: once the card has
+    // dodged, whatever logo now sits under the cursor may legitimately
+    // re-target the tooltip after the 150ms intent delay.)
+    const cellBox = (await info.boundingBox())!;
+    const before = (await tooltip.boundingBox())!;
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.waitForTimeout(80);
     await expect(tooltip).toBeVisible();
+    const after = (await tooltip.boundingBox())!;
+    const cellCenter = cellBox.x + cellBox.width / 2;
+    expect(before.x + before.width / 2 > cellCenter).not.toBe(
+      after.x + after.width / 2 > cellCenter,
+    );
 
-    // Leaving both closes it after the grace period.
+    // Left alone, it closes after the dodge grace period.
     await page.mouse.move(4, page.viewportSize()!.height - 4);
-    await expect(tooltip).toBeHidden();
+    await expect(tooltip).toBeHidden({ timeout: 4000 });
   });
 
   test("opens on keyboard focus and closes on Escape", async ({ page }) => {

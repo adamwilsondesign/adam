@@ -41,6 +41,7 @@ function assertFixtures(): void {
 export function fixtureSiteSettings(): SiteSettings {
   return {
     ...settings,
+    linkedinUrl: settings.linkedinUrl ?? null,
     navigation: settings.navigation ?? DEFAULT_NAVIGATION,
   };
 }

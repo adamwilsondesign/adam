@@ -55,6 +55,14 @@ export const siteSettingsType = defineType({
         }),
     }),
     defineField({
+      name: "linkedinUrl",
+      title: "LinkedIn profile",
+      type: "url",
+      group: "identity",
+      description: "Public LinkedIn profile URL shown as an icon in the header.",
+      validation: (rule) => rule.uri({ scheme: ["https"] }),
+    }),
+    defineField({
       name: "navigation",
       title: "Site sections",
       type: "array",

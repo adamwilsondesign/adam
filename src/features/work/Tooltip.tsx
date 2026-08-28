@@ -13,30 +13,36 @@ export type TooltipAnchor = {
   client: WorkClient;
   /** Viewport rect of the hovered logo. */
   rect: { x: number; y: number; width: number; height: number };
+  /** Pinned open by a click; pinned cards hold still instead of dodging. */
+  sticky?: boolean;
 };
 
 const VIEWPORT_PADDING = 12;
 const GAP = 14;
 
 type Position = { left: number; top: number };
-
-type WorkTooltipProps = {
-  anchor: TooltipAnchor | null;
-  /** Pointer entered the tooltip — cancel any pending close (safe corridor). */
-  onPointerHold?: () => void;
-  /** Pointer left the tooltip — resume the grace-period close. */
-  onPointerRelease?: () => void;
-};
+type Side = "right" | "left" | "above" | "below";
 
 /**
  * The informational tooltip for clients without a case study, anchored
  * beside the hovered or focused logo and repositioned edge-aware (right,
- * left, above, below — whichever fits). The plate is pointer-interactive so
- * crossing from the logo onto it never dismisses the content mid-read.
+ * left, above, below — whichever fits). Hovering the card itself makes it
+ * dodge to the horizontally opposite edge of the logo; pinned (clicked)
+ * cards hold still.
  */
-export function WorkTooltip({ anchor, onPointerHold, onPointerRelease }: WorkTooltipProps) {
+export function WorkTooltip({
+  anchor,
+  onDodge,
+}: {
+  anchor: TooltipAnchor | null;
+  /** The card flipped sides under the cursor — reset the close timing. */
+  onDodge?: () => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position | null>(null);
+  /** Requested horizontal side after a dodge, per client. */
+  const [dodge, setDodge] = useState<{ id: string; side: "left" | "right" } | null>(null);
+  const chosenSideRef = useRef<Side>("right");
 
   useLayoutEffect(() => {
     if (!anchor || !ref.current) {
@@ -48,12 +54,20 @@ export function WorkTooltip({ anchor, onPointerHold, onPointerRelease }: WorkToo
     const viewportHeight = window.innerHeight;
     const { rect } = anchor;
 
-    const placements: Position[] = [
-      { left: rect.x + rect.width + GAP, top: rect.y + rect.height / 2 - tip.height / 2 },
-      { left: rect.x - GAP - tip.width, top: rect.y + rect.height / 2 - tip.height / 2 },
-      { left: rect.x + rect.width / 2 - tip.width / 2, top: rect.y - GAP - tip.height },
-      { left: rect.x + rect.width / 2 - tip.width / 2, top: rect.y + rect.height + GAP },
-    ];
+    const placements: Record<Side, Position> = {
+      right: { left: rect.x + rect.width + GAP, top: rect.y + rect.height / 2 - tip.height / 2 },
+      left: { left: rect.x - GAP - tip.width, top: rect.y + rect.height / 2 - tip.height / 2 },
+      above: { left: rect.x + rect.width / 2 - tip.width / 2, top: rect.y - GAP - tip.height },
+      below: {
+        left: rect.x + rect.width / 2 - tip.width / 2,
+        top: rect.y + rect.height + GAP,
+      },
+    };
+
+    const preferred: Side[] =
+      dodge?.id === anchor.client.id && dodge.side === "left"
+        ? ["left", "right", "above", "below"]
+        : ["right", "left", "above", "below"];
 
     const fits = (candidate: Position) =>
       candidate.left >= VIEWPORT_PADDING &&
@@ -61,7 +75,9 @@ export function WorkTooltip({ anchor, onPointerHold, onPointerRelease }: WorkToo
       candidate.left + tip.width <= viewportWidth - VIEWPORT_PADDING &&
       candidate.top + tip.height <= viewportHeight - VIEWPORT_PADDING;
 
-    const chosen = placements.find(fits) ?? placements[0]!;
+    const side = preferred.find((candidate) => fits(placements[candidate])) ?? preferred[0]!;
+    chosenSideRef.current = side;
+    const chosen = placements[side];
     setPosition({
       left: Math.min(
         Math.max(chosen.left, VIEWPORT_PADDING),
@@ -72,7 +88,15 @@ export function WorkTooltip({ anchor, onPointerHold, onPointerRelease }: WorkToo
         viewportHeight - VIEWPORT_PADDING - tip.height,
       ),
     });
-  }, [anchor]);
+  }, [anchor, dodge]);
+
+  /** Cursor reached the card: hop to the opposite side of the logo. */
+  const handlePointerEnter = () => {
+    if (!anchor || anchor.sticky) return;
+    const next = chosenSideRef.current === "left" ? "right" : "left";
+    setDodge({ id: anchor.client.id, side: next });
+    onDodge?.();
+  };
 
   const span = anchor ? clientYearSpan(anchor.client) : null;
   const tags = anchor ? clientTags(anchor.client) : [];
@@ -95,8 +119,7 @@ export function WorkTooltip({ anchor, onPointerHold, onPointerRelease }: WorkToo
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.14 } }}
           transition={{ duration: 0.2, ease: EASE_OUT }}
-          onPointerEnter={onPointerHold}
-          onPointerLeave={onPointerRelease}
+          onPointerEnter={handlePointerEnter}
         >
           <p className={styles.name}>{anchor.client.name}</p>
           <p className={styles.meta}>

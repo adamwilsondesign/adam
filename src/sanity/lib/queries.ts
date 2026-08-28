@@ -14,6 +14,7 @@ export const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]{
   description,
   "logoUrl": logo.asset->url,
   contactUrl,
+  linkedinUrl,
   navigation[]{ label, href, available },
   workStartYear,
   workEndYear,

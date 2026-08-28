@@ -12,6 +12,8 @@
 import type { WorkTag, YearRange } from "@/lib/content/model";
 
 export type WorkSnapshot = {
+  /** The explicit All selection (false with no tags = the deliberate void). */
+  all: boolean;
   tags: WorkTag[];
   years: YearRange;
   /** Display order of the visible client ids. */

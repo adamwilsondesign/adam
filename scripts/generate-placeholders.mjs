@@ -853,6 +853,9 @@ async function main() {
     // invented). Editable later in Sanity site settings → Contact, or via
     // NEXT_PUBLIC_CONTACT_URL while running on fixtures.
     contactUrl: "mailto:adamwilson@lazertechnologies.com",
+    // TODO(owner): replace with the real profile URL (or set it in Sanity /
+    // NEXT_PUBLIC_LINKEDIN_URL). LinkedIn's root is a safe stand-in.
+    linkedinUrl: "https://www.linkedin.com/",
     navigation: [
       { label: "Work", href: "/work", available: true },
       { label: "About", href: "/about", available: false },

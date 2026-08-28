@@ -39,10 +39,10 @@ type DesktopCaseModalProps = {
 
 /**
  * The desktop case-study modal. The clicked grid logo is its visual origin:
- * the image-filled mark expands and travels into the left information panel,
- * the modal structure resolves around it, the mark settles back to plain
- * monochrome, and the written content and gallery enter last. Closing plays
- * the same journey in reverse toward the (still mounted) grid cell.
+ * the plain monochrome mark expands and travels into the left information
+ * panel, the modal structure resolves around it, and the written content and
+ * gallery enter last. Closing plays the same journey in reverse toward the
+ * (still mounted) grid cell.
  */
 export function DesktopCaseModal({
   study,
@@ -140,11 +140,7 @@ export function DesktopCaseModal({
 
       <div className={styles.panel}>
         <motion.div ref={logoBoxRef} className={styles.logoBox} animate={logoControls} aria-hidden>
-          <LogoMark
-            logoUrl={study.logoUrl}
-            heroUrl={study.hero.url}
-            heroVisible={phase === "enter"}
-          />
+          <LogoMark logoUrl={study.logoUrl} />
         </motion.div>
 
         <motion.div

@@ -18,13 +18,11 @@ import { orderedCaseSiblings, resolveSiblings, type CaseSibling } from "./case-s
 import styles from "./MobileCaseSheet.module.css";
 import { PortableTextBody } from "./PortableTextBody";
 
-/** Cinematic intro: logo travel, then the hero pans through the mask.
- *  Tuned to ~1.3s total — long enough to read as intentional, short enough
- *  to never feel like a loading screen. */
+/** Intro: the plain monochrome logo travels to the centred presentation,
+ *  holds a beat, and the sheet rises beneath it. */
 const TRAVEL_MS = 420;
-const PAN_MS = 900;
-/** The sheet starts rising just before the mask pan completes. */
-const SHEET_AT_MS = TRAVEL_MS + PAN_MS - 120;
+const HOLD_MS = 180;
+const SHEET_AT_MS = TRAVEL_MS + HOLD_MS;
 /** Native-feeling dismissal thresholds (distance px, velocity px/ms). */
 const DISMISS_DISTANCE = 140;
 const DISMISS_VELOCITY = 0.55;
@@ -44,10 +42,9 @@ type MobileCaseSheetProps = {
 };
 
 /**
- * The mobile case-study experience. Opening from the canvas moves the logo
- * to a centred presentation, fills its mask with the hero image (left edges
- * aligned), pans the image through the mask for about two seconds, then
- * raises the full-screen sheet. Reduced motion skips the pan entirely.
+ * The mobile case-study experience. Opening from the canvas moves the plain
+ * monochrome logo to a centred presentation, then raises the full-screen
+ * sheet beneath it. Reduced motion skips the travel entirely.
  */
 export function MobileCaseSheet({
   study,
@@ -223,7 +220,7 @@ export function MobileCaseSheet({
         <motion.div
           className={styles.floatingLogo}
           initial={hasIntro ? { ...origin.rect } : { ...presentation }}
-          animate={logoReturn ? { ...logoReturn } : { ...presentation }}
+          animate={logoReturn ? { ...logoReturn, opacity: 0.9 } : { ...presentation }}
           transition={{
             duration: logoReturn ? 0.4 : TRAVEL_MS / 1000,
             ease: EASE_INOUT,
@@ -236,28 +233,7 @@ export function MobileCaseSheet({
               maskImage: `url("${study.logoUrl}")`,
               WebkitMaskImage: `url("${study.logoUrl}")`,
             }}
-          >
-            {/* Left edge aligned with the logo's left edge, panning across. */}
-            <motion.img
-              src={study.hero.url}
-              alt=""
-              className={styles.introHero}
-              initial={{ objectPosition: "0% 50%", opacity: 0 }}
-              animate={{
-                objectPosition: logoReturn ? "0% 50%" : "100% 50%",
-                opacity: logoReturn ? 0 : 1,
-              }}
-              transition={{
-                objectPosition: {
-                  delay: logoReturn ? 0 : TRAVEL_MS / 1000,
-                  duration: logoReturn ? 0.2 : PAN_MS / 1000,
-                  ease: "easeInOut",
-                },
-                opacity: { duration: 0.2, delay: logoReturn ? 0 : TRAVEL_MS / 1000 - 0.15 },
-              }}
-              draggable={false}
-            />
-          </span>
+          />
         </motion.div>
       ) : null}
 
