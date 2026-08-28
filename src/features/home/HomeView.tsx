@@ -52,52 +52,60 @@ export function HomeView({ intro }: HomeViewProps) {
       animate={leaving ? { opacity: 0 } : { opacity: 1 }}
       transition={{ duration: leaving ? EXIT_DURATION : 0.3, ease: [0.32, 0.08, 0.24, 1] }}
     >
-      <motion.p
-        className={styles.intro}
-        {...enter}
-        transition={{ duration: 0.5, delay: 0.05, ease: [0.32, 0.08, 0.24, 1] }}
-      >
-        {intro}
-      </motion.p>
+      <div className={styles.column}>
+        <motion.p
+          className={styles.intro}
+          {...enter}
+          transition={{ duration: 0.5, delay: 0.05, ease: [0.32, 0.08, 0.24, 1] }}
+        >
+          {intro}
+        </motion.p>
 
-      <nav className={styles.nav} aria-label="Site sections">
-        <ul className={styles.navList}>
-          {SECTIONS.map((section, index) => (
-            <motion.li
-              key={section.href}
-              {...enter}
-              transition={{
-                duration: 0.5,
-                delay: 0.14 + index * 0.06,
-                ease: [0.32, 0.08, 0.24, 1],
-              }}
-            >
-              {section.available ? (
-                <Link className={styles.navLink} href={section.href} onClick={openWork}>
-                  {section.label}
-                  <span className={styles.navArrow} aria-hidden>
-                    →
+        <nav className={styles.nav} aria-label="Site sections">
+          <ul className={styles.navList}>
+            {SECTIONS.map((section, index) => (
+              <motion.li
+                key={section.href}
+                {...enter}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.14 + index * 0.06,
+                  ease: [0.32, 0.08, 0.24, 1],
+                }}
+              >
+                {section.available ? (
+                  <Link className={styles.navLink} href={section.href} onClick={openWork}>
+                    {section.label}
+                    <span className={styles.navArrow} aria-hidden>
+                      →
+                    </span>
+                  </Link>
+                ) : (
+                  <span className={styles.navDisabled}>
+                    {section.label}
+                    <span className={styles.soon}>Soon</span>
                   </span>
-                </Link>
-              ) : (
-                <span className={styles.navDisabled}>
-                  {section.label}
-                  <span className={styles.soon}>Soon</span>
-                </span>
-              )}
-            </motion.li>
-          ))}
-        </ul>
-      </nav>
+                )}
+              </motion.li>
+            ))}
+          </ul>
+        </nav>
 
-      <motion.footer
-        className={styles.footer}
-        {...enter}
-        transition={{ duration: 0.5, delay: 0.4, ease: [0.32, 0.08, 0.24, 1] }}
-      >
-        <span>Selected work, 2010–2026</span>
-        <span>© {new Date().getFullYear()}</span>
-      </motion.footer>
+        <motion.div
+          className={styles.accentRule}
+          aria-hidden
+          {...enter}
+          transition={{ duration: 0.6, delay: 0.42, ease: [0.32, 0.08, 0.24, 1] }}
+        />
+        <motion.footer
+          className={styles.footer}
+          {...enter}
+          transition={{ duration: 0.5, delay: 0.44, ease: [0.32, 0.08, 0.24, 1] }}
+        >
+          <span>Selected work, 2010–2026</span>
+          <span>© {new Date().getFullYear()}</span>
+        </motion.footer>
+      </div>
     </motion.div>
   );
 }

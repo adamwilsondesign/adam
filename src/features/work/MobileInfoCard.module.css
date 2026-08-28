@@ -21,15 +21,18 @@
 
 .card {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 12px;
+  right: 12px;
   bottom: 0;
   min-height: 46vh;
-  background: var(--color-surface-solid);
-  border-top: 1px solid var(--color-line);
-  border-radius: 20px 20px 0 0;
-  padding: 22px 24px calc(24px + env(safe-area-inset-bottom, 0px));
-  box-shadow: var(--shadow-overlay);
+  background: var(--color-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--color-line);
+  border-bottom: none;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  padding: 24px 26px calc(24px + env(safe-area-inset-bottom, 0px));
+  box-shadow: var(--shadow-float);
 }
 
 .cardHeader {
@@ -42,9 +45,10 @@
 .name {
   margin: 0;
   font-size: 22px;
-  font-weight: 550;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  letter-spacing: -0.015em;
   line-height: 1.25;
+  color: var(--color-fg-strong);
 }
 
 .close {
@@ -62,7 +66,7 @@
   margin: 10px 0 0;
   font-size: 13px;
   letter-spacing: 0.03em;
-  color: var(--color-fg-muted);
+  color: var(--color-fg-faint);
   font-variant-numeric: tabular-nums;
 }
 

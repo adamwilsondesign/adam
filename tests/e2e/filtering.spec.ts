@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const anyCell = "a[data-case-cell], button[aria-describedby='work-tooltip']";
+const anyCell = "a[data-case-cell], button[data-client-cell]";
 
 test.describe("work filtering", () => {
   test("all 40 clients fit in one viewport initially", async ({ page }) => {
@@ -67,10 +67,11 @@ test.describe("work filtering", () => {
 
     const initial = await readOrder();
 
-    // Unrelated update: hovering (tooltip state) must not reshuffle.
-    await page.locator("button[aria-describedby='work-tooltip']").first().hover();
-    await page.waitForTimeout(400);
-    await page.mouse.move(10, 10);
+    // Unrelated update: opening and closing a tooltip must not reshuffle.
+    await page.locator("button[data-client-cell]").first().click();
+    await expect(page.locator("#work-tooltip")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#work-tooltip")).toBeHidden();
     expect(await readOrder()).toEqual(initial);
 
     // A completed tag change reshuffles (40 items — an identical order is
@@ -82,12 +83,21 @@ test.describe("work filtering", () => {
     expect(await readOrder()).not.toEqual(initial);
   });
 
-  test("tooltip appears beside informational logos and stays in the viewport", async ({ page }) => {
+  test("tooltip opens on click (not hover), stays in the viewport, closes outside", async ({
+    page,
+  }) => {
     await page.goto("/work");
-    const info = page.locator("button[aria-describedby='work-tooltip']").first();
-    await info.hover();
+    const info = page.locator("button[data-client-cell]").first();
     const tooltip = page.locator("#work-tooltip");
+
+    // Hover alone must not open it.
+    await info.hover();
+    await page.waitForTimeout(350);
+    await expect(tooltip).toBeHidden();
+
+    await info.click();
     await expect(tooltip).toBeVisible();
+    await expect(info).toHaveAttribute("aria-expanded", "true");
     const box = await tooltip.boundingBox();
     const viewport = page.viewportSize()!;
     expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -95,7 +105,14 @@ test.describe("work filtering", () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
     expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height);
 
-    await page.mouse.move(10, 10);
+    // Clicking the same logo toggles it closed…
+    await info.click();
+    await expect(tooltip).toBeHidden();
+
+    // …and clicking elsewhere dismisses an open one.
+    await info.click();
+    await expect(tooltip).toBeVisible();
+    await page.mouse.click(10, viewport.height / 2);
     await expect(tooltip).toBeHidden();
   });
 });

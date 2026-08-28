@@ -15,16 +15,18 @@ type LogoCellProps = {
   client: WorkClient;
   /** Slug of the case study currently open above the grid, if any. */
   openSlug: string | null;
-  onInfoEnter: (client: WorkClient, rect: DOMRect) => void;
-  onInfoLeave: () => void;
+  /** True while this client's informational tooltip is open. */
+  infoOpen: boolean;
+  onInfoToggle: (client: WorkClient, rect: DOMRect) => void;
+  onInfoClose: () => void;
 };
 
 /**
  * One desktop grid cell. Case-study clients are real links whose logo mask
  * fills with the hero image on hover; informational clients are buttons that
- * anchor the tooltip on hover and keyboard focus.
+ * toggle the anchored tooltip on click (hover only raises their opacity).
  */
-export function LogoCell({ client, openSlug, onInfoEnter, onInfoLeave }: LogoCellProps) {
+export function LogoCell({ client, openSlug, infoOpen, onInfoToggle, onInfoClose }: LogoCellProps) {
   const cellRef = useRef<HTMLElement | null>(null);
   const [hovered, setHovered] = useState(false);
 
@@ -90,12 +92,14 @@ export function LogoCell({ client, openSlug, onInfoEnter, onInfoLeave }: LogoCel
       }}
       type="button"
       className={styles.cell}
+      data-client-cell={client.id}
       aria-label={client.name}
-      aria-describedby="work-tooltip"
-      onPointerEnter={() => onInfoEnter(client, markRect())}
-      onPointerLeave={onInfoLeave}
-      onFocus={() => onInfoEnter(client, markRect())}
-      onBlur={onInfoLeave}
+      aria-expanded={infoOpen}
+      aria-describedby={infoOpen ? "work-tooltip" : undefined}
+      onClick={() => onInfoToggle(client, markRect())}
+      onBlur={() => {
+        if (infoOpen) onInfoClose();
+      }}
     >
       <span className={styles.logoBox}>
         <LogoMark logoUrl={client.logoUrl} />

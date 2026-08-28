@@ -40,7 +40,7 @@ test.describe("case-study routing", () => {
     );
     await page.waitForTimeout(700);
     const orderBefore = await page
-      .locator("[data-case-cell], button[aria-describedby='work-tooltip']")
+      .locator("[data-case-cell], button[data-client-cell]")
       .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("aria-label")));
 
     const caseCell = page.locator("a[data-case-cell]").first();
@@ -59,7 +59,7 @@ test.describe("case-study routing", () => {
       "false",
     );
     const orderAfter = await page
-      .locator("[data-case-cell], button[aria-describedby='work-tooltip']")
+      .locator("[data-case-cell], button[data-client-cell]")
       .evaluateAll((cells) => cells.map((cell) => cell.getAttribute("aria-label")));
     expect(orderAfter).toEqual(orderBefore);
 

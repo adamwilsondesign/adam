@@ -2,6 +2,13 @@
   position: fixed;
   inset: 0;
   display: flex;
+  justify-content: center;
+}
+
+.column {
+  width: 100%;
+  max-width: var(--page-max-width);
+  display: flex;
   flex-direction: column;
   padding: calc(var(--chrome-header-height) + 2vh) var(--page-margin)
     max(4vh, env(safe-area-inset-bottom, 0px));
@@ -9,10 +16,11 @@
 
 .intro {
   margin: auto 0 0;
-  max-width: 32ch;
-  font-size: clamp(19px, 2.3vw, 29px);
-  font-weight: 450;
-  line-height: 1.42;
+  max-width: 34ch;
+  font-family: var(--font-heading);
+  font-size: clamp(19px, 2.2vw, 27px);
+  font-weight: 500;
+  line-height: 1.45;
   letter-spacing: -0.012em;
   color: var(--color-fg);
   text-wrap: balance;
@@ -35,19 +43,19 @@
   display: inline-flex;
   align-items: baseline;
   gap: 14px;
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: clamp(30px, 4.2vw, 52px);
   font-weight: 500;
-  letter-spacing: -0.022em;
-  line-height: 1.22;
-  padding: 2px 0;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.16;
+  padding: 3px 0;
 }
 
 .navLink {
-  color: var(--color-fg);
+  color: var(--color-fg-strong);
 }
 
 .navArrow {
-  font-size: 0.62em;
+  font-size: 0.6em;
   transform: translateX(-4px);
   opacity: 0;
   transition:
@@ -72,18 +80,34 @@
   text-transform: uppercase;
   color: var(--color-fg-faint);
   border: 1px solid var(--color-line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 3px 8px;
   transform: translateY(-6px);
 }
 
-.footer {
+/* The single chromatic moment: a dusk-violet wash on a hairline strip. */
+.accentRule {
   margin-top: auto;
+  height: 1px;
+  width: 100%;
+  background: var(--color-line);
+  position: relative;
+}
+
+.accentRule::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-dusk-violet);
+}
+
+.footer {
+  margin-top: 18px;
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: 13px;
+  letter-spacing: var(--tracking-ui);
   color: var(--color-fg-faint);
 }
 

@@ -101,10 +101,12 @@
 
 .title {
   margin: 0;
+  font-family: var(--font-heading);
   font-size: 30px;
-  font-weight: 550;
+  font-weight: 500;
   letter-spacing: -0.022em;
   line-height: 1.14;
+  color: var(--color-fg-strong);
 }
 
 .subtitle {
@@ -117,7 +119,7 @@
 .meta {
   margin: 16px 0 0;
   font-size: 12px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-fg-faint);
   font-variant-numeric: tabular-nums;
@@ -162,7 +164,7 @@
 .galleryImage {
   width: 100%;
   height: auto;
-  border-radius: 6px;
+  border-radius: var(--radius-ui);
 }
 
 .caption {

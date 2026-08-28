@@ -6,12 +6,12 @@
 }
 
 .yearLabel {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-ui);
   color: var(--color-fg-muted);
-  min-width: 34px;
+  min-width: 36px;
   text-align: center;
   user-select: none;
 }
@@ -41,7 +41,7 @@
   top: 50%;
   height: 2px;
   transform: translateY(-50%);
-  background: var(--color-fg);
+  background: var(--color-fg-strong);
   border-radius: 1px;
   pointer-events: none;
 }
@@ -53,8 +53,8 @@
   height: 16px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background: var(--color-bg);
-  border: 2px solid var(--color-fg);
+  background: var(--color-surface-solid);
+  border: 2px solid var(--color-fg-strong);
   cursor: grab;
   touch-action: none;
   transition: transform 120ms var(--ease-precise);

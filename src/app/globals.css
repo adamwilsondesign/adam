@@ -1,21 +1,56 @@
 /* ------------------------------------------------------------------ */
-/* Design tokens                                                       */
+/* Design tokens — "dusk-lit workspace" system                         */
+/*                                                                     */
+/* Deep matte-black canvas, graphite frosted panels, hairline borders  */
+/* instead of shadows, pill-shaped controls, weight-500 headlines, and */
+/* a single dusk-violet gradient wash as the only chromatic accent.    */
 /* ------------------------------------------------------------------ */
 
 :root {
-  /* Dark is the default theme: black ground, white interface. */
-  --color-bg: #000000;
-  --color-fg: #f5f5f2;
-  --color-fg-muted: rgba(245, 245, 242, 0.62);
-  --color-fg-faint: rgba(245, 245, 242, 0.38);
-  --color-line: rgba(245, 245, 242, 0.16);
-  --color-line-strong: rgba(245, 245, 242, 0.32);
-  --color-surface: rgba(22, 22, 22, 0.92);
-  --color-surface-solid: #101010;
-  --color-scrim: rgba(0, 0, 0, 0.62);
-  --shadow-overlay: 0 24px 80px rgba(0, 0, 0, 0.55);
+  /* Dark is the default theme: void canvas, bone text. */
+  --color-bg: #0a0a0a;
+  --color-fg: #ededed; /* bone — body text, avoids pure-white glare */
+  --color-fg-strong: #ffffff; /* snow — headlines, primary action fills */
+  --color-fg-muted: #c2c2c2; /* ash — secondary copy */
+  --color-fg-faint: #686868; /* slate — metadata, timestamps */
+  --color-line: rgba(229, 229, 229, 0.18); /* hairline on dark surfaces */
+  --color-line-strong: rgba(229, 229, 229, 0.42);
+  --color-surface: rgba(22, 22, 22, 0.78); /* graphite, translucent */
+  --color-surface-solid: #161616; /* graphite, opaque */
+  --color-frost: rgba(212, 212, 212, 0.08); /* frosted-glass panel fill */
+  --color-scrim: rgba(0, 0, 0, 0.64);
+  --color-action-bg: #ffffff; /* the one filled (pill) treatment */
+  --color-action-fg: #161616;
+
+  /* The only chromatic accent — a gradient wash, never a solid fill. */
+  --gradient-dusk-violet: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 0) 30%,
+    rgba(107, 98, 242, 0.565) 50%,
+    rgba(0, 0, 0, 0) 70%,
+    rgba(0, 0, 0, 0)
+  );
+
+  /* Elevation: translucency + hairlines do the work; floating panels get
+     only this whisper of depth. */
+  --shadow-float:
+    rgba(255, 255, 255, 0.02) 0px 3px 4.5px, rgba(0, 0, 0, 0.04) 0px 10px 8px,
+    rgba(0, 0, 0, 0.1) 0px 4px 3px;
 
   color-scheme: dark;
+
+  /* Type */
+  --font-body: var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --tracking-display: -0.035em;
+  --tracking-ui: 0.025em;
+
+  /* Shape */
+  --radius-ui: 10px;
+  --radius-card: 24px;
+  --radius-panel: 24px;
+  --radius-pill: 9999px;
 
   /* Motion */
   --ease-precise: cubic-bezier(0.32, 0.08, 0.24, 1);
@@ -24,21 +59,28 @@
 
   /* Chrome metrics */
   --chrome-header-height: 76px;
-  --chrome-dock-clearance: 132px;
+  --chrome-dock-clearance: 136px;
   --page-margin: clamp(20px, 4vw, 56px);
+  --page-max-width: 1200px;
 }
 
 :root[data-theme="light"] {
-  --color-bg: #f4f2ee;
-  --color-fg: #0d0d0c;
-  --color-fg-muted: rgba(13, 13, 12, 0.62);
-  --color-fg-faint: rgba(13, 13, 12, 0.4);
-  --color-line: rgba(13, 13, 12, 0.16);
-  --color-line-strong: rgba(13, 13, 12, 0.34);
-  --color-surface: rgba(250, 249, 246, 0.94);
-  --color-surface-solid: #faf9f6;
-  --color-scrim: rgba(20, 18, 14, 0.35);
-  --shadow-overlay: 0 24px 80px rgba(30, 26, 20, 0.22);
+  --color-bg: #f4f4f2;
+  --color-fg: #262626;
+  --color-fg-strong: #161616;
+  --color-fg-muted: #5f5f5c;
+  --color-fg-faint: #8f8f8a;
+  --color-line: rgba(22, 22, 22, 0.14);
+  --color-line-strong: rgba(22, 22, 22, 0.34);
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-solid: #ffffff;
+  --color-frost: rgba(255, 255, 255, 0.45);
+  --color-scrim: rgba(24, 24, 22, 0.38);
+  --color-action-bg: #161616;
+  --color-action-fg: #ffffff;
+  --shadow-float:
+    rgba(0, 0, 0, 0.02) 0px 3px 4.5px, rgba(0, 0, 0, 0.05) 0px 10px 8px,
+    rgba(0, 0, 0, 0.07) 0px 4px 3px;
 
   color-scheme: light;
 }
@@ -67,12 +109,7 @@ body {
   overflow: hidden;
   background: var(--color-bg);
   color: var(--color-fg);
-  font-family:
-    var(--font-geist-sans),
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -101,13 +138,13 @@ svg {
 
 /* Visible focus for keyboard users, invisible for pointer users. */
 :focus-visible {
-  outline: 2px solid var(--color-fg);
+  outline: 2px solid var(--color-fg-strong);
   outline-offset: 3px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 ::selection {
-  background: var(--color-fg);
+  background: var(--color-fg-strong);
   color: var(--color-bg);
 }
 
@@ -127,6 +164,6 @@ svg {
 @media (max-width: 767px) {
   :root {
     --chrome-header-height: 60px;
-    --chrome-dock-clearance: 148px;
+    --chrome-dock-clearance: 152px;
   }
 }

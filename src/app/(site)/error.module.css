@@ -18,10 +18,12 @@
 
 .title {
   margin: 14px 0 0;
+  font-family: var(--font-heading);
   font-size: clamp(24px, 3.4vw, 40px);
   font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  color: var(--color-fg-strong);
 }
 
 .hint {

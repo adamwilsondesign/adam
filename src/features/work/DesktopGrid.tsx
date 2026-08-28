@@ -28,7 +28,11 @@ type DesktopGridProps = {
 export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-  const [tooltip, setTooltip] = useState<TooltipAnchor | null>(null);
+  // The tooltip remembers which composition it was opened against, so any
+  // recomposition (filter change, reshuffle) dismisses it automatically.
+  const [tooltip, setTooltip] = useState<(TooltipAnchor & { forClients: WorkClient[] }) | null>(
+    null,
+  );
   const reducedMotion = useReducedMotion();
 
   // Staggered delays apply only to the initial Work entrance.
@@ -68,18 +72,36 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
     return computeCellRects(clients.length, layout, GAP);
   }, [clients.length, size]);
 
-  // The tooltip only shows while its client is still part of the composition.
-  const activeTooltip =
-    tooltip && clients.some((client) => client.id === tooltip.client.id) ? tooltip : null;
+  // The tooltip only shows for the composition it was opened against.
+  const activeTooltip = tooltip && tooltip.forClients === clients ? tooltip : null;
 
   useEffect(() => {
-    if (!tooltip) return;
+    if (!activeTooltip) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setTooltip(null);
     };
+    // A viewport resize reflows the grid, leaving the anchor rect stale.
+    const onResize = () => setTooltip(null);
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [tooltip]);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [activeTooltip]);
+
+  const toggleTooltip = (client: WorkClient, markRect: DOMRect) => {
+    if (activeTooltip?.client.id === client.id) {
+      setTooltip(null);
+      return;
+    }
+    setTooltip({
+      client,
+      rect: { x: markRect.x, y: markRect.y, width: markRect.width, height: markRect.height },
+      forClients: clients,
+    });
+    track({ name: "client_info_opened", clientId: client.id });
+  };
 
   return (
     <div ref={containerRef} className={styles.field}>
@@ -124,19 +146,9 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
                   <LogoCell
                     client={client}
                     openSlug={openSlug}
-                    onInfoEnter={(hoveredClient, markRect) => {
-                      setTooltip({
-                        client: hoveredClient,
-                        rect: {
-                          x: markRect.x,
-                          y: markRect.y,
-                          width: markRect.width,
-                          height: markRect.height,
-                        },
-                      });
-                      track({ name: "client_info_opened", clientId: hoveredClient.id });
-                    }}
-                    onInfoLeave={() => setTooltip(null)}
+                    infoOpen={activeTooltip?.client.id === client.id}
+                    onInfoToggle={toggleTooltip}
+                    onInfoClose={() => setTooltip(null)}
                   />
                 </motion.li>
               );
