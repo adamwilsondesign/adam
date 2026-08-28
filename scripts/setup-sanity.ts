@@ -7,6 +7,8 @@
  *
  * Flags:
  *   --name <displayName>   project display name (default "Adam Wilson — Portfolio")
+ *   --project <id>         reuse an existing project id (also inferred from a
+ *                          project robot token when it sees exactly one project)
  *   --dataset <name>       dataset name          (default "production")
  *   --org <organizationId> Sanity organization to create the project under
  *                          (only needed when your account belongs to several)
@@ -156,34 +158,46 @@ async function main(): Promise<void> {
   const dataset = flag("dataset") ?? process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
   const siteUrl = flag("site-url") ?? process.env.NEXT_PUBLIC_SITE_URL ?? null;
 
-  // 1. Project — reuse the configured one, otherwise create it.
-  let projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? null;
+  // 1. Project — configured > --project > the token's own project > create.
+  let projectId = flag("project") ?? process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? null;
   if (projectId && /^[a-z0-9-]+$/.test(projectId)) {
     console.log(`Reusing configured Sanity project ${projectId}.`);
   } else {
-    let organizationId = flag("org");
-    if (!organizationId) {
-      const organizations = await api<{ id: string; name: string }[]>(
-        token,
-        "GET",
-        "/organizations",
-      );
-      if (organizations.length === 1) {
-        organizationId = organizations[0]!.id;
-      } else if (organizations.length > 1) {
-        console.error(
-          "Your account belongs to several Sanity organizations — pick one with --org <id>:",
+    // A project robot token can't create projects or list organizations, but
+    // it can list the project(s) it belongs to — reuse that project.
+    const visible = await api<{ id: string; displayName: string }[]>(token, "GET", "/projects");
+    if (visible.length === 1) {
+      projectId = visible[0]!.id;
+      console.log(`Using the token's project ${projectId} (“${visible[0]!.displayName}”).`);
+    } else if (visible.length > 1) {
+      console.error("This token can see several projects — pick one with --project <id>:");
+      for (const project of visible) console.error(`  ${project.id}  ${project.displayName}`);
+      process.exit(1);
+    } else {
+      let organizationId = flag("org");
+      if (!organizationId) {
+        const organizations = await api<{ id: string; name: string }[]>(
+          token,
+          "GET",
+          "/organizations",
         );
-        for (const org of organizations) console.error(`  ${org.id}  ${org.name}`);
-        process.exit(1);
+        if (organizations.length === 1) {
+          organizationId = organizations[0]!.id;
+        } else if (organizations.length > 1) {
+          console.error(
+            "Your account belongs to several Sanity organizations — pick one with --org <id>:",
+          );
+          for (const org of organizations) console.error(`  ${org.id}  ${org.name}`);
+          process.exit(1);
+        }
       }
+      const project = await api<{ id: string }>(token, "POST", "/projects", {
+        displayName,
+        ...(organizationId ? { organizationId } : {}),
+      });
+      projectId = project.id;
+      console.log(`Created Sanity project ${projectId} (“${displayName}”).`);
     }
-    const project = await api<{ id: string }>(token, "POST", "/projects", {
-      displayName,
-      ...(organizationId ? { organizationId } : {}),
-    });
-    projectId = project.id;
-    console.log(`Created Sanity project ${projectId} (“${displayName}”).`);
   }
 
   // 2. Dataset. Check first: re-PUTting an existing dataset needs management
