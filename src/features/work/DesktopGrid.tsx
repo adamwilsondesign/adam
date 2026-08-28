@@ -6,13 +6,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
 
+import { DUR, EASE_INOUT, EASE_OUT } from "@/lib/motion";
+
 import styles from "./DesktopGrid.module.css";
 import { computeCellRects, computeGridLayout } from "./grid-layout";
 import { LogoCell } from "./LogoCell";
 import { WorkTooltip, type TooltipAnchor } from "./Tooltip";
 
-const GAP = 16;
-const EASE = [0.32, 0.08, 0.24, 1] as const;
+const GAP = 22;
 
 type DesktopGridProps = {
   clients: WorkClient[];
@@ -111,7 +112,7 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
             clients.map((client, index) => {
               const rect = rects[index];
               if (!rect) return null;
-              const entranceDelay = entering ? Math.min(index * 0.02, 0.4) : 0;
+              const entranceDelay = entering ? Math.min(index * 0.022, 0.44) : 0;
               return (
                 <motion.li
                   key={client.id}
@@ -122,7 +123,7 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
                     width: rect.width,
                     height: rect.height,
                     opacity: 0,
-                    scale: reducedMotion ? 1 : 0.84,
+                    scale: reducedMotion ? 1 : 0.88,
                   }}
                   animate={{
                     x: rect.x,
@@ -134,12 +135,12 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
                   }}
                   exit={{
                     opacity: 0,
-                    scale: reducedMotion ? 1 : 0.84,
-                    transition: { duration: reducedMotion ? 0.14 : 0.26, ease: "easeIn" },
+                    scale: reducedMotion ? 1 : 0.88,
+                    transition: { duration: reducedMotion ? 0.14 : 0.3, ease: EASE_INOUT },
                   }}
                   transition={{
-                    duration: reducedMotion ? 0.18 : 0.52,
-                    ease: EASE,
+                    duration: reducedMotion ? 0.18 : DUR.grid,
+                    ease: entering ? EASE_OUT : EASE_INOUT,
                     delay: entranceDelay,
                   }}
                 >

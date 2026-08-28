@@ -3,44 +3,44 @@
   inset: 0;
   z-index: 55;
   display: grid;
-  grid-template-columns: minmax(360px, 1fr) 2fr;
-  background: var(--color-surface-solid);
+  grid-template-columns: minmax(380px, 1fr) 2fr;
+  background: var(--color-bg);
 }
 
+/* Text-only control in the hairline register. */
 .close {
   position: absolute;
-  top: 16px;
+  top: 10px;
   left: calc(var(--page-margin) - 10px);
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
+  gap: 7px;
+  min-height: 44px;
   min-width: 44px;
-  padding: 0 16px;
-  border-radius: var(--radius-pill);
-  background: var(--color-wash);
+  padding: 0 10px;
   color: var(--color-fg);
-  transition: opacity 160ms var(--ease-precise);
+  opacity: 0.62;
+  transition: opacity 200ms var(--ease-precise);
 }
 
 .close:hover,
 .close:focus-visible {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .closeLabel {
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 34px;
-  padding: calc(var(--chrome-header-height) + 8px) 12px 48px var(--page-margin);
+  gap: 33px;
+  padding: calc(var(--chrome-header-height) + 8px) 33px 48px var(--page-margin);
   overflow-y: auto;
   min-width: 0;
 }
@@ -59,25 +59,25 @@
 
 .title {
   margin: 0;
-  font-size: clamp(30px, 3vw, 48px);
-  font-weight: 600;
-  letter-spacing: -0.007em;
-  line-height: 1.08;
+  font-size: 40px;
+  font-weight: var(--weight-light);
+  line-height: 1.11;
   color: var(--color-fg);
 }
 
 .subtitle {
-  margin: 10px 0 0;
-  font-size: 16px;
-  line-height: 1.45;
+  margin: 12px 0 0;
+  font-size: 19px;
+  font-weight: var(--weight-thin);
+  line-height: 1.15;
   color: var(--color-fg-muted);
 }
 
 .meta {
-  margin: 18px 0 0;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  margin: 22px 0 0;
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
   color: var(--color-fg-faint);
   font-variant-numeric: tabular-nums;
 }
@@ -91,24 +91,23 @@
 }
 
 .body {
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
-/* The one chromatic control on the page: the filled blue pill CTA. */
+/* The one solid button: a black plate, straight cuts. */
 .external {
-  margin-top: 28px;
+  margin-top: 33px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 22px;
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: -0.022em;
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
   color: var(--color-action-fg);
   background: var(--color-action-bg);
-  border-radius: var(--radius-pill);
-  transition: background-color 160ms var(--ease-precise);
+  transition: background-color 200ms var(--ease-precise);
 }
 
 .external:hover,
@@ -116,7 +115,11 @@
   background: var(--color-action-bg-hover);
 }
 
+/* The media panel is the carbon display case: imagery floats on the dark
+   plane like objects in a vitrine. */
 .media {
   min-width: 0;
-  padding: calc(var(--chrome-header-height) + 16px) 0 56px 26px;
+  background: var(--color-carbon);
+  padding: calc(var(--chrome-header-height) + 16px) 0 56px 33px;
+  transition: background-color 360ms var(--ease-precise);
 }

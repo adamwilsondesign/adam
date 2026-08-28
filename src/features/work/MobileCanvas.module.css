@@ -7,18 +7,6 @@
   overscroll-behavior: none;
 }
 
-/* Keeps the header legible while outer logos bleed beneath it. */
-.viewport::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(var(--chrome-header-height) + 18px);
-  background: linear-gradient(to bottom, var(--color-band) 30%, transparent);
-  pointer-events: none;
-}
-
 .canvas {
   position: absolute;
   top: 0;

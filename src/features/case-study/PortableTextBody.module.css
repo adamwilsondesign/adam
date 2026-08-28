@@ -1,10 +1,10 @@
 .paragraph {
   margin: 0 0 1em;
-  font-size: 17px;
-  line-height: 1.47;
-  letter-spacing: -0.022em;
+  font-size: 14px;
+  font-weight: var(--weight-thin);
+  line-height: 1.5;
   color: var(--color-fg-muted);
-  max-width: 44ch;
+  max-width: 46ch;
 }
 
 .paragraph:last-child {

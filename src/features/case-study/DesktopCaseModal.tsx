@@ -10,11 +10,22 @@ import { track } from "@/lib/analytics";
 import type { CaseStudy } from "@/lib/content/model";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
+import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
+
 import styles from "./DesktopCaseModal.module.css";
 import { Gallery } from "./Gallery";
 import { PortableTextBody } from "./PortableTextBody";
 
-const EASE = [0.32, 0.08, 0.24, 1] as const;
+/** Written content cascades in one element at a time once the mark settles. */
+const contentStagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+} as const;
+
+const contentItem = {
+  hidden: { opacity: 0, y: 16, transition: { duration: 0.22, ease: EASE_EXIT } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE_OUT } },
+} as const;
 
 type Phase = "enter" | "open" | "closing";
 
@@ -73,7 +84,7 @@ export function DesktopCaseModal({
       scale: Math.max(0.05, rect.width / final.width),
     });
     void logoControls
-      .start({ x: 0, y: 0, scale: 1, transition: { duration: 0.55, ease: EASE } })
+      .start({ x: 0, y: 0, scale: 1, transition: { duration: DUR.slow, ease: EASE_INOUT } })
       .then(() => setPhase("open"));
   }, [active, travelPending, origin, logoControls]);
 
@@ -93,7 +104,7 @@ export function DesktopCaseModal({
         x: target.x + target.width / 2 - (final.x + final.width / 2),
         y: target.y + target.height / 2 - (final.y + final.height / 2),
         scale: Math.max(0.05, target.width / final.width),
-        transition: { duration: 0.44, ease: EASE },
+        transition: { duration: 0.5, ease: EASE_INOUT },
       })
       .then(finish);
   };
@@ -111,9 +122,9 @@ export function DesktopCaseModal({
       initial={origin ? { opacity: 0 } : false}
       animate={{ opacity: phase === "closing" ? 0 : 1 }}
       transition={{
-        duration: phase === "closing" ? 0.32 : 0.26,
-        ease: "easeOut",
-        delay: phase === "closing" ? 0.16 : 0,
+        duration: phase === "closing" ? 0.36 : 0.32,
+        ease: phase === "closing" ? EASE_EXIT : EASE_OUT,
+        delay: phase === "closing" ? 0.2 : 0,
       }}
     >
       <button
@@ -138,27 +149,32 @@ export function DesktopCaseModal({
 
         <motion.div
           className={styles.content}
-          initial={origin ? { opacity: 0, y: 10 } : false}
-          animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-          transition={{ duration: 0.4, ease: EASE, delay: contentVisible ? 0.05 : 0 }}
+          variants={origin ? contentStagger : undefined}
+          initial={origin ? "hidden" : false}
+          animate={contentVisible ? "visible" : "hidden"}
         >
-          <h1 id="case-study-title" className={styles.title}>
+          <motion.h1 id="case-study-title" className={styles.title} variants={contentItem}>
             {study.title}
-          </h1>
-          {study.subtitle ? <p className={styles.subtitle}>{study.subtitle}</p> : null}
-          <p className={styles.meta}>
+          </motion.h1>
+          {study.subtitle ? (
+            <motion.p className={styles.subtitle} variants={contentItem}>
+              {study.subtitle}
+            </motion.p>
+          ) : null}
+          <motion.p className={styles.meta} variants={contentItem}>
             <span className={styles.client}>{study.clientName}</span>
             <span className={styles.metaSep}> · </span>
             {study.displayDate}
             <span className={styles.metaSep}> · </span>
             {study.tags.join(", ")}
-          </p>
-          <div className={styles.body}>
+          </motion.p>
+          <motion.div className={styles.body} variants={contentItem}>
             <PortableTextBody value={study.body} fallback={study.summary} />
-          </div>
+          </motion.div>
           {study.externalUrl ? (
-            <a
+            <motion.a
               className={styles.external}
+              variants={contentItem}
               href={study.externalUrl}
               target="_blank"
               rel="noreferrer"
@@ -168,16 +184,16 @@ export function DesktopCaseModal({
             >
               Visit project
               <ArrowUpRightIcon />
-            </a>
+            </motion.a>
           ) : null}
         </motion.div>
       </div>
 
       <motion.div
         className={styles.media}
-        initial={origin ? { opacity: 0 } : false}
-        animate={contentVisible ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.45, ease: EASE, delay: contentVisible ? 0.16 : 0 }}
+        initial={origin ? { opacity: 0, x: 36 } : false}
+        animate={contentVisible ? { opacity: 1, x: 0 } : { opacity: 0 }}
+        transition={{ duration: 0.65, ease: EASE_OUT, delay: contentVisible ? 0.12 : 0 }}
       >
         <Gallery media={study.gallery} slug={study.slug} active={active && phase === "open"} />
       </motion.div>

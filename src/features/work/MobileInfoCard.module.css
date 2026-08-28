@@ -4,10 +4,15 @@
   z-index: 50;
 }
 
+/* The canvas recedes out of focus behind the presented logo: a blurred,
+   frosted scrim rather than a plain shade. (Unprefixed only — the CSS
+   compiler adds -webkit-; writing it by hand makes the minifier collapse
+   the pair into the prefixed form, which Chromium doesn't parse.) */
 .scrim {
   position: absolute;
   inset: 0;
   background: var(--color-scrim);
+  backdrop-filter: blur(16px) saturate(0.9);
   cursor: default;
 }
 
@@ -25,9 +30,9 @@
   right: 0;
   bottom: 0;
   min-height: 46vh;
-  background: var(--color-surface-solid);
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
-  padding: 26px 28px calc(26px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-line-strong);
+  padding: 26px 22px calc(26px + env(safe-area-inset-bottom, 0px));
 }
 
 .cardHeader {
@@ -39,10 +44,9 @@
 
 .name {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.2;
+  font-size: 26px;
+  font-weight: var(--weight-light);
+  line-height: 1.15;
   color: var(--color-fg);
 }
 
@@ -58,9 +62,10 @@
 }
 
 .meta {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   font-size: 13px;
-  letter-spacing: 0.03em;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
   color: var(--color-fg-faint);
   font-variant-numeric: tabular-nums;
 }
@@ -70,9 +75,10 @@
 }
 
 .description {
-  margin: 14px 0 0;
-  font-size: 15px;
-  line-height: 1.6;
+  margin: 15px 0 0;
+  font-size: 14px;
+  font-weight: var(--weight-thin);
+  line-height: 1.5;
   color: var(--color-fg);
   max-width: 40ch;
 }

@@ -8,6 +8,7 @@ import { preload } from "react-dom";
 
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
+import { EASE_INOUT, EASE_OUT } from "@/lib/motion";
 
 import styles from "./MobileCanvas.module.css";
 import { LogoMark } from "./LogoMark";
@@ -102,8 +103,8 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
       return;
     }
     const [cx, cy] = clampPan(x.get(), y.get());
-    if (cx !== x.get()) animate(x, cx, { duration: 0.3, ease: "easeOut" });
-    if (cy !== y.get()) animate(y, cy, { duration: 0.3, ease: "easeOut" });
+    if (cx !== x.get()) animate(x, cx, { duration: 0.45, ease: EASE_OUT });
+    if (cy !== y.get()) animate(y, cy, { duration: 0.45, ease: EASE_OUT });
   }, [viewport, canvasWidth, canvasHeight, clampPan, x, y]);
 
   useGesture(
@@ -128,8 +129,8 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
           // Glide out with the release velocity, settling inside the bounds.
           const speed = Math.hypot(vx, vy);
           const [tx, ty] = clampPan(ox + dx * speed * 90, oy + dy * speed * 90);
-          animate(x, tx, { duration: 0.42, ease: [0.17, 0.6, 0.35, 1] });
-          animate(y, ty, { duration: 0.42, ease: [0.17, 0.6, 0.35, 1] });
+          animate(x, tx, { duration: 0.55, ease: EASE_OUT });
+          animate(y, ty, { duration: 0.55, ease: EASE_OUT });
           return;
         }
         x.set(ox);
@@ -170,8 +171,8 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
         if (last) {
           pinchBase.current = null;
           const [cx2, cy2] = clampPan(x.get(), y.get());
-          if (cx2 !== x.get()) animate(x, cx2, { duration: 0.3, ease: "easeOut" });
-          if (cy2 !== y.get()) animate(y, cy2, { duration: 0.3, ease: "easeOut" });
+          if (cx2 !== x.get()) animate(x, cx2, { duration: 0.4, ease: EASE_OUT });
+          if (cy2 !== y.get()) animate(y, cy2, { duration: 0.4, ease: EASE_OUT });
         }
       },
     },
@@ -223,10 +224,10 @@ export function MobileCanvas({ clients, openSlug, infoClientId, onInfoOpen }: Mo
               layout={!reducedMotion}
               className={styles.cellBox}
               style={{ width: cellSize, height: cellSize }}
-              initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.85 }}
+              initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.88 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: reducedMotion ? 1 : 0.85 }}
-              transition={{ duration: reducedMotion ? 0.15 : 0.34, ease: [0.32, 0.08, 0.24, 1] }}
+              exit={{ opacity: 0, scale: reducedMotion ? 1 : 0.88 }}
+              transition={{ duration: reducedMotion ? 0.15 : 0.42, ease: EASE_INOUT }}
             >
               <MobileCell
                 client={client}

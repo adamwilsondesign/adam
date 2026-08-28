@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
+
 import styles from "./HomeView.module.css";
 
 type HomeViewProps = {
@@ -18,7 +20,7 @@ const SECTIONS = [
   { label: "Experiments", href: "/experiments", available: false },
 ] as const;
 
-const EXIT_DURATION = 0.26;
+const EXIT_DURATION = 0.3;
 
 /**
  * The homepage shell: a fixed viewport with the introductory statement and
@@ -42,48 +44,46 @@ export function HomeView({ intro }: HomeViewProps) {
     window.setTimeout(() => router.push("/work"), reducedMotion ? 0 : EXIT_DURATION * 1000);
   };
 
-  const enter = reducedMotion
-    ? { initial: { opacity: 0 }, animate: { opacity: 1 } }
-    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
+  const enter = (delay: number) =>
+    reducedMotion
+      ? {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { duration: 0.2, delay: delay / 2 },
+        }
+      : {
+          initial: { opacity: 0, y: 16 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.7, delay, ease: EASE_OUT },
+        };
 
   return (
     <motion.div
       className={styles.root}
       animate={leaving ? { opacity: 0 } : { opacity: 1 }}
-      transition={{ duration: leaving ? EXIT_DURATION : 0.3, ease: [0.32, 0.08, 0.24, 1] }}
+      initial={false}
+      transition={{
+        duration: leaving ? EXIT_DURATION : DUR.fast,
+        ease: leaving ? EASE_EXIT : EASE_OUT,
+      }}
     >
       <div className={styles.column}>
-        <motion.p
-          className={styles.intro}
-          {...enter}
-          transition={{ duration: 0.5, delay: 0.05, ease: [0.32, 0.08, 0.24, 1] }}
-        >
+        <motion.p className={styles.intro} {...enter(0.05)}>
           {intro}
         </motion.p>
 
         <nav className={styles.nav} aria-label="Site sections">
           <ul className={styles.navList}>
             {SECTIONS.map((section, index) => (
-              <motion.li
-                key={section.href}
-                {...enter}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.14 + index * 0.06,
-                  ease: [0.32, 0.08, 0.24, 1],
-                }}
-              >
+              <motion.li key={section.href} {...enter(0.16 + index * 0.07)}>
                 {section.available ? (
                   <Link className={styles.navLink} href={section.href} onClick={openWork}>
                     {section.label}
-                    <span className={styles.navArrow} aria-hidden>
-                      ›
-                    </span>
                   </Link>
                 ) : (
                   <span className={styles.navDisabled}>
                     {section.label}
-                    <span className={styles.soon}>Soon</span>
+                    <span className={styles.soon}>soon</span>
                   </span>
                 )}
               </motion.li>
@@ -91,11 +91,7 @@ export function HomeView({ intro }: HomeViewProps) {
           </ul>
         </nav>
 
-        <motion.footer
-          className={styles.footer}
-          {...enter}
-          transition={{ duration: 0.5, delay: 0.44, ease: [0.32, 0.08, 0.24, 1] }}
-        >
+        <motion.footer className={styles.footer} {...enter(0.42)}>
           <span>Selected work, 2010–2026</span>
           <span>© {new Date().getFullYear()}</span>
         </motion.footer>

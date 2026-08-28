@@ -1,33 +1,34 @@
-/* Floating frosted bar — borderless and shadowless; the blur and the
-   band-vs-paper contrast do the separating. */
+/* The dock is a ruled instrument plate: canvas surface, single black rule,
+   straight cuts, no blur, no shadow. */
 .dockDesktop,
 .dockMobile {
   position: fixed;
   z-index: 30;
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-line-strong);
+  transition:
+    background-color 360ms var(--ease-precise),
+    border-color 360ms var(--ease-precise);
 }
 
 .dockDesktop {
   left: 50%;
-  bottom: 24px;
+  bottom: 22px;
   transform: translateX(-50%);
-  width: min(680px, calc(100vw - 2 * var(--page-margin)));
-  border-radius: var(--radius-card);
-  padding: 14px 24px 10px;
-  gap: 2px;
+  width: min(690px, calc(100vw - 2 * var(--page-margin)));
+  padding: 15px 22px 11px;
+  gap: 4px;
 }
 
 .dockMobile {
-  left: 16px;
-  right: 16px;
+  left: 15px;
+  right: 15px;
   bottom: max(12px, env(safe-area-inset-bottom, 0px));
-  border-radius: var(--radius-card);
-  padding: 12px 18px 10px;
-  gap: 2px;
+  padding: 12px 15px 10px;
+  gap: 4px;
 }
 
 .pillRow {
@@ -41,42 +42,42 @@
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  margin: 0 -18px;
-  padding: 2px 18px;
+  margin: 0 -15px;
+  padding: 2px 15px;
 }
 
 .dockMobile .pillRow::-webkit-scrollbar {
   display: none;
 }
 
-/* Quiet wash pills; the selected state is an ink fill. No borders. */
+/* Sharp-cut tags: hairline boxes; the selected state is a solid ink plate. */
 .pill {
   flex: none;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: var(--radius-pill);
-  background: var(--color-wash);
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
   color: var(--color-fg);
   transition:
-    color 160ms var(--ease-precise),
-    background-color 160ms var(--ease-precise),
-    opacity 160ms var(--ease-precise);
+    color 200ms var(--ease-precise),
+    background-color 200ms var(--ease-precise),
+    border-color 200ms var(--ease-precise);
 }
 
 .dockMobile .pill {
   min-height: 44px;
-  padding: 0 16px;
+  padding: 0 15px;
 }
 
 .pill:hover {
-  opacity: 0.8;
+  border-color: var(--color-line-strong);
 }
 
 .pill[data-active] {
   background: var(--color-fill-active);
+  border-color: var(--color-fill-active);
   color: var(--color-fill-active-fg);
 }
 

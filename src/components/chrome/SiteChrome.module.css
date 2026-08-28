@@ -1,3 +1,4 @@
+/* The ruled top bar: solid canvas plate with a steel hairline underline. */
 .header {
   position: fixed;
   top: 0;
@@ -9,7 +10,11 @@
   align-items: center;
   padding: 0 calc(var(--page-margin) - 10px);
   z-index: 40;
-  pointer-events: none;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-line);
+  transition:
+    background-color 360ms var(--ease-precise),
+    border-color 360ms var(--ease-precise);
 }
 
 .slot {
@@ -29,36 +34,35 @@
 .controlGroup {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 15px;
 }
 
-/* Quiet text controls — no boxes, no borders; color carries the state. */
+/* Whispered controls: lowercase hairline type, no boxes. */
 .control {
-  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   min-height: 44px;
   min-width: 44px;
-  padding: 0 12px;
+  padding: 0 8px;
   justify-content: center;
-  color: var(--color-fg-muted);
-  transition: color 160ms var(--ease-precise);
+  color: var(--color-fg);
+  opacity: 0.62;
+  transition: opacity 200ms var(--ease-precise);
 }
 
 .control:hover,
 .control:focus-visible {
-  color: var(--color-fg);
+  opacity: 1;
 }
 
 .controlLabel {
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-size: 13px;
+  font-weight: var(--weight-thin);
+  text-transform: lowercase;
 }
 
 .logoButton {
-  pointer-events: auto;
   min-height: 44px;
   display: inline-flex;
   align-items: center;

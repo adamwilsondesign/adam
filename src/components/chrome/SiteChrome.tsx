@@ -18,7 +18,7 @@ type SiteChromeProps = {
   contactUrl: string | null;
 };
 
-const slotTransition = { duration: 0.16, ease: "easeOut" as const };
+const slotTransition = { duration: 0.24, ease: [0.22, 1, 0.36, 1] as const };
 
 /**
  * The persistent shell chrome: menu / back at top left, the personal logo

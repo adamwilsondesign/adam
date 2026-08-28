@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { track } from "@/lib/analytics";
 import type { WorkClient, YearRange } from "@/lib/content/model";
+import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
 import { setShellNavigationInterceptor } from "@/lib/shell-navigation";
 import { MOBILE_WORK_QUERY, useMediaQuery } from "@/lib/use-media-query";
 
@@ -110,12 +111,23 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
     if (historyState?.awInfo) window.history.back();
   };
 
+  const dockEntrance = reducedMotion
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.2 } }
+    : {
+        initial: { opacity: 0, y: 18 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: DUR.slow, delay: 0.18, ease: EASE_OUT },
+      };
+
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0 }}
       animate={{ opacity: leaving ? 0 : 1 }}
-      transition={{ duration: leaving ? EXIT_DURATION : 0.24, ease: "easeOut" }}
+      transition={{
+        duration: leaving ? EXIT_DURATION : 0.28,
+        ease: leaving ? EASE_EXIT : EASE_OUT,
+      }}
       data-leaving={leaving || undefined}
     >
       {isMobile === null ? null : isMobile ? (
@@ -126,13 +138,17 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
             infoClientId={info?.client.id ?? null}
             onInfoOpen={openInfo}
           />
-          <FilterDock state={state} variant="mobile" />
+          <motion.div className={styles.dockLayer} {...dockEntrance}>
+            <FilterDock state={state} variant="mobile" />
+          </motion.div>
           <MobileInfoCard state={info} onClose={closeInfo} />
         </>
       ) : (
         <>
           <DesktopGrid clients={state.visibleClients} openSlug={openSlug} />
-          <FilterDock state={state} variant="desktop" />
+          <motion.div className={styles.dockLayer} {...dockEntrance}>
+            <FilterDock state={state} variant="desktop" />
+          </motion.div>
         </>
       )}
     </motion.div>

@@ -1,84 +1,90 @@
 /* ------------------------------------------------------------------ */
-/* Design tokens — "cathedral of white space"                          */
+/* Design tokens — "industrial catalogue under studio light"           */
 /*                                                                     */
-/* Near-white canvas, ink typography, alternating white/#f5f5f7 bands  */
-/* instead of borders or dividers, zero shadows, 28px card corners,    */
-/* pill buttons, and a single electric-blue accent reserved for        */
-/* filled CTA buttons (links use link-blue). Color otherwise lives in  */
-/* the imagery, never the UI.                                          */
+/* A near-white canvas (#f6f8f7) ruled into sections by 1px hairlines. */
+/* Ultra-thin type whispers around the imagery — weight 100–300 only.  */
+/* Zero rounded corners, zero shadows, zero decorative gradients.      */
+/* Elevation is a tonal jump to the carbon (#0f0e12) display-case      */
+/* band, never a shadow. Color is rationed: one blue for links, black  */
+/* fills for the single solid button style.                            */
 /* ------------------------------------------------------------------ */
 
 :root {
   /* Light is the default theme. */
-  --color-bg: #ffffff; /* paper — page canvas */
-  --color-band: #f5f5f7; /* alternating band — the Work state's canvas */
-  --color-fg: #1d1d1f; /* primary ink */
-  --color-fg-strong: #1d1d1f; /* headlines (same ink; weight does the work) */
-  --color-fg-muted: #707070; /* secondary text */
-  --color-fg-faint: #86868b; /* tertiary metadata */
-  --color-line: #d6d6d6; /* hairline — rarely used */
-  --color-line-strong: rgba(0, 0, 0, 0.8); /* ghost-pill borders */
-  --color-surface: rgba(250, 250, 252, 0.8); /* frosted nav/dock surface */
-  --color-surface-solid: #ffffff; /* card / sheet / modal surface */
-  --color-wash: #e8e8ed; /* subtle button fill, hover wash */
-  --color-scrim: rgba(0, 0, 0, 0.44);
-  --color-action-bg: #0071e3; /* the only chromatic UI element */
-  --color-action-bg-hover: #0077ed;
-  --color-action-fg: #ffffff;
-  --color-link: #0066cc; /* inline text links */
-  --color-fill-active: #1d1d1f; /* selected pills: ink fill */
-  --color-fill-active-fg: #ffffff;
+  --color-bg: #f6f8f7; /* canvas mist */
+  --color-band: #f6f8f7; /* the shell shares one canvas; rules divide it */
+  --color-carbon: #0f0e12; /* dark display-case band (violet-cast near-black) */
+  --color-carbon-fg: #f6f8f7;
+  --color-fg: #000000; /* ink */
+  --color-fg-strong: #000000;
+  --color-fg-muted: #55555a; /* readable secondary (graphite is too faint for copy) */
+  --color-fg-faint: #b2b2b2; /* graphite — engraved-label register */
+  --color-line: #e5e5e5; /* steel hairline */
+  --color-line-strong: #000000; /* black rules */
+  --color-surface: rgba(246, 248, 247, 0.96); /* dock plate */
+  --color-surface-solid: #ffffff; /* pure-white implicit surface */
+  --color-wash: #ececee; /* pressed/hover field */
+  --color-scrim: rgba(246, 248, 247, 0.52); /* frosted mist over the blur */
+  --color-action-bg: #000000; /* the one solid button: black plate */
+  --color-action-bg-hover: #2a2a2e;
+  --color-action-fg: #f6f8f7;
+  --color-link: #0071bb; /* whispered blue links */
+  --color-fill-active: #000000; /* selected tags: ink fill */
+  --color-fill-active-fg: #f6f8f7;
 
   color-scheme: light;
 
-  /* Type — one family, weight does the talking (600–700 headings, 400 body). */
+  /* Type — one industrial voice: weight 100–200 for running copy,
+     300 for labels 19px+ and headings. Never heavier. */
   --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-heading:
     var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --tracking-display: -0.015em;
-  --tracking-body: -0.022em;
+  --weight-thin: 200; /* screen-legible stand-in for te-20's 100 */
+  --weight-light: 300;
 
-  /* Shape — no radius below 10px on interactive elements; 28px cards. */
-  --radius-ui: 10px;
-  --radius-card: 28px;
-  --radius-panel: 28px;
-  --radius-pill: 980px;
+  /* Shape — straight cuts only. */
+  --radius-ui: 0px;
+  --radius-card: 0px;
+  --radius-panel: 0px;
+  --radius-pill: 0px;
 
-  /* The system has no shadow elevation; kept as a hook for the rare
-     floating layer that would otherwise vanish against its background. */
+  /* No shadow elevation anywhere. */
   --shadow-float: none;
 
-  /* Motion */
-  --ease-precise: cubic-bezier(0.32, 0.08, 0.24, 1);
-  --duration-grid: 520ms;
-  --duration-fade: 240ms;
+  /* Motion — one vocabulary (see src/lib/motion.ts for the JS side). */
+  --ease-precise: cubic-bezier(0.22, 1, 0.36, 1); /* out: velvety settle */
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-grid: 580ms;
+  --duration-fade: 260ms;
 
   /* Chrome metrics */
   --chrome-header-height: 64px;
-  --chrome-dock-clearance: 136px;
+  --chrome-dock-clearance: 140px;
   --page-margin: clamp(20px, 4vw, 56px);
   --page-max-width: 1200px;
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #000000;
-  --color-band: #101013;
-  --color-fg: #f5f5f7;
-  --color-fg-strong: #f5f5f7;
-  --color-fg-muted: #a1a1a6;
-  --color-fg-faint: #86868b;
-  --color-line: rgba(255, 255, 255, 0.18);
-  --color-line-strong: rgba(255, 255, 255, 0.72);
-  --color-surface: rgba(29, 29, 31, 0.78);
-  --color-surface-solid: #1d1d1f;
-  --color-wash: #2c2c2e;
-  --color-scrim: rgba(0, 0, 0, 0.6);
-  --color-action-bg: #0071e3;
-  --color-action-bg-hover: #0077ed;
-  --color-action-fg: #ffffff;
-  --color-link: #2997ff;
-  --color-fill-active: #f5f5f7;
-  --color-fill-active-fg: #1d1d1f;
+  --color-bg: #0f0e12;
+  --color-band: #0f0e12;
+  --color-carbon: #000000; /* the vitrine goes one step darker */
+  --color-carbon-fg: #f6f8f7;
+  --color-fg: #f6f8f7;
+  --color-fg-strong: #f6f8f7;
+  --color-fg-muted: #b8b8bc;
+  --color-fg-faint: #7a7a80;
+  --color-line: rgba(246, 248, 247, 0.16);
+  --color-line-strong: #f6f8f7;
+  --color-surface: rgba(15, 14, 18, 0.96);
+  --color-surface-solid: #17161b;
+  --color-wash: #232227;
+  --color-scrim: rgba(0, 0, 0, 0.5);
+  --color-action-bg: #f6f8f7;
+  --color-action-bg-hover: #dcdee0;
+  --color-action-fg: #0f0e12;
+  --color-link: #58a9dd;
+  --color-fill-active: #f6f8f7;
+  --color-fill-active-fg: #0f0e12;
 
   color-scheme: dark;
 }
@@ -108,11 +114,19 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.47;
-  letter-spacing: var(--tracking-body);
+  font-size: 14px;
+  font-weight: var(--weight-thin);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Theme switches glide instead of snapping. */
+body,
+main {
+  transition:
+    background-color 360ms var(--ease-precise),
+    color 360ms var(--ease-precise);
 }
 
 a {
@@ -136,11 +150,12 @@ svg {
   max-width: 100%;
 }
 
-/* Visible focus for keyboard users, invisible for pointer users. */
+/* Visible focus for keyboard users, invisible for pointer users.
+   A ruled ink rectangle — square, like everything else. */
 :focus-visible {
-  outline: 2px solid var(--color-action-bg);
+  outline: 1.5px solid var(--color-fg);
   outline-offset: 3px;
-  border-radius: var(--radius-ui);
+  border-radius: 0;
 }
 
 ::selection {
@@ -161,9 +176,16 @@ svg {
   border: 0;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  body,
+  main {
+    transition: none;
+  }
+}
+
 @media (max-width: 767px) {
   :root {
     --chrome-header-height: 56px;
-    --chrome-dock-clearance: 152px;
+    --chrome-dock-clearance: 156px;
   }
 }

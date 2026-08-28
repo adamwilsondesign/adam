@@ -30,8 +30,8 @@ export function LogoMark({
 }: LogoMarkProps) {
   const boxRef = useRef<HTMLSpanElement>(null);
   const reducedMotion = useReducedMotion();
-  const x = useSpring(0, { stiffness: 220, damping: 30 });
-  const y = useSpring(0, { stiffness: 220, damping: 30 });
+  const x = useSpring(0, { stiffness: 160, damping: 26, mass: 0.5 });
+  const y = useSpring(0, { stiffness: 160, damping: 26, mass: 0.5 });
 
   const handlePointerMove = useCallback(
     (event: React.PointerEvent) => {
@@ -73,7 +73,7 @@ export function LogoMark({
           className={styles.fill}
           style={reducedMotion ? undefined : { x, y }}
           animate={{ opacity: heroVisible ? 1 : 0 }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         />
       ) : null}
     </span>

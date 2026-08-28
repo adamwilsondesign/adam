@@ -12,11 +12,12 @@ import { track } from "@/lib/analytics";
 import type { CaseStudy } from "@/lib/content/model";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
+import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
+
 import styles from "./MobileCaseSheet.module.css";
 import { PortableTextBody } from "./PortableTextBody";
 
-const EASE = [0.32, 0.08, 0.24, 1] as const;
-const TRAVEL_MS = 450;
+const TRAVEL_MS = 480;
 const PAN_MS = 2000;
 /** The sheet starts rising just before the mask pan completes. */
 const SHEET_AT_MS = TRAVEL_MS + PAN_MS - 150;
@@ -81,7 +82,7 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
         if (my > DISMISS_DISTANCE || (vy > DISMISS_VELOCITY && my > 48)) {
           requestClose();
         } else {
-          animate(sheetY, 0, { duration: 0.28, ease: EASE });
+          animate(sheetY, 0, { duration: 0.38, ease: EASE_OUT });
         }
         return;
       }
@@ -103,14 +104,14 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
     if (phase !== "closing" || !active) return;
     const target = findCaseCellRect(study.slug);
     const sheetDown = animate(sheetY, window.innerHeight * 1.05, {
-      duration: reducedMotion ? 0.18 : 0.32,
-      ease: EASE,
+      duration: reducedMotion ? 0.18 : 0.36,
+      ease: EASE_EXIT,
     });
     let timer = 0;
     void sheetDown.then(() => {
       if (origin && target && !reducedMotion) {
         setLogoReturn(target);
-        timer = window.setTimeout(onNavigateClose, 340);
+        timer = window.setTimeout(onNavigateClose, 430);
       } else {
         onNavigateClose();
       }
@@ -137,12 +138,21 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
     <div className={styles.root}>
       {hasIntro || logoReturn ? (
         <motion.div
+          className={styles.introScrim}
+          aria-hidden
+          initial={{ opacity: 0 }}
+          animate={{ opacity: logoReturn ? 0 : 1 }}
+          transition={{ duration: 0.4, ease: EASE_OUT }}
+        />
+      ) : null}
+      {hasIntro || logoReturn ? (
+        <motion.div
           className={styles.floatingLogo}
           initial={hasIntro ? { ...origin.rect } : { ...presentation }}
           animate={logoReturn ? { ...logoReturn } : { ...presentation }}
           transition={{
-            duration: logoReturn ? 0.32 : TRAVEL_MS / 1000,
-            ease: EASE,
+            duration: logoReturn ? 0.4 : TRAVEL_MS / 1000,
+            ease: EASE_INOUT,
           }}
           aria-hidden
         >
@@ -187,7 +197,7 @@ export function MobileCaseSheet({ study, origin, active, onNavigateClose }: Mobi
         style={{ y: sheetY }}
         initial={origin ? { y: "104%" } : false}
         animate={phase === "sheet" ? { y: 0 } : undefined}
-        transition={{ duration: reducedMotion ? 0.2 : 0.5, ease: EASE }}
+        transition={{ duration: reducedMotion ? 0.2 : DUR.slow, ease: EASE_OUT }}
       >
         <div className={styles.handleArea}>
           <span className={styles.handle} aria-hidden />

@@ -1,6 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+
+import { EASE_OUT } from "@/lib/motion";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { clientTags, clientYearSpan, formatYearRange, type WorkClient } from "@/lib/content/model";
@@ -79,10 +81,10 @@ export function WorkTooltip({ anchor }: { anchor: TooltipAnchor | null }) {
             top: position?.top ?? -9999,
             visibility: position ? "visible" : "hidden",
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.16, ease: "easeOut" }}
+          initial={{ opacity: 0, y: 6, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, transition: { duration: 0.16 } }}
+          transition={{ duration: 0.34, ease: EASE_OUT }}
         >
           <p className={styles.name}>{anchor.client.name}</p>
           <p className={styles.meta}>

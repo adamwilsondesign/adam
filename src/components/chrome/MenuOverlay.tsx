@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRef } from "react";
 
 import { CloseIcon } from "@/components/icons";
+import { EASE_OUT } from "@/lib/motion";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
 import styles from "./MenuOverlay.module.css";
@@ -48,10 +49,10 @@ export function MenuOverlay({ open, pathname, onClose, onNavigate }: MenuOverlay
             aria-modal="true"
             aria-label="Site menu"
             className={styles.panel}
-            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
+            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -18 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -12 }}
-            transition={{ duration: 0.24, ease: [0.32, 0.08, 0.24, 1] }}
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -18 }}
+            transition={{ duration: 0.42, ease: EASE_OUT }}
           >
             <button
               type="button"
@@ -63,9 +64,14 @@ export function MenuOverlay({ open, pathname, onClose, onNavigate }: MenuOverlay
             </button>
             <nav aria-label="Site sections">
               <ul className={styles.list}>
-                {SECTIONS.map((section) =>
+                {SECTIONS.map((section, index) =>
                   section.available ? (
-                    <li key={section.href}>
+                    <motion.li
+                      key={section.href}
+                      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: 0.08 + index * 0.05, ease: EASE_OUT }}
+                    >
                       <button
                         type="button"
                         className={styles.link}
@@ -74,14 +80,19 @@ export function MenuOverlay({ open, pathname, onClose, onNavigate }: MenuOverlay
                       >
                         {section.label}
                       </button>
-                    </li>
+                    </motion.li>
                   ) : (
-                    <li key={section.href}>
+                    <motion.li
+                      key={section.href}
+                      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: 0.08 + index * 0.05, ease: EASE_OUT }}
+                    >
                       <span className={styles.linkDisabled}>
                         {section.label}
                         <span className={styles.soon}>Soon</span>
                       </span>
-                    </li>
+                    </motion.li>
                   ),
                 )}
               </ul>

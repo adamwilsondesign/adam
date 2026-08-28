@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 
 import { CloseIcon } from "@/components/icons";
 import { clientTags, clientYearSpan, formatYearRange, type WorkClient } from "@/lib/content/model";
@@ -21,7 +22,7 @@ type MobileInfoCardProps = {
   onClose: () => void;
 };
 
-const EASE = [0.32, 0.08, 0.24, 1] as const;
+import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
 
 /**
  * Mobile informational overlay: the tapped logo travels to the upper centre
@@ -33,6 +34,15 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
   const [closing, setClosing] = useState(false);
+  // Hydration-safe client check: the overlay portals to <body> so its
+  // frosted scrim sits above the site header (the Work view's fixed root
+  // would otherwise trap it beneath, and an animated ancestor would also
+  // bound the backdrop blur's sampling region).
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   useFocusTrap(panelRef, state !== null, { onEscape: () => requestClose() });
 
   const requestClose = () => {
@@ -73,7 +83,9 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
     };
   })();
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence onExitComplete={handleExitComplete}>
       {state && !closing && (
         <div className={styles.root} key={state.client.id}>
@@ -84,8 +96,8 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
             onClick={requestClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.22, delay: 0.08 } }}
-            transition={{ duration: 0.26 }}
+            exit={{ opacity: 0, transition: { duration: 0.28, delay: 0.1, ease: EASE_EXIT } }}
+            transition={{ duration: 0.36, ease: EASE_OUT }}
           />
 
           <motion.div
@@ -97,9 +109,12 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
             exit={
               reducedMotion
                 ? { opacity: 0, transition: { duration: 0.16 } }
-                : { ...returnRect(state.client), transition: { duration: 0.34, ease: EASE } }
+                : {
+                    ...returnRect(state.client),
+                    transition: { duration: 0.42, ease: EASE_INOUT },
+                  }
             }
-            transition={{ duration: reducedMotion ? 0.16 : 0.4, ease: EASE }}
+            transition={{ duration: reducedMotion ? 0.16 : DUR.base, ease: EASE_INOUT }}
             aria-hidden
           >
             <LogoMark logoUrl={state.client.logoUrl} />
@@ -116,9 +131,9 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
             exit={
               reducedMotion
                 ? { opacity: 0, transition: { duration: 0.16 } }
-                : { y: "104%", transition: { duration: 0.3, ease: EASE } }
+                : { y: "104%", transition: { duration: 0.34, ease: EASE_EXIT } }
             }
-            transition={{ duration: 0.42, ease: EASE, delay: reducedMotion ? 0 : 0.08 }}
+            transition={{ duration: 0.55, ease: EASE_OUT, delay: reducedMotion ? 0 : 0.06 }}
           >
             <div className={styles.cardHeader}>
               <h2 className={styles.name}>{state.client.name}</h2>
@@ -140,6 +155,7 @@ export function MobileInfoCard({ state, onClose }: MobileInfoCardProps) {
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
