@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import type { NavSection, YearRange } from "@/lib/content/model";
 import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
 
+import { CloudsBackground } from "./CloudsBackground";
 import styles from "./HomeView.module.css";
 
 type HomeViewProps = {
@@ -65,6 +66,7 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
         ease: leaving ? EASE_EXIT : EASE_OUT,
       }}
     >
+      <CloudsBackground />
       <div className={styles.column}>
         <motion.p className={styles.intro} {...enter(0.05)}>
           {intro}

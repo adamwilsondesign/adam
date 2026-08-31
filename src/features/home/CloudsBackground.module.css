@@ -1,0 +1,12 @@
+.clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* The sky is scenery: never a hit target. Vanta reads the pointer from
+     window events, so interaction survives this. */
+  pointer-events: none;
+}
+
+.clouds canvas {
+  display: block;
+}
