@@ -477,14 +477,282 @@
         "startYear": {
           "type": "objectAttribute",
           "value": {
-            "type": "number"
+            "type": "union",
+            "of": [
+              {
+                "type": "number",
+                "value": 2027
+              },
+              {
+                "type": "number",
+                "value": 2026
+              },
+              {
+                "type": "number",
+                "value": 2025
+              },
+              {
+                "type": "number",
+                "value": 2024
+              },
+              {
+                "type": "number",
+                "value": 2023
+              },
+              {
+                "type": "number",
+                "value": 2022
+              },
+              {
+                "type": "number",
+                "value": 2021
+              },
+              {
+                "type": "number",
+                "value": 2020
+              },
+              {
+                "type": "number",
+                "value": 2019
+              },
+              {
+                "type": "number",
+                "value": 2018
+              },
+              {
+                "type": "number",
+                "value": 2017
+              },
+              {
+                "type": "number",
+                "value": 2016
+              },
+              {
+                "type": "number",
+                "value": 2015
+              },
+              {
+                "type": "number",
+                "value": 2014
+              },
+              {
+                "type": "number",
+                "value": 2013
+              },
+              {
+                "type": "number",
+                "value": 2012
+              },
+              {
+                "type": "number",
+                "value": 2011
+              },
+              {
+                "type": "number",
+                "value": 2010
+              },
+              {
+                "type": "number",
+                "value": 2009
+              },
+              {
+                "type": "number",
+                "value": 2008
+              },
+              {
+                "type": "number",
+                "value": 2007
+              },
+              {
+                "type": "number",
+                "value": 2006
+              },
+              {
+                "type": "number",
+                "value": 2005
+              },
+              {
+                "type": "number",
+                "value": 2004
+              },
+              {
+                "type": "number",
+                "value": 2003
+              },
+              {
+                "type": "number",
+                "value": 2002
+              },
+              {
+                "type": "number",
+                "value": 2001
+              },
+              {
+                "type": "number",
+                "value": 2000
+              },
+              {
+                "type": "number",
+                "value": 1999
+              },
+              {
+                "type": "number",
+                "value": 1998
+              },
+              {
+                "type": "number",
+                "value": 1997
+              },
+              {
+                "type": "number",
+                "value": 1996
+              },
+              {
+                "type": "number",
+                "value": 1995
+              }
+            ]
           },
           "optional": true
         },
         "endYear": {
           "type": "objectAttribute",
           "value": {
-            "type": "number"
+            "type": "union",
+            "of": [
+              {
+                "type": "number",
+                "value": 2027
+              },
+              {
+                "type": "number",
+                "value": 2026
+              },
+              {
+                "type": "number",
+                "value": 2025
+              },
+              {
+                "type": "number",
+                "value": 2024
+              },
+              {
+                "type": "number",
+                "value": 2023
+              },
+              {
+                "type": "number",
+                "value": 2022
+              },
+              {
+                "type": "number",
+                "value": 2021
+              },
+              {
+                "type": "number",
+                "value": 2020
+              },
+              {
+                "type": "number",
+                "value": 2019
+              },
+              {
+                "type": "number",
+                "value": 2018
+              },
+              {
+                "type": "number",
+                "value": 2017
+              },
+              {
+                "type": "number",
+                "value": 2016
+              },
+              {
+                "type": "number",
+                "value": 2015
+              },
+              {
+                "type": "number",
+                "value": 2014
+              },
+              {
+                "type": "number",
+                "value": 2013
+              },
+              {
+                "type": "number",
+                "value": 2012
+              },
+              {
+                "type": "number",
+                "value": 2011
+              },
+              {
+                "type": "number",
+                "value": 2010
+              },
+              {
+                "type": "number",
+                "value": 2009
+              },
+              {
+                "type": "number",
+                "value": 2008
+              },
+              {
+                "type": "number",
+                "value": 2007
+              },
+              {
+                "type": "number",
+                "value": 2006
+              },
+              {
+                "type": "number",
+                "value": 2005
+              },
+              {
+                "type": "number",
+                "value": 2004
+              },
+              {
+                "type": "number",
+                "value": 2003
+              },
+              {
+                "type": "number",
+                "value": 2002
+              },
+              {
+                "type": "number",
+                "value": 2001
+              },
+              {
+                "type": "number",
+                "value": 2000
+              },
+              {
+                "type": "number",
+                "value": 1999
+              },
+              {
+                "type": "number",
+                "value": 1998
+              },
+              {
+                "type": "number",
+                "value": 1997
+              },
+              {
+                "type": "number",
+                "value": 1996
+              },
+              {
+                "type": "number",
+                "value": 1995
+              }
+            ]
           },
           "optional": true
         },

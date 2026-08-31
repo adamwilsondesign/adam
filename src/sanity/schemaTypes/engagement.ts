@@ -1,8 +1,14 @@
 import { defineField, defineType } from "sanity";
 import { WORK_TAG_VALUES, workTagList } from "./workTags";
 
-const YEAR_MIN = 1990;
-const YEAR_MAX = 2100;
+const YEAR_MIN = 1995;
+const YEAR_MAX = new Date().getFullYear() + 1;
+
+/** Selectable years, most recent first (next year included for ongoing work). */
+const yearList = Array.from({ length: YEAR_MAX - YEAR_MIN + 1 }, (_, index) => {
+  const year = YEAR_MAX - index;
+  return { title: String(year), value: year };
+});
 
 /**
  * A single period of work with a client. Filtering on the Work grid is
@@ -13,23 +19,34 @@ export const engagementType = defineType({
   name: "engagement",
   title: "Engagement",
   type: "object",
+  fieldsets: [
+    {
+      name: "period",
+      title: "Period",
+      description:
+        "The years this engagement ran, inclusive on both ends. The Work grid's year slider matches clients against these.",
+      options: { columns: 2 },
+    },
+  ],
   fields: [
     defineField({
       name: "startYear",
-      title: "Start year",
+      title: "From",
       type: "number",
-      description: "First year of this engagement (inclusive).",
-      validation: (rule) =>
-        rule.required().integer().min(YEAR_MIN).max(YEAR_MAX).error("Enter a four-digit year."),
+      fieldset: "period",
+      options: { list: yearList },
+      description: "First year of the engagement.",
+      validation: (rule) => rule.required().integer().min(YEAR_MIN).max(YEAR_MAX),
     }),
     defineField({
       name: "endYear",
-      title: "End year",
+      title: "To",
       type: "number",
-      description:
-        "Last year of this engagement (inclusive). Same as start year for one-year work.",
+      fieldset: "period",
+      options: { list: yearList },
+      description: "Last year. Pick the same year as “From” for one-year work.",
       validation: (rule) => [
-        rule.required().integer().min(YEAR_MIN).max(YEAR_MAX).error("Enter a four-digit year."),
+        rule.required().integer().min(YEAR_MIN).max(YEAR_MAX),
         rule.custom((endYear, context) => {
           const startYear = (context.parent as { startYear?: number } | undefined)?.startYear;
           if (typeof endYear === "number" && typeof startYear === "number" && endYear < startYear) {
@@ -45,7 +62,8 @@ export const engagementType = defineType({
       type: "array",
       of: [{ type: "string" }],
       options: { list: workTagList, layout: "grid" },
-      description: "What kind of work this engagement was. Drives the Work filter.",
+      description:
+        "Tick every kind of work this engagement covered — these are the filter chips on the Work page.",
       validation: (rule) => [
         rule.required().min(1).error("Every engagement needs at least one tag."),
         rule.custom((tags) => {
