@@ -23,9 +23,10 @@ export type WorkSnapshot = {
 };
 
 export type CanvasSnapshot = {
-  cellSize: number;
-  x: number;
-  y: number;
+  /** Column count of the vertical logo grid (1–4). */
+  columns: number;
+  /** Scroll offset to restore on return. */
+  scrollY: number;
 };
 
 let workSnapshot: WorkSnapshot | null = null;

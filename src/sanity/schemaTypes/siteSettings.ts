@@ -11,7 +11,7 @@ export const siteSettingsType = defineType({
   groups: [
     { name: "identity", title: "Identity", default: true },
     { name: "work", title: "Work" },
-    { name: "seo", title: "SEO" },
+    { name: "seo", title: "Metadata" },
   ],
   fields: [
     defineField({
@@ -155,10 +155,20 @@ export const siteSettingsType = defineType({
     }),
     defineField({
       name: "defaultOgImage",
-      title: "Default Open Graph image",
+      title: "Social share image",
       type: "image",
       group: "seo",
-      description: "Social-preview image used when a page has no image of its own.",
+      description:
+        "Open Graph / social-preview image used when a page has no image of its own (1200×630 recommended).",
+    }),
+    defineField({
+      name: "favicon",
+      title: "Favicon",
+      type: "image",
+      group: "seo",
+      options: { accept: "image/svg+xml,image/png,.svg,.png,.ico" },
+      description:
+        "Browser-tab icon (SVG or PNG, square). Falls back to the bundled icon when unset.",
     }),
   ],
   preview: {

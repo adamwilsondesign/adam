@@ -174,6 +174,7 @@ describe("normalizeSiteSettings", () => {
       seoTitle: null,
       seoDescription: null,
       defaultOgImage: null,
+      faviconUrl: null,
     });
     expect(settings.workStartYear).toBe(2012);
     expect(settings.workEndYear).toBe(2030);

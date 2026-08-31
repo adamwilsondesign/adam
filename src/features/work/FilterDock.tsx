@@ -23,59 +23,71 @@ type FilterDockProps = {
  */
 export function FilterDock({ state, variant }: FilterDockProps) {
   return (
-    <div
-      id="work-filters"
-      tabIndex={-1}
-      className={variant === "desktop" ? styles.dockDesktop : styles.dockMobile}
-    >
-      <div className={styles.pillRow} role="group" aria-label="Filter by tag">
+    <>
+      {variant === "mobile" ? (
         <button
           type="button"
-          className={`${styles.pill} ${styles.pillAll}`}
-          data-active={state.allSelected || undefined}
-          aria-pressed={state.allSelected}
-          onClick={state.onToggleAll}
-        >
-          All
-        </button>
-        {WORK_TAGS.map((tag) => (
-          <TagPill
-            key={tag}
-            tag={tag}
-            active={state.activeTags.includes(tag)}
-            blocked={state.blockedTags.has(tag) && !state.activeTags.includes(tag)}
-            pulseKey={state.rejectionPulse?.tag === tag ? state.rejectionPulse.key : null}
-            onToggle={state.onToggleTag}
-          />
-        ))}
-      </div>
-      <div className={styles.controlRow}>
-        <span className={styles.count} aria-hidden>
-          {String(state.visibleClients.length).padStart(2, "0")} /{" "}
-          {String(state.totalCount).padStart(2, "0")}
-        </span>
-        <div className={styles.sliderRow}>
-          <YearRangeSlider
-            bounds={state.bounds}
-            value={state.years}
-            onChange={state.onYearsChange}
-            onInteractionEnd={state.onYearsInteractionEnd}
-          />
-        </div>
-        <button
-          type="button"
-          className={styles.shuffle}
+          className={styles.shuffleFab}
           aria-label="Shuffle the composition"
           onClick={state.onShuffle}
         >
           <ShuffleIcon />
-          <span className={styles.shuffleLabel}>shuffle</span>
         </button>
+      ) : null}
+      <div
+        id="work-filters"
+        tabIndex={-1}
+        className={variant === "desktop" ? styles.dockDesktop : styles.dockMobile}
+      >
+        <div className={styles.pillRow} role="group" aria-label="Filter by tag">
+          <button
+            type="button"
+            className={`${styles.pill} ${styles.pillAll}`}
+            data-active={state.allSelected || undefined}
+            aria-pressed={state.allSelected}
+            onClick={state.onToggleAll}
+          >
+            All
+          </button>
+          {WORK_TAGS.map((tag) => (
+            <TagPill
+              key={tag}
+              tag={tag}
+              active={state.activeTags.includes(tag)}
+              blocked={state.blockedTags.has(tag) && !state.activeTags.includes(tag)}
+              pulseKey={state.rejectionPulse?.tag === tag ? state.rejectionPulse.key : null}
+              onToggle={state.onToggleTag}
+            />
+          ))}
+        </div>
+        <div className={styles.controlRow}>
+          <span className={styles.count} aria-hidden>
+            {String(state.visibleClients.length).padStart(2, "0")} /{" "}
+            {String(state.totalCount).padStart(2, "0")}
+          </span>
+          <div className={styles.sliderRow}>
+            <YearRangeSlider
+              bounds={state.bounds}
+              value={state.years}
+              onChange={state.onYearsChange}
+              onInteractionEnd={state.onYearsInteractionEnd}
+            />
+          </div>
+          <button
+            type="button"
+            className={styles.shuffle}
+            aria-label="Shuffle the composition"
+            onClick={state.onShuffle}
+          >
+            <ShuffleIcon />
+            <span className={styles.shuffleLabel}>shuffle</span>
+          </button>
+        </div>
+        <div aria-live="polite" role="status" className="visually-hidden">
+          {state.announcement}
+        </div>
       </div>
-      <div aria-live="polite" role="status" className="visually-hidden">
-        {state.announcement}
-      </div>
-    </div>
+    </>
   );
 }
 

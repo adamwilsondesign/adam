@@ -159,6 +159,8 @@ export type SiteSettings = {
     title: string;
     description: string;
     ogImageUrl: string | null;
+    /** Browser-tab icon; the bundled /icon.svg stands in when unset. */
+    faviconUrl: string | null;
   };
 };
 

@@ -20,7 +20,8 @@ export const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]{
   workEndYear,
   seoTitle,
   seoDescription,
-  defaultOgImage
+  defaultOgImage,
+  "faviconUrl": favicon.asset->url
 }`);
 
 export const WORK_INDEX_QUERY =

@@ -15,8 +15,6 @@
   background: transparent;
   /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
   backdrop-filter: blur(14px) saturate(1.05);
-  border-bottom: 1px solid var(--color-line);
-  transition: border-color 360ms var(--ease-precise);
 }
 
 .slot {
@@ -65,7 +63,7 @@
   padding: 0 8px;
   justify-content: center;
   color: var(--color-fg);
-  opacity: 0.62;
+  opacity: 0.75;
   transition: opacity 200ms var(--ease-precise);
 }
 
@@ -97,6 +95,30 @@
   .controlLabel {
     display: none;
   }
+
+  /* The wordmark reads flush-left after the back slot; the icon cluster
+     keeps the right edge. Nothing overlaps — the middle column truncates. */
+  .header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  /* Slot contents are absolutely positioned (for crossfades), so the auto
+     column needs a real footprint or the wordmark slides under the arrow. */
+  .slot {
+    min-width: 44px;
+  }
+
+  .centerSlot {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .logoButton {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 /* The only control that survives the fall: outside the theme, like the void. */
@@ -116,7 +138,7 @@
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
   color: #ffffff;
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity 200ms var(--ease-precise);
 }
 

@@ -4,29 +4,6 @@
   z-index: 55;
 }
 
-.floatingLogo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  color: var(--color-fg);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.introMask {
-  position: absolute;
-  inset: 0;
-  display: block;
-  background-color: currentColor;
-  overflow: hidden;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
-}
-
 .sheet {
   position: absolute;
   inset: 0;
@@ -34,7 +11,8 @@
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
-  border-top: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  overflow: hidden;
   touch-action: none;
 }
 
@@ -59,26 +37,6 @@
   height: 2px;
   background: var(--color-fg);
   opacity: 0.5;
-}
-
-.close {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 3;
-  min-width: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-fg);
-  opacity: 0.62;
-  transition: opacity 200ms var(--ease-precise);
-}
-
-.close:hover,
-.close:focus-visible {
-  opacity: 1;
 }
 
 .scroller {
@@ -122,12 +80,34 @@
 }
 
 .meta {
-  margin: 16px 0 0;
-  font-size: 13px;
-  font-weight: var(--weight-light);
-  text-transform: lowercase;
-  color: var(--color-fg-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 12px;
+}
+
+/* The study's tags, in the dock pill language. */
+.metaDate {
+  margin-right: 4px;
   font-variant-numeric: tabular-nums;
+  color: var(--color-fg-muted);
+}
+
+.tagPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: var(--weight-thin);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-fg);
+  opacity: 0.75;
 }
 
 .metaSep {
@@ -184,52 +164,57 @@
 .siblingNav {
   margin-top: 33px;
   display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 15px;
-  border-top: 1px solid var(--color-line-strong);
+  flex-direction: column;
+  gap: 12px;
   padding-top: 15px;
 }
 
-.siblingLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  max-width: 48%;
-  padding: 4px 2px;
-  text-align: left;
-  color: var(--color-fg);
-}
-
-.siblingNext {
-  text-align: right;
-}
-
-.siblingText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 14px;
-  font-weight: var(--weight-light);
-  text-transform: lowercase;
-  line-height: 1.25;
-}
-
-.siblingKicker {
-  font-size: 11px;
-  font-weight: var(--weight-thin);
+/* Editorial marginalia above the row. */
+.siblingEyebrow {
+  font-size: 12px;
+  font-weight: var(--weight-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   color: var(--color-fg-muted);
 }
 
-/* The canvas falls out of focus behind the presented logo during the
-   cinematic intro — same register as the info overlay. */
-.introScrim {
-  position: fixed;
-  inset: 0;
-  background: var(--color-scrim);
-  /* Unprefixed only — the compiler adds -webkit-; a hand-written prefix
-     makes the minifier drop the unprefixed declaration. */
-  backdrop-filter: blur(16px) saturate(0.9);
-  pointer-events: none;
+.siblingRow {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -20px;
+  padding: 2px 20px 6px;
+}
+
+.siblingRow::-webkit-scrollbar {
+  display: none;
+}
+
+/* One tappable charcoal plate per study, the mark centred inside. */
+.siblingLogo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 108px;
+  height: 76px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-solid);
+  color: var(--color-fg);
+  opacity: 0.75;
+  transition: opacity 200ms var(--ease-precise);
+}
+
+.siblingLogo:hover,
+.siblingLogo:focus-visible {
+  opacity: 1;
+}
+
+.siblingMark {
+  position: relative;
+  display: block;
+  width: 64%;
+  height: 46%;
 }

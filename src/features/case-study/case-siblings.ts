@@ -13,6 +13,9 @@ export type CaseSibling = {
   slug: string;
   title: string;
   clientId: string;
+  clientName: string;
+  logoUrl: string;
+  logoAspect: number;
 };
 
 export type SiblingPair = {
@@ -47,4 +50,23 @@ export function resolveSiblings(
 /** Session-aware wrapper: orders by the current Work composition. */
 export function orderedCaseSiblings(all: CaseSibling[], currentSlug: string): SiblingPair {
   return resolveSiblings(all, readWorkSnapshot()?.order ?? null, currentSlug);
+}
+
+/** The full case-study list in the session's composition order (pure core). */
+export function resolveCaseList(
+  all: CaseSibling[],
+  order: readonly string[] | null,
+  currentSlug: string,
+): CaseSibling[] {
+  if (!order || order.length === 0) return all;
+  const position = new Map(order.map((id, index) => [id, index]));
+  const filtered = all
+    .filter((sibling) => position.has(sibling.clientId))
+    .sort((a, b) => position.get(a.clientId)! - position.get(b.clientId)!);
+  return filtered.some((sibling) => sibling.slug === currentSlug) ? filtered : all;
+}
+
+/** Session-aware wrapper for the full ordered list. */
+export function orderedCaseList(all: CaseSibling[], currentSlug: string): CaseSibling[] {
+  return resolveCaseList(all, readWorkSnapshot()?.order ?? null, currentSlug);
 }

@@ -5,24 +5,25 @@ import { animate, motion, useMotionValue, useReducedMotion } from "motion/react"
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
-import { ArrowLeftIcon, ArrowRightIcon, ArrowUpRightIcon, CloseIcon } from "@/components/icons";
+import { ArrowUpRightIcon } from "@/components/icons";
 import { LogoMark } from "@/features/work/LogoMark";
-import { findCaseCellRect, type CaseOrigin } from "@/features/work/origin-store";
+import { type CaseOrigin } from "@/features/work/origin-store";
 import { track } from "@/lib/analytics";
 import type { CaseStudy } from "@/lib/content/model";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
-import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
+import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
 
-import { orderedCaseSiblings, resolveSiblings, type CaseSibling } from "./case-siblings";
+import {
+  orderedCaseList,
+  orderedCaseSiblings,
+  resolveCaseList,
+  resolveSiblings,
+  type CaseSibling,
+} from "./case-siblings";
 import styles from "./MobileCaseSheet.module.css";
 import { PortableTextBody } from "./PortableTextBody";
 
-/** Intro: the plain monochrome logo travels to the centred presentation,
- *  holds a beat, and the sheet rises beneath it. */
-const TRAVEL_MS = 420;
-const HOLD_MS = 180;
-const SHEET_AT_MS = TRAVEL_MS + HOLD_MS;
 /** Native-feeling dismissal thresholds (distance px, velocity px/ms). */
 const DISMISS_DISTANCE = 140;
 const DISMISS_VELOCITY = 0.55;
@@ -42,9 +43,8 @@ type MobileCaseSheetProps = {
 };
 
 /**
- * The mobile case-study experience. Opening from the canvas moves the plain
- * monochrome logo to a centred presentation, then raises the full-screen
- * sheet beneath it. Reduced motion skips the travel entirely.
+ * The mobile case-study experience: the sheet rises directly over the grid —
+ * one clean movement, no intermediate logo travel.
  */
 export function MobileCaseSheet({
   study,
@@ -57,9 +57,7 @@ export function MobileCaseSheet({
   const reducedMotion = useReducedMotion();
   const sheetRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const hasIntro = origin !== null && !reducedMotion;
-  const [phase, setPhase] = useState<Phase>(hasIntro ? "intro" : "sheet");
-  const startedRef = useRef(false);
+  const [phase, setPhase] = useState<Phase>("sheet");
   const sheetY = useMotionValue(0);
   const sheetX = useMotionValue(0);
 
@@ -78,18 +76,17 @@ export function MobileCaseSheet({
         : resolveSiblings(siblings, null, study.slug),
     [mounted, siblings, study.slug],
   );
+  const moreStudies = useMemo(() => {
+    const list = mounted
+      ? orderedCaseList(siblings, study.slug)
+      : resolveCaseList(siblings, null, study.slug);
+    return list.filter((sibling) => sibling.slug !== study.slug);
+  }, [mounted, siblings, study.slug]);
 
   useFocusTrap(sheetRef, active && phase === "sheet", {
     initialFocus: "container",
     onEscape: () => requestClose(),
   });
-
-  useEffect(() => {
-    if (!active || startedRef.current || !hasIntro) return;
-    startedRef.current = true;
-    const timer = window.setTimeout(() => setPhase("sheet"), SHEET_AT_MS);
-    return () => window.clearTimeout(timer);
-  }, [active, hasIntro]);
 
   const requestClose = () => {
     if (phase === "closing") return;
@@ -168,75 +165,21 @@ export function MobileCaseSheet({
     },
   );
 
-  // Closing choreography: the sheet slides away, the floating logo returns
-  // to its grid cell, then navigation restores the untouched canvas.
-  const [logoReturn, setLogoReturn] = useState<CaseOrigin["rect"] | null>(null);
+  // Closing: the sheet slides away, then navigation restores the canvas.
   useEffect(() => {
     if (phase !== "closing" || !active) return;
-    const target = findCaseCellRect(study.slug);
     const sheetDown = animate(sheetY, window.innerHeight * 1.05, {
       duration: reducedMotion ? 0.18 : 0.36,
       ease: EASE_EXIT,
     });
-    let timer = 0;
-    void sheetDown.then(() => {
-      if (origin && target && !reducedMotion) {
-        setLogoReturn(target);
-        timer = window.setTimeout(onNavigateClose, 430);
-      } else {
-        onNavigateClose();
-      }
-    });
+    void sheetDown.then(onNavigateClose);
     return () => {
       sheetDown.stop();
-      window.clearTimeout(timer);
     };
-  }, [phase, active, study.slug, origin, reducedMotion, sheetY, onNavigateClose]);
-
-  const presentation = (() => {
-    if (typeof window === "undefined") return { x: 0, y: 0, width: 0, height: 0 };
-    const width = Math.min(window.innerWidth * 0.68, 300);
-    const height = width * 0.54;
-    return {
-      x: (window.innerWidth - width) / 2,
-      y: window.innerHeight * 0.2,
-      width,
-      height,
-    };
-  })();
+  }, [phase, active, reducedMotion, sheetY, onNavigateClose]);
 
   return (
     <div className={styles.root}>
-      {hasIntro || logoReturn ? (
-        <motion.div
-          className={styles.introScrim}
-          aria-hidden
-          initial={{ opacity: 0 }}
-          animate={{ opacity: logoReturn ? 0 : 1 }}
-          transition={{ duration: 0.4, ease: EASE_OUT }}
-        />
-      ) : null}
-      {hasIntro || logoReturn ? (
-        <motion.div
-          className={styles.floatingLogo}
-          initial={hasIntro ? { ...origin.rect } : { ...presentation }}
-          animate={logoReturn ? { ...logoReturn, opacity: 0.9 } : { ...presentation }}
-          transition={{
-            duration: logoReturn ? 0.4 : TRAVEL_MS / 1000,
-            ease: EASE_INOUT,
-          }}
-          aria-hidden
-        >
-          <span
-            className={styles.introMask}
-            style={{
-              maskImage: `url("${study.logoUrl}")`,
-              WebkitMaskImage: `url("${study.logoUrl}")`,
-            }}
-          />
-        </motion.div>
-      ) : null}
-
       <motion.div
         ref={sheetRef}
         role="dialog"
@@ -252,15 +195,6 @@ export function MobileCaseSheet({
         <div className={styles.handleArea} data-sheet-grip>
           <span className={styles.handle} aria-hidden />
         </div>
-        <button
-          type="button"
-          data-close
-          className={styles.close}
-          aria-label="Close case study"
-          onClick={requestClose}
-        >
-          <CloseIcon />
-        </button>
 
         <div ref={scrollRef} className={styles.scroller}>
           <header className={styles.header}>
@@ -271,13 +205,14 @@ export function MobileCaseSheet({
               {study.title}
             </h1>
             {study.subtitle ? <p className={styles.subtitle}>{study.subtitle}</p> : null}
-            <p className={styles.meta}>
-              <span>{study.clientName}</span>
-              <span className={styles.metaSep}> · </span>
-              {study.displayDate}
-              <span className={styles.metaSep}> · </span>
-              {study.tags.join(", ")}
-            </p>
+            <div className={styles.meta}>
+              <span className={styles.metaDate}>{study.displayDate}</span>
+              {study.tags.map((tag) => (
+                <span key={tag} className={styles.tagPill}>
+                  {tag}
+                </span>
+              ))}
+            </div>
             <div className={styles.body}>
               <PortableTextBody value={study.body} fallback={study.summary} />
             </div>
@@ -323,38 +258,24 @@ export function MobileCaseSheet({
             ))}
           </div>
 
-          {pair.prev || pair.next ? (
+          {moreStudies.length > 0 ? (
             <nav className={styles.siblingNav} aria-label="More case studies">
-              {pair.prev ? (
-                <button
-                  type="button"
-                  className={styles.siblingLink}
-                  onClick={() => onNavigateSibling(pair.prev!.slug)}
-                >
-                  <ArrowLeftIcon size={16} />
-                  <span className={styles.siblingText}>
-                    <span className={styles.siblingKicker}>previous</span>
-                    {pair.prev.title}
-                  </span>
-                </button>
-              ) : (
-                <span />
-              )}
-              {pair.next ? (
-                <button
-                  type="button"
-                  className={`${styles.siblingLink} ${styles.siblingNext}`}
-                  onClick={() => onNavigateSibling(pair.next!.slug)}
-                >
-                  <span className={styles.siblingText}>
-                    <span className={styles.siblingKicker}>next</span>
-                    {pair.next.title}
-                  </span>
-                  <ArrowRightIcon size={16} />
-                </button>
-              ) : (
-                <span />
-              )}
+              <span className={styles.siblingEyebrow}>more case studies</span>
+              <div className={styles.siblingRow}>
+                {moreStudies.map((sibling) => (
+                  <button
+                    key={sibling.slug}
+                    type="button"
+                    className={styles.siblingLogo}
+                    aria-label={`${sibling.clientName} — ${sibling.title}`}
+                    onClick={() => onNavigateSibling(sibling.slug)}
+                  >
+                    <span className={styles.siblingMark}>
+                      <LogoMark logoUrl={sibling.logoUrl} />
+                    </span>
+                  </button>
+                ))}
+              </div>
             </nav>
           ) : null}
         </div>

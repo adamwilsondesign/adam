@@ -67,7 +67,7 @@ function settings(overrides: Partial<SiteSettings> = {}): SiteSettings {
     navigation: [{ label: "Work", href: "/work", available: true }],
     workStartYear: 2010,
     workEndYear: 2026,
-    seo: { title: "t", description: "d", ogImageUrl: null },
+    seo: { title: "t", description: "d", ogImageUrl: null, faviconUrl: null },
     ...overrides,
   };
 }

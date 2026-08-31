@@ -1,13 +1,13 @@
 "use client";
 
 import { useGesture } from "@use-gesture/react";
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
-import { EASE_INOUT, EASE_OUT } from "@/lib/motion";
+import { EASE_INOUT } from "@/lib/motion";
 
 import styles from "./MobileCanvas.module.css";
 import { LogoMark } from "./LogoMark";
@@ -15,17 +15,16 @@ import { opticalLogoBox } from "./optical";
 import { setCaseOrigin } from "./origin-store";
 import { readCanvasSnapshot, saveCanvasSnapshot } from "./work-state-store";
 
-const GAP = 10;
-const MIN_CELL = 92;
-const MAX_CELL = 210;
-const INITIAL_CELL = 136;
-/** How far the canvas may be dragged past its natural bounds. */
-const BLEED = 44;
-/** Commit a new column count when the live pinch scale drifts this far. */
-const COMMIT_UP = 1.24;
-const COMMIT_DOWN = 0.8;
-/** Ignore taps this soon after a pan/pinch, to stop accidental opens. */
-const TAP_SUPPRESS_MS = 180;
+const MIN_COLUMNS = 1;
+const MAX_COLUMNS = 4;
+const DEFAULT_COLUMNS = 3;
+/** Pinch ratio that commits a column change (spread → fewer, larger). */
+const COMMIT_IN = 1.3;
+const COMMIT_OUT = 1 / COMMIT_IN;
+/** Ignore taps this soon after a pinch, to stop accidental opens. */
+const TAP_SUPPRESS_MS = 220;
+/** Below this cell width, clients with a compact alternate mark use it. */
+const COMPACT_BELOW = 112;
 
 type MobileCanvasProps = {
   clients: WorkClient[];
@@ -33,25 +32,15 @@ type MobileCanvasProps = {
   /** Client shown in the info overlay (its cell hides while open). */
   infoClientId: string | null;
   onInfoOpen: (client: WorkClient, rect: DOMRect) => void;
-  /** False the moment a logo activation begins — pan/pinch freeze instantly. */
+  /** False the moment a logo activation begins — pinches freeze instantly. */
   gesturesEnabled: boolean;
 };
 
-/** Below this cell size, clients with a compact alternate mark use it. */
-const COMPACT_BELOW = 112;
-
-function clampRange(viewport: number, content: number, bleed: number): [number, number] {
-  if (content >= viewport) return [viewport - content - bleed, bleed];
-  const centered = (viewport - content) / 2;
-  return [centered - bleed, centered + bleed];
-}
-
 /**
- * The mobile Work canvas: a bounded two-dimensional logo field that pans in
- * every direction and changes density with pinch. Pinch-in enlarges logos
- * (fewer columns), pinch-out shows more columns; cells resize continuously
- * during the gesture (a live transform) and the column count commits at
- * density thresholds, reflowing smoothly around the gesture midpoint.
+ * The mobile Work canvas: a vertically scrolling logo grid. Scrolling is
+ * native and vertical-only; pinching changes density between one and four
+ * columns — spreading the fingers zooms in (fewer, larger logos), pinching
+ * together zooms out (more, smaller ones).
  */
 export function MobileCanvas({
   clients,
@@ -60,166 +49,76 @@ export function MobileCanvas({
   onInfoOpen,
   gesturesEnabled,
 }: MobileCanvasProps) {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
 
-  const [cellSize, setCellSize] = useState(() => readCanvasSnapshot()?.cellSize ?? INITIAL_CELL);
-  const [viewport, setViewport] = useState<{ width: number; height: number } | null>(null);
-
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const liveScale = useMotionValue(1);
+  const [columns, setColumns] = useState(() => {
+    const saved = readCanvasSnapshot()?.columns;
+    return saved ? Math.max(MIN_COLUMNS, Math.min(MAX_COLUMNS, saved)) : DEFAULT_COLUMNS;
+  });
+  const [cellWidth, setCellWidth] = useState<number | null>(null);
   const suppressTapUntil = useRef(0);
-  /** Pinch baseline, re-based at every threshold commit. */
-  const pinchBase = useRef<{ x0: number; y0: number; cell0: number; ms0: number } | null>(null);
+  /** Pinch baseline scale, re-based at every committed column change. */
+  const pinchBase = useRef<number | null>(null);
 
+  // Measure the grid track so compact-mark decisions track real cell size.
   useEffect(() => {
-    const node = viewportRef.current;
+    const node = scrollerRef.current;
     if (!node) return;
     const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) setViewport({ width: entry.contentRect.width, height: entry.contentRect.height });
+      const width = entries[0]?.contentRect.width;
+      if (width) setCellWidth(width / columns);
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [columns]);
 
-  const columns = useMemo(() => {
-    if (!viewport) return 3;
-    return Math.max(2, Math.min(8, Math.round((viewport.width * 1.16) / cellSize)));
-  }, [viewport, cellSize]);
-
-  const rows = Math.ceil(clients.length / columns);
-  const canvasWidth = columns * cellSize + (columns - 1) * GAP;
-  const canvasHeight = rows * cellSize + (rows - 1) * GAP;
-
-  const clampPan = useCallback(
-    (px: number, py: number): [number, number] => {
-      if (!viewport) return [px, py];
-      const [minX, maxX] = clampRange(viewport.width, canvasWidth, BLEED);
-      const [minY, maxY] = clampRange(viewport.height, canvasHeight, BLEED);
-      return [Math.min(maxX, Math.max(minX, px)), Math.min(maxY, Math.max(minY, py))];
-    },
-    [viewport, canvasWidth, canvasHeight],
-  );
-
-  // Center the canvas on first measure (or restore the saved exploration
-  // position) and re-clamp when the composition changes.
-  const centeredRef = useRef(false);
+  // Restore the saved exploration position once, then persist as it scrolls.
   useEffect(() => {
-    if (!viewport) return;
-    if (!centeredRef.current) {
-      centeredRef.current = true;
-      const saved = readCanvasSnapshot();
-      if (saved) {
-        const [sx, sy] = clampPan(saved.x, saved.y);
-        x.set(sx);
-        y.set(sy);
-      } else {
-        x.set((viewport.width - canvasWidth) / 2);
-        y.set((viewport.height - canvasHeight) / 2);
-      }
-      return;
-    }
-    const [cx, cy] = clampPan(x.get(), y.get());
-    if (cx !== x.get()) animate(x, cx, { duration: 0.45, ease: EASE_OUT });
-    if (cy !== y.get()) animate(y, cy, { duration: 0.45, ease: EASE_OUT });
-  }, [viewport, canvasWidth, canvasHeight, clampPan, x, y]);
-
-  /** Persist the exploration state so revisits restore it exactly. */
-  const persistCanvas = useCallback((px: number, py: number, cell: number) => {
-    saveCanvasSnapshot({ cellSize: cell, x: px, y: py });
-  }, []);
+    const node = scrollerRef.current;
+    if (!node) return;
+    const saved = readCanvasSnapshot();
+    if (saved) node.scrollTop = saved.scrollY;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        saveCanvasSnapshot({ columns, scrollY: node.scrollTop });
+      });
+    };
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      node.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [columns]);
 
   useGesture(
     {
-      onDrag: ({
-        pinching,
-        cancel,
-        offset: [ox, oy],
-        last,
-        velocity: [vx, vy],
-        direction: [dx, dy],
-        movement,
-      }) => {
-        if (pinching) {
-          cancel();
-          return;
-        }
-        if (Math.hypot(movement[0], movement[1]) > 6) {
-          suppressTapUntil.current = performance.now() + TAP_SUPPRESS_MS;
-        }
-        if (last) {
-          // Glide out with the release velocity, settling inside the bounds.
-          const speed = Math.hypot(vx, vy);
-          const [tx, ty] = clampPan(ox + dx * speed * 90, oy + dy * speed * 90);
-          animate(x, tx, { duration: 0.55, ease: EASE_OUT });
-          animate(y, ty, { duration: 0.55, ease: EASE_OUT });
-          persistCanvas(tx, ty, cellSize);
-          return;
-        }
-        x.set(ox);
-        y.set(oy);
-      },
-      onPinch: ({ origin: [gox, goy], movement: [ms], first, last }) => {
+      onPinch: ({ first, last, movement: [scale], event }) => {
+        event.preventDefault();
         suppressTapUntil.current = performance.now() + TAP_SUPPRESS_MS;
-        const viewportRect = viewportRef.current?.getBoundingClientRect();
-        const originX = gox - (viewportRect?.left ?? 0);
-        const originY = goy - (viewportRect?.top ?? 0);
-
-        if (first || !pinchBase.current) {
-          pinchBase.current = { x0: x.get(), y0: y.get(), cell0: cellSize, ms0: ms };
+        if (first || pinchBase.current === null) {
+          pinchBase.current = scale;
           return;
         }
-        const base = pinchBase.current;
-
-        // Spec: pinch inward enlarges logos, pinch outward adds columns —
-        // the inverse of the raw gesture scale.
-        const desiredCell = Math.min(MAX_CELL, Math.max(MIN_CELL, base.cell0 * (base.ms0 / ms)));
-        const factor = desiredCell / base.cell0;
-
-        // Live: scale around the gesture midpoint (transform-origin is 0 0,
-        // so the translate compensates to anchor the midpoint).
-        liveScale.set(factor);
-        x.set(originX - (originX - base.x0) * factor);
-        y.set(originY - (originY - base.y0) * factor);
-
-        if (factor > COMMIT_UP || factor < COMMIT_DOWN || last) {
-          // Commit: bake the visual scale into the cell size. The pan is
-          // already midpoint-compensated; the column count recalculates and
-          // logos reflow smoothly from here.
-          liveScale.set(1);
-          setCellSize(desiredCell);
-          pinchBase.current = { x0: x.get(), y0: y.get(), cell0: desiredCell, ms0: ms };
+        const ratio = scale / pinchBase.current;
+        if (ratio > COMMIT_IN) {
+          // Fingers spreading: zoom in — fewer, larger logos.
+          setColumns((current) => Math.max(MIN_COLUMNS, current - 1));
+          pinchBase.current = scale;
+        } else if (ratio < COMMIT_OUT) {
+          // Fingers closing: zoom out — more, smaller logos.
+          setColumns((current) => Math.min(MAX_COLUMNS, current + 1));
+          pinchBase.current = scale;
         }
-
-        if (last) {
-          pinchBase.current = null;
-          const [cx2, cy2] = clampPan(x.get(), y.get());
-          if (cx2 !== x.get()) animate(x, cx2, { duration: 0.4, ease: EASE_OUT });
-          if (cy2 !== y.get()) animate(y, cy2, { duration: 0.4, ease: EASE_OUT });
-          persistCanvas(cx2, cy2, desiredCell);
-        }
+        if (last) pinchBase.current = null;
       },
     },
     {
-      target: viewportRef,
-      // Activation freeze: the first tap on a logo disables the gesture layer
-      // so no pan or pinch can disturb the departure composition.
+      target: scrollerRef,
       enabled: gesturesEnabled,
       eventOptions: { passive: false },
-      drag: {
-        from: () => [x.get(), y.get()],
-        bounds: () => {
-          if (!viewport) return {};
-          const [minX, maxX] = clampRange(viewport.width, canvasWidth, BLEED);
-          const [minY, maxY] = clampRange(viewport.height, canvasHeight, BLEED);
-          return { left: minX, right: maxX, top: minY, bottom: maxY };
-        },
-        rubberband: 0.18,
-        pointer: { touch: true },
-      },
       pinch: { pointer: { touch: true } },
     },
   );
@@ -232,28 +131,14 @@ export function MobileCanvas({
   };
 
   return (
-    <div ref={viewportRef} className={styles.viewport}>
-      <motion.div
-        ref={canvasRef}
-        className={styles.canvas}
-        style={{
-          x,
-          y,
-          scale: liveScale,
-          width: canvasWidth,
-          transformOrigin: "0 0",
-          gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
-          gap: GAP,
-        }}
-        onClickCapture={suppressAccidentalTap}
-      >
+    <div ref={scrollerRef} className={styles.scroller} onClickCapture={suppressAccidentalTap}>
+      <div className={styles.grid} style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         <AnimatePresence initial={false}>
           {clients.map((client) => (
             <motion.div
               key={client.id}
               layout={!reducedMotion}
               className={styles.cellBox}
-              style={{ width: cellSize, height: cellSize }}
               initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.88 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: reducedMotion ? 1 : 0.88 }}
@@ -264,12 +149,12 @@ export function MobileCanvas({
                 openSlug={openSlug}
                 hidden={client.id === infoClientId}
                 onInfoOpen={onInfoOpen}
-                compact={cellSize < COMPACT_BELOW}
+                compact={(cellWidth ?? 999) < COMPACT_BELOW}
               />
             </motion.div>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   );
 }

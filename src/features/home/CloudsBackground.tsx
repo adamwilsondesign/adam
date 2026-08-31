@@ -65,6 +65,7 @@ export function CloudsBackground() {
     let disposed = false;
     let effect: import("vanta/dist/vanta.clouds.min").VantaCloudsEffect | null = null;
     let observer: MutationObserver | null = null;
+    let cleanupTouch: (() => void) | null = null;
     const scheme = window.matchMedia("(prefers-color-scheme: dark)");
     const applyTheme = () => effect?.setOptions(isDarkTheme() ? DARK : LIGHT);
 
@@ -79,7 +80,9 @@ export function CloudsBackground() {
           el,
           THREE,
           mouseControls: true,
-          touchControls: true,
+          // Vanta's own touch tracking moves the sky against the finger;
+          // we feed it mirrored coordinates instead (below).
+          touchControls: false,
           gyroControls: false,
           minHeight: 200,
           minWidth: 200,
@@ -91,6 +94,14 @@ export function CloudsBackground() {
         return;
       }
 
+      const onTouchMove = (event: TouchEvent) => {
+        const touch = event.touches[0];
+        if (!touch || !effect) return;
+        effect.onMouseMove(window.innerWidth - touch.clientX, window.innerHeight - touch.clientY);
+      };
+      window.addEventListener("touchmove", onTouchMove, { passive: true });
+      cleanupTouch = () => window.removeEventListener("touchmove", onTouchMove);
+
       observer = new MutationObserver(applyTheme);
       observer.observe(document.documentElement, {
         attributes: true,
@@ -101,6 +112,7 @@ export function CloudsBackground() {
 
     return () => {
       disposed = true;
+      cleanupTouch?.();
       observer?.disconnect();
       scheme.removeEventListener("change", applyTheme);
       effect?.destroy();

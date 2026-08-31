@@ -36,13 +36,7 @@
   padding: 0 12px;
   color: var(--color-fg);
   opacity: 0.75;
-  transition:
-    opacity 160ms var(--ease-precise),
-    background-color 160ms var(--ease-precise);
-}
-
-.close:hover {
-  background: var(--color-wash);
+  transition: opacity 160ms var(--ease-precise);
 }
 
 .close:hover,
@@ -99,12 +93,34 @@
 }
 
 .meta {
-  margin: 22px 0 0;
-  font-size: 13px;
-  font-weight: var(--weight-light);
-  text-transform: lowercase;
-  color: var(--color-fg-muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 12px;
+}
+
+/* The study's tags, in the dock pill language. */
+.metaDate {
+  margin-right: 4px;
   font-variant-numeric: tabular-nums;
+  color: var(--color-fg-muted);
+}
+
+.tagPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: var(--weight-thin);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-fg);
+  opacity: 0.75;
 }
 
 .client {

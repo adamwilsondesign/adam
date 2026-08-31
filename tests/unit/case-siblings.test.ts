@@ -6,6 +6,9 @@ const sibling = (slug: string, clientId: string): CaseSibling => ({
   slug,
   title: slug.toUpperCase(),
   clientId,
+  clientName: slug,
+  logoUrl: `/logos/${slug}.svg`,
+  logoAspect: 1,
 });
 
 const ALL = [

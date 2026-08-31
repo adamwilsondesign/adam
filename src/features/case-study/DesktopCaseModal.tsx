@@ -163,13 +163,14 @@ export function DesktopCaseModal({
                 {study.subtitle}
               </motion.p>
             ) : null}
-            <motion.p className={styles.meta} variants={contentItem}>
-              <span className={styles.client}>{study.clientName}</span>
-              <span className={styles.metaSep}> · </span>
-              {study.displayDate}
-              <span className={styles.metaSep}> · </span>
-              {study.tags.join(", ")}
-            </motion.p>
+            <motion.div className={styles.meta} variants={contentItem}>
+              <span className={styles.metaDate}>{study.displayDate}</span>
+              {study.tags.map((tag) => (
+                <span key={tag} className={styles.tagPill}>
+                  {tag}
+                </span>
+              ))}
+            </motion.div>
             <motion.div className={styles.body} variants={contentItem}>
               <PortableTextBody value={study.body} fallback={study.summary} />
             </motion.div>

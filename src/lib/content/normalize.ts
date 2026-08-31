@@ -258,6 +258,7 @@ export function normalizeSiteSettings(raw: SITE_SETTINGS_QUERY_RESULT): SiteSett
       title: stegaClean(raw?.seoTitle) ?? stegaClean(title),
       description: stegaClean(raw?.seoDescription) ?? stegaClean(description),
       ogImageUrl: imageUrl(raw?.defaultOgImage, 1200),
+      faviconUrl: raw?.faviconUrl ?? null,
     },
   };
 }

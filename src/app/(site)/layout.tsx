@@ -32,6 +32,11 @@ export async function generateMetadata(): Promise<Metadata> {
       description: settings.seo.description,
       images: settings.seo.ogImageUrl ? [settings.seo.ogImageUrl] : undefined,
     },
+    // Site metadata is CMS-managed; the bundled marks stand in when unset.
+    icons: {
+      icon: settings.seo.faviconUrl ?? "/icon.svg",
+      apple: "/apple-icon.png",
+    },
     // Draft previews must never be indexed.
     robots: isDraft ? { index: false, follow: false } : undefined,
   };

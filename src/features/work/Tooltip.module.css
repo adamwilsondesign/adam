@@ -1,12 +1,14 @@
-/* A ruled specimen label: opaque plate, steel hairline, straight cuts.
-   Pointer-interactive so the corridor between logo and label is safe. */
+/* A frosted specimen label; pointer-interactive so the corridor between
+   logo and label is safe. */
 .tooltip {
   position: fixed;
   z-index: 45;
   border-radius: var(--radius-card);
   width: max-content;
   max-width: 280px;
-  background: var(--color-surface-solid);
+  background: var(--color-surface);
+  /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
+  backdrop-filter: blur(14px);
   border: 1px solid var(--color-line);
   padding: 15px 16px;
   pointer-events: auto;

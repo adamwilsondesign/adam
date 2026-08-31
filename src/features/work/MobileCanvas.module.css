@@ -1,22 +1,28 @@
-.viewport {
+.scroller {
   position: fixed;
   inset: 0;
-  overflow: hidden;
-  /* The canvas owns all touch gestures — no browser panning or zooming. */
-  touch-action: none;
-  overscroll-behavior: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Vertical scrolling stays native; two-finger pinches are ours. */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: calc(var(--chrome-header-height) + 12px) 15px
+    calc(var(--chrome-dock-clearance) + max(12px, env(safe-area-inset-bottom, 0px)));
 }
 
-.canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.grid {
   display: grid;
-  will-change: transform;
+  gap: 10px;
 }
 
 .cellBox {
   position: relative;
+  aspect-ratio: 1;
 }
 
 .cell {

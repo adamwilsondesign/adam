@@ -43,6 +43,7 @@ export function fixtureSiteSettings(): SiteSettings {
     ...settings,
     linkedinUrl: settings.linkedinUrl ?? null,
     navigation: settings.navigation ?? DEFAULT_NAVIGATION,
+    seo: { ...settings.seo, faviconUrl: settings.seo.faviconUrl ?? null },
   };
 }
 

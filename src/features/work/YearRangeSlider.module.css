@@ -43,19 +43,21 @@
   pointer-events: none;
 }
 
-/* Square machined handles — straight cuts, hairline rule. */
+/* Round handles on the shared pill silhouette, quiet until touched. */
 .thumb {
   position: absolute;
   top: 50%;
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   transform: translate(-50%, -50%);
-  background: var(--color-bg);
-  border: 1px solid var(--color-fg);
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  opacity: 0.75;
   cursor: grab;
   touch-action: none;
   transition:
-    transform 180ms var(--ease-precise),
+    opacity 180ms var(--ease-precise),
     background-color 180ms var(--ease-precise);
 }
 
@@ -68,12 +70,13 @@
 
 .thumb:hover,
 .thumb:focus-visible {
-  transform: translate(-50%, -50%) scale(1.25);
+  opacity: 1;
 }
 
 .thumb:active {
   cursor: grabbing;
-  background: var(--color-fg);
+  opacity: 1;
+  background: var(--color-wash);
 }
 
 /* The active year floats above the handle while it is being adjusted. */

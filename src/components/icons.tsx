@@ -62,8 +62,8 @@ export function ArrowRightIcon({ size = 20 }: IconProps) {
 export function LinkedInIcon({ size = 20 }: IconProps) {
   return (
     <svg {...iconAttributes(size)}>
-      <rect x="3" y="3" width="14" height="14" />
-      <path d="M6.5 9v4.5M6.5 6.4v.1M9.5 13.5V9m0 1.6c.4-1 1.3-1.6 2.2-1.6 1.2 0 1.8.8 1.8 2.1v2.4" />
+      <circle cx="10" cy="10" r="8.25" />
+      <path d="M6.9 9.2v4.1M6.9 6.8v.1M9.7 13.3V9.2m0 1.5c.4-.9 1.2-1.5 2-1.5 1.1 0 1.7.7 1.7 1.9v2.2" />
     </svg>
   );
 }

@@ -58,7 +58,7 @@ test.describe("mobile work canvas", () => {
     const slug = await cell!.getAttribute("data-case-cell");
     await cell!.tap();
     await expect(page).toHaveURL(new RegExp(`/work/${slug}$`));
-    // The sheet rises after the cinematic intro.
+    // The sheet rises directly — no intermediate logo travel.
     await expect(page.getByRole("dialog", { name: /./ })).toBeVisible({ timeout: 6000 });
 
     await page.goBack();
@@ -70,7 +70,7 @@ test.describe("mobile work canvas", () => {
     await expect(page.locator("#case-sheet-title")).toHaveText("Field Console");
   });
 
-  test("sheet next/back buttons progress through case studies in place", async ({ page }) => {
+  test("the more-case-studies logo row navigates in place", async ({ page }) => {
     // Arrive via the grid so history has a /work entry beneath the study.
     await page.goto("/work");
     await page.goto("/work/auralith");
@@ -78,9 +78,10 @@ test.describe("mobile work canvas", () => {
 
     const nav = page.locator('nav[aria-label="More case studies"]');
     await nav.scrollIntoViewIfNeeded();
-    const nextButton = nav.getByRole("button", { name: /^next/ });
-    await expect(nextButton).toBeVisible();
-    await nextButton.tap();
+    await expect(nav.getByText("more case studies")).toBeVisible();
+    const sibling = nav.getByRole("button").first();
+    await expect(sibling).toBeVisible();
+    await sibling.tap();
 
     // The slug swaps in place; a different case study renders.
     await expect(page).toHaveURL(/\/work\/(?!auralith$)[a-z-]+$/);

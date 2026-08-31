@@ -59,15 +59,13 @@
 .navLink {
   color: var(--color-fg);
   text-decoration: none;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 1px;
-  transition: color 200ms var(--ease-precise);
+  opacity: 0.75;
+  transition: opacity 200ms var(--ease-precise);
 }
 
 .navLink:hover,
 .navLink:focus-visible {
-  text-decoration: underline;
-  color: var(--color-link);
+  opacity: 1;
 }
 
 /* Unreleased sections: present but quiet, clearly held back. */
@@ -97,7 +95,6 @@
   background: transparent;
   /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
   backdrop-filter: blur(14px) saturate(1.05);
-  border-top: 1px solid var(--color-line);
   color: var(--color-fg);
   font-size: 12px;
   font-weight: var(--weight-label);

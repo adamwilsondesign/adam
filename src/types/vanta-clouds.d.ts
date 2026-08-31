@@ -22,6 +22,8 @@ declare module "vanta/dist/vanta.clouds.min" {
   export type VantaCloudsEffect = {
     destroy(): void;
     setOptions(options: Partial<VantaCloudsOptions>): void;
+    /** Vanta base API: feeds the pointer position the sky reacts to. */
+    onMouseMove(x: number, y: number): void;
   };
 
   export default function CLOUDS(options: VantaCloudsOptions): VantaCloudsEffect;

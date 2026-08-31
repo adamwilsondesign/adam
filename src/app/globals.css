@@ -23,7 +23,7 @@
   --color-fg-faint: #6f6f6f;
   --color-line: rgba(255, 255, 255, 0.18); /* bone hairline */
   --color-line-strong: #ffffff;
-  --color-surface: rgba(37, 37, 37, 0.92); /* dock plate — charcoal */
+  --color-surface: rgba(37, 37, 37, 0.66); /* frosted charcoal plate (dock, tooltips) */
   --color-surface-solid: #252525; /* the one elevated card surface */
   --color-wash: #303030; /* pressed/hover field */
   --color-scrim: rgba(0, 0, 0, 0.6); /* void over the blur */
@@ -84,7 +84,7 @@
   --color-fg-faint: #9a9a9a;
   --color-line: rgba(0, 0, 0, 0.16);
   --color-line-strong: #000000;
-  --color-surface: rgba(235, 235, 235, 0.92);
+  --color-surface: rgba(235, 235, 235, 0.66);
   --color-surface-solid: #ebebeb;
   --color-wash: #dedede;
   --color-scrim: rgba(255, 255, 255, 0.6);

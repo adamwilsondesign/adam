@@ -162,12 +162,28 @@ export async function getCaseStudySlugs(): Promise<{ slug: string; updatedAt: st
 
 /** The case-study sibling list (index order) for prev/next navigation. */
 export async function getCaseSiblings(): Promise<
-  { slug: string; title: string; clientId: string }[]
+  {
+    slug: string;
+    title: string;
+    clientId: string;
+    clientName: string;
+    logoUrl: string;
+    logoAspect: number;
+  }[]
 > {
   const clients = await getWorkIndex();
   return clients.flatMap((client) =>
     client.caseStudy
-      ? [{ slug: client.caseStudy.slug, title: client.caseStudy.title, clientId: client.id }]
+      ? [
+          {
+            slug: client.caseStudy.slug,
+            title: client.caseStudy.title,
+            clientId: client.id,
+            clientName: client.name,
+            logoUrl: client.logoUrl,
+            logoAspect: client.logoAspect,
+          },
+        ]
       : [],
   );
 }

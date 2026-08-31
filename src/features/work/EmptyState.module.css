@@ -11,6 +11,8 @@
 }
 
 .door {
+  opacity: 0.85;
+  transition: opacity 200ms var(--ease-precise);
   pointer-events: auto;
   padding: 10px;
   color: var(--color-fg);
@@ -23,7 +25,7 @@
 
   .door:hover,
   .door:focus-visible {
-    transform: translateY(-4px);
+    opacity: 1;
   }
 }
 

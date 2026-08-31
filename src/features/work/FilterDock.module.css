@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   background: var(--color-surface);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
   border: none;
   border-radius: var(--radius-panel);
   outline: none;
@@ -43,6 +43,7 @@
 }
 
 .dockMobile .pillRow {
+  flex-wrap: nowrap;
   justify-content: flex-start;
   overflow-x: auto;
   scrollbar-width: none;
@@ -68,10 +69,10 @@
   border: 1px solid var(--color-line);
   border-radius: var(--radius-pill);
   color: var(--color-fg);
+  opacity: 0.75;
   transition:
     color 160ms var(--ease-precise),
     background-color 160ms var(--ease-precise),
-    border-color 160ms var(--ease-precise),
     opacity 160ms var(--ease-precise);
 }
 
@@ -80,14 +81,16 @@
   padding: 0 15px;
 }
 
-.pill:hover {
-  border-color: var(--color-line-strong);
+.pill:hover,
+.pill:focus-visible {
+  opacity: 1;
 }
 
 .pill[data-active] {
   background: var(--color-fill-active);
   border-color: var(--color-line-strong);
   color: var(--color-fill-active-fg);
+  opacity: 1;
 }
 
 /* A tag that would empty the grid: clearly subdued, still focusable — the
@@ -142,7 +145,40 @@
 }
 
 .dockMobile .shuffle {
-  min-height: 44px;
+  display: none;
+}
+
+/* Mobile: the count sits at the right end of the slider row. */
+.dockMobile .count {
+  order: 2;
+  margin-left: 10px;
+  min-width: 0;
+  text-align: right;
+}
+
+/* Mobile-only floating shuffle, hovering above the dock's right edge. */
+.shuffleFab {
+  position: fixed;
+  z-index: 31;
+  right: 15px;
+  bottom: calc(max(12px, env(safe-area-inset-bottom, 0px)) + 128px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
+  backdrop-filter: blur(14px);
+  color: var(--color-fg);
+  opacity: 0.75;
+  transition: opacity 200ms var(--ease-precise);
+}
+
+.shuffleFab:hover,
+.shuffleFab:focus-visible {
+  opacity: 1;
 }
 
 .shuffle:hover,

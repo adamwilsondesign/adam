@@ -33,7 +33,10 @@
   font-weight: var(--weight-thin);
   text-transform: lowercase;
   color: var(--color-fg);
-  background: var(--color-surface-solid);
+  background: var(--color-surface);
+  /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-pill);
   border: 1px solid var(--color-line);
   pointer-events: none;
   user-select: none;
