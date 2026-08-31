@@ -17,7 +17,7 @@ type CloudPalette = {
 
 /** Daylight sky tuned toward the site's mist-white canvas. */
 const LIGHT: CloudPalette = {
-  backgroundColor: 0xf6f8f7,
+  backgroundColor: 0xe5e4e0,
   skyColor: 0x84a8c0,
   cloudColor: 0xc9d4e2,
   cloudShadowColor: 0x2c4a63,
@@ -28,7 +28,7 @@ const LIGHT: CloudPalette = {
 
 /** Dusk variant for the dark theme: deep sky, ember horizon. */
 const DARK: CloudPalette = {
-  backgroundColor: 0x0f0e12,
+  backgroundColor: 0x1d1d1d,
   skyColor: 0x0e1722,
   cloudColor: 0x232e3b,
   cloudShadowColor: 0x030509,

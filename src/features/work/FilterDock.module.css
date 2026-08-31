@@ -21,7 +21,7 @@
   left: 50%;
   bottom: 22px;
   transform: translateX(-50%);
-  width: min(720px, calc(100vw - 2 * var(--page-margin)));
+  width: min(960px, calc(100vw - 2 * var(--page-margin)));
   padding: 15px 22px 11px;
   gap: 4px;
 }
@@ -36,6 +36,7 @@
 
 .pillRow {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
 }
@@ -53,15 +54,18 @@
   display: none;
 }
 
-/* Sharp-cut tags: hairline boxes; the selected state is a solid ink plate. */
+/* Ghost pill tags: ink hairline, 10px radius, museum-signage caps; the
+   selected state is a solid ink plate with parchment type. */
 .pill {
   flex: none;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: var(--weight-thin);
-  text-transform: lowercase;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   min-height: 32px;
-  padding: 0 12px;
+  padding: 0 19px;
   border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
   color: var(--color-fg);
   transition:
     color 160ms var(--ease-precise),
@@ -113,7 +117,8 @@
 .count {
   flex: none;
   min-width: 56px;
-  font-size: 12px;
+  letter-spacing: var(--tracking-label);
+  font-size: 11px;
   font-weight: var(--weight-thin);
   font-variant-numeric: tabular-nums;
   color: var(--color-fg-muted);
@@ -127,9 +132,10 @@
   gap: 6px;
   min-height: 32px;
   padding: 0 6px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: var(--weight-thin);
-  text-transform: lowercase;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   color: var(--color-fg-muted);
   transition: color 160ms var(--ease-precise);
 }
