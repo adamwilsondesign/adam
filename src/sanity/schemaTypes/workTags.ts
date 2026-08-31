@@ -9,7 +9,8 @@
 export const WORK_TAG_VALUES = [
   "AI",
   "AR",
-  "Crypto",
+  "App",
+  "Fintech/Crypto",
   "R&D",
   "Hardware",
   "Enterprise",

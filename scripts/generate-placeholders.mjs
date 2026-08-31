@@ -72,7 +72,17 @@ function hashString(value) {
 /* Client roster                                                       */
 /* ------------------------------------------------------------------ */
 
-const TAGS = ["AI", "AR", "Crypto", "R&D", "Hardware", "Enterprise", "Startup", "Consumer"];
+const TAGS = [
+  "AI",
+  "AR",
+  "App",
+  "Fintech/Crypto",
+  "R&D",
+  "Hardware",
+  "Enterprise",
+  "Startup",
+  "Consumer",
+];
 
 /** name, logo archetype, case study flag. All names are fictional. */
 const ROSTER = [
@@ -854,8 +864,8 @@ async function main() {
     // NEXT_PUBLIC_CONTACT_URL while running on fixtures.
     contactUrl: "mailto:adamwilson@lazertechnologies.com",
     // TODO(owner): replace with the real profile URL (or set it in Sanity /
-    // NEXT_PUBLIC_LINKEDIN_URL). LinkedIn's root is a safe stand-in.
-    linkedinUrl: "https://www.linkedin.com/",
+    // NEXT_PUBLIC_LINKEDIN_URL).
+    linkedinUrl: "https://www.linkedin.com/in/adam-kyle-wilson/",
     navigation: [
       { label: "Work", href: "/work", available: true },
       { label: "About", href: "/about", available: false },

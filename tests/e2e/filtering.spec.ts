@@ -91,7 +91,7 @@ test.describe("work filtering", () => {
       for (const t of [
         "AI",
         "AR",
-        "Crypto",
+        "Fintech/Crypto",
         "R&D",
         "Hardware",
         "Enterprise",
@@ -207,9 +207,9 @@ test.describe("work filtering", () => {
     // Three quick toggles with no settling time between them.
     await page.getByRole("button", { name: "AI", exact: true }).click();
     await page.getByRole("button", { name: "AR", exact: true }).click();
-    await page.getByRole("button", { name: "Crypto", exact: true }).click();
+    await page.getByRole("button", { name: "Fintech/Crypto", exact: true }).click();
 
-    const expected = matchingSlugs(["AI", "AR", "Crypto"], FULL).length;
+    const expected = matchingSlugs(["AI", "AR", "Fintech/Crypto"], FULL).length;
     // Within the reflow budget the displayed cells match the final selection —
     // no stale exit animations linger past ~450ms.
     await page.waitForTimeout(800);

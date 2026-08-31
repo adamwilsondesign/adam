@@ -15,7 +15,8 @@ import type { PortableTextBlock } from "next-sanity";
 export const WORK_TAGS = [
   "AI",
   "AR",
-  "Crypto",
+  "App",
+  "Fintech/Crypto",
   "R&D",
   "Hardware",
   "Enterprise",

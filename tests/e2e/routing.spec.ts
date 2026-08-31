@@ -33,8 +33,8 @@ test.describe("case-study routing", () => {
     await grid.waitFor();
 
     // Change the filter state before opening the overlay.
-    await page.getByRole("button", { name: "Crypto", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Crypto", exact: true })).toHaveAttribute(
+    await page.getByRole("button", { name: "Fintech/Crypto", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Fintech/Crypto", exact: true })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -54,7 +54,7 @@ test.describe("case-study routing", () => {
     await expect(page.getByRole("dialog")).toBeHidden();
 
     // The exact previous Work state is restored: filters and composition.
-    await expect(page.getByRole("button", { name: "Crypto", exact: true })).toHaveAttribute(
+    await expect(page.getByRole("button", { name: "Fintech/Crypto", exact: true })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
