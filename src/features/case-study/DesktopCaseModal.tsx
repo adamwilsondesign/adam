@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useAnimationControls, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { ArrowUpRightIcon, CloseIcon } from "@/components/icons";
 import { LogoMark } from "@/features/work/LogoMark";
@@ -12,6 +12,7 @@ import { useFocusTrap } from "@/lib/use-focus-trap";
 
 import { DUR, EASE_EXIT, EASE_INOUT, EASE_OUT } from "@/lib/motion";
 
+import { orderedCaseList, resolveCaseList, type CaseSibling } from "./case-siblings";
 import styles from "./DesktopCaseModal.module.css";
 import { Gallery } from "./Gallery";
 import { PortableTextBody } from "./PortableTextBody";
@@ -34,7 +35,10 @@ type DesktopCaseModalProps = {
   origin: CaseOrigin | null;
   /** False while the mobile variant is the visible one. */
   active: boolean;
+  /** All case studies (index order); the filtered composition refines it. */
+  siblings: CaseSibling[];
   onNavigateClose: () => void;
+  onNavigateSibling: (slug: string) => void;
 };
 
 /**
@@ -48,7 +52,9 @@ export function DesktopCaseModal({
   study,
   origin,
   active,
+  siblings,
   onNavigateClose,
+  onNavigateSibling,
 }: DesktopCaseModalProps) {
   const reducedMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -57,6 +63,21 @@ export function DesktopCaseModal({
   const travelPending = origin !== null && !reducedMotion;
   const [phase, setPhase] = useState<Phase>(travelPending ? "enter" : "open");
   const startedRef = useRef(false);
+
+  // The row follows the filtered composition once the client session state
+  // is readable; the server (and first client render) use the full index
+  // order so hydration stays consistent.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const moreStudies = useMemo(() => {
+    const list = mounted
+      ? orderedCaseList(siblings, study.slug)
+      : resolveCaseList(siblings, null, study.slug);
+    return list.filter((sibling) => sibling.slug !== study.slug);
+  }, [mounted, siblings, study.slug]);
 
   useFocusTrap(rootRef, active && phase !== "closing", {
     initialFocus: "container",
@@ -193,6 +214,30 @@ export function DesktopCaseModal({
                 <ArrowUpRightIcon />
                 <span className="visually-hidden">(external site, opens in a new tab)</span>
               </motion.a>
+            ) : null}
+            {moreStudies.length > 0 ? (
+              <motion.nav
+                className={styles.siblingNav}
+                variants={contentItem}
+                aria-label="More case studies"
+              >
+                <span className={styles.siblingEyebrow}>more case studies</span>
+                <div className={styles.siblingRow}>
+                  {moreStudies.map((sibling) => (
+                    <button
+                      key={sibling.slug}
+                      type="button"
+                      className={styles.siblingLogo}
+                      aria-label={`${sibling.clientName} — ${sibling.title}`}
+                      onClick={() => onNavigateSibling(sibling.slug)}
+                    >
+                      <span className={styles.siblingMark}>
+                        <LogoMark logoUrl={sibling.logoUrl} />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </motion.nav>
             ) : null}
           </motion.div>
         </div>

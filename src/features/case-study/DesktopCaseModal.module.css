@@ -54,6 +54,9 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* When the column overflows, fall back to start-aligned so the top of the
+     content stays scrollable (plain center pushes it above the scroll box). */
+  justify-content: safe center;
   gap: 33px;
   padding: calc(var(--chrome-header-height) + 8px) 33px 48px var(--page-margin);
   overflow-y: auto;
@@ -154,6 +157,62 @@
 .external:hover,
 .external:focus-visible {
   background: var(--color-action-bg-hover);
+}
+
+/* Progression between case studies: the mobile sheet's logo row, closing
+   the information column. */
+.siblingNav {
+  margin-top: 33px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.siblingEyebrow {
+  font-size: 12px;
+  font-weight: var(--weight-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-fg-muted);
+}
+
+.siblingRow {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0 6px;
+}
+
+.siblingRow::-webkit-scrollbar {
+  display: none;
+}
+
+/* One tappable charcoal plate per study, the mark centred inside. */
+.siblingLogo {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 108px;
+  height: 76px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-solid);
+  color: var(--color-fg);
+  opacity: 0.75;
+  transition: opacity 200ms var(--ease-precise);
+}
+
+.siblingLogo:hover,
+.siblingLogo:focus-visible {
+  opacity: 1;
+}
+
+.siblingMark {
+  position: relative;
+  display: block;
+  width: 64%;
+  height: 46%;
 }
 
 /* The media panel is the carbon display case: imagery floats on the dark

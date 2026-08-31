@@ -82,7 +82,9 @@ export function CaseStudyOverlay({ study, mode, siblings }: CaseStudyOverlayProp
           study={study}
           origin={origin}
           active={isMobile === false}
+          siblings={siblings}
           onNavigateClose={close}
+          onNavigateSibling={navigateSibling}
         />
       </div>
       <div className={styles.mobileHost}>

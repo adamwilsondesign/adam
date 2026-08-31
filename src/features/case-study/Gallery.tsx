@@ -23,8 +23,6 @@ type GalleryProps = {
  */
 export function Gallery({ media, slug, active }: GalleryProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [atEnd, setAtEnd] = useState(media.length <= 1);
-  const [atStart, setAtStart] = useState(true);
   const [current, setCurrent] = useState(0);
   const dragState = useRef<{ startX: number; startScroll: number; moved: boolean } | null>(null);
   const scrollFrame = useRef(0);
@@ -73,8 +71,6 @@ export function Gallery({ media, slug, active }: GalleryProps) {
     scrollFrame.current = requestAnimationFrame(() => {
       const node = scrollRef.current;
       if (!node) return;
-      setAtEnd(node.scrollLeft + node.clientWidth >= node.scrollWidth - 32);
-      setAtStart(node.scrollLeft <= 32);
       // Progress: the item whose left edge sits nearest the viewport edge.
       let nearest = 0;
       let nearestDistance = Number.POSITIVE_INFINITY;
@@ -171,8 +167,6 @@ export function Gallery({ media, slug, active }: GalleryProps) {
         ))}
         <div className={styles.endSpacer} aria-hidden />
       </div>
-      <div className={styles.startFade} data-hidden={atStart || undefined} aria-hidden />
-      <div className={styles.endFade} data-hidden={atEnd || undefined} aria-hidden />
       {media.length > 1 ? (
         <p className={styles.progress} aria-live="off">
           {String(current + 1).padStart(2, "0")} / {String(media.length).padStart(2, "0")}

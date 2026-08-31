@@ -76,7 +76,8 @@ test.describe("mobile work canvas", () => {
     await page.goto("/work/auralith");
     await expect(page.locator("#case-sheet-title")).toHaveText("Field Console");
 
-    const nav = page.locator('nav[aria-label="More case studies"]');
+    // Both variants render the row; scope to the mobile sheet's visible one.
+    const nav = page.locator('nav[aria-label="More case studies"]').filter({ visible: true });
     await nav.scrollIntoViewIfNeeded();
     await expect(nav.getByText("more case studies")).toBeVisible();
     const sibling = nav.getByRole("button").first();

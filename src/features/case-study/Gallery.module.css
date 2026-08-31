@@ -68,39 +68,6 @@
   width: max(12vw, 80px);
 }
 
-.endFade {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 110px;
-  pointer-events: none;
-  background: linear-gradient(to right, transparent, var(--color-carbon));
-  opacity: 1;
-  transition: opacity 300ms var(--ease-precise);
-}
-
-.endFade[data-hidden] {
-  opacity: 0;
-}
-
-/* Mirrored cue on the left once the strip has scrolled. */
-.startFade {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 110px;
-  pointer-events: none;
-  background: linear-gradient(to left, transparent, var(--color-carbon));
-  opacity: 1;
-  transition: opacity 300ms var(--ease-precise);
-}
-
-.startFade[data-hidden] {
-  opacity: 0;
-}
-
 /* Quiet position indicator in the vitrine's upper corner. */
 .progress {
   position: absolute;
