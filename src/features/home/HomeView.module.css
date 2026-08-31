@@ -6,7 +6,9 @@
 }
 
 .column {
-  position: relative;
+  /* Flex item: z-index applies without `position`, which matters — a
+     positioned column would become the containing block for the absolutely
+     anchored footer and pull it off the viewport edges. */
   z-index: 1;
   width: 100%;
   max-width: var(--page-max-width);
@@ -79,6 +81,7 @@
 }
 
 /* The carbon footer band — the page's single dark plane. */
+/* Frosted baseboard: the sky blurs through it, ruled off like the header. */
 .footer {
   position: absolute;
   left: 0;
@@ -88,8 +91,11 @@
   justify-content: space-between;
   gap: 16px;
   padding: 15px var(--page-margin) max(15px, env(safe-area-inset-bottom, 0px));
-  background: var(--color-carbon);
-  color: var(--color-carbon-fg);
+  background: color-mix(in srgb, var(--color-bg) 38%, transparent);
+  /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
+  backdrop-filter: blur(14px) saturate(1.05);
+  border-top: 1px solid var(--color-line);
+  color: var(--color-fg);
   font-size: 13px;
   font-weight: var(--weight-thin);
 }

@@ -1,4 +1,6 @@
-/* The ruled top bar: solid canvas plate with a steel hairline underline. */
+/* The ruled top bar: a frosted strip over whatever passes beneath it (the
+   homepage sky, drifting grid cells), kept legible by the blur and a faint
+   wash of the canvas colour. Steel hairline underline stays. */
 .header {
   position: fixed;
   top: 0;
@@ -10,7 +12,9 @@
   align-items: center;
   padding: 0 calc(var(--page-margin) - 10px);
   z-index: 40;
-  background: var(--color-bg);
+  background: color-mix(in srgb, var(--color-bg) 38%, transparent);
+  /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
+  backdrop-filter: blur(14px) saturate(1.05);
   border-bottom: 1px solid var(--color-line);
   transition:
     background-color 360ms var(--ease-precise),
