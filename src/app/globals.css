@@ -1,60 +1,62 @@
 /* ------------------------------------------------------------------ */
-/* Design tokens — "editorial print on warm parchment" (OFF+BRAND)     */
+/* Design tokens — "black editorial spread" (Metalab reference)        */
 /*                                                                     */
-/* A warm parchment canvas (#e5e4e0) carrying near-monochrome ink      */
-/* (#1d1d1d) typography — one typeface, weight 400 for body and        */
-/* display alike, 700 reserved for small labels. Cards are paper       */
-/* (#ffffff) and sharp-cornered; interactive elements alone get a      */
-/* 10px radius. Structure comes from ash (#bfbebe) hairlines. Zero     */
-/* shadows — depth is a surface shift (parchment → paper → stone),     */
-/* never elevation. Color stays rationed to the hero's one chromatic   */
-/* event; everything else is achromatic by discipline.                 */
+/* A void-black canvas (#000000) where typography and negative space   */
+/* do the entire performance: an ultra-light display serif at          */
+/* commanding sizes over a whisper-quiet grotesque for all             */
+/* functional copy. Achromatic by conviction — no accent, no           */
+/* gradient. Exactly one tier of depth: charcoal (#252525) panels on   */
+/* the void, no border, no shadow. Buttons and panels wear a soft      */
+/* 50px tablet-like radius; pills are fully round. Metadata labels     */
+/* (12px, weight 350) float beside content like editorial marginalia.  */
 /* ------------------------------------------------------------------ */
 
 :root {
-  /* Light is the default theme. */
-  --color-bg: #e5e4e0; /* parchment canvas */
-  --color-band: #e5e4e0; /* the shell shares one canvas; rules divide it */
-  --color-carbon: #1d1d1d; /* ink display-case band */
-  --color-carbon-fg: #e5e4e0;
-  --color-fg: #1d1d1d; /* ink — editorial near-black, zero blue cast */
-  --color-fg-strong: #1d1d1d;
-  --color-fg-muted: #55534f; /* warm graphite secondary */
-  --color-fg-faint: #a3a19c; /* engraved-label register */
-  --color-line: #bfbebe; /* ash hairline */
-  --color-line-strong: #1d1d1d; /* ink rules */
-  --color-surface: rgba(229, 228, 224, 0.96); /* dock plate */
-  --color-surface-solid: #ffffff; /* paper — elevated card surface */
-  --color-wash: #cdcdc9; /* stone — pressed/hover field */
-  --color-scrim: rgba(229, 228, 224, 0.55); /* frosted parchment over the blur */
-  --color-action-bg: #1d1d1d; /* the one solid button: ink plate */
-  --color-action-bg-hover: #3a3936;
-  --color-action-fg: #e5e4e0;
-  --color-link: #1d1d1d; /* links are ink ghosts, never colored */
-  --color-glow: rgba(29, 29, 29, 0.28); /* case-study halo — achromatic ink bloom */
-  --color-fill-active: #1d1d1d; /* selected tags: ink fill */
-  --color-fill-active-fg: #e5e4e0;
+  /* The void is the default theme. */
+  --color-bg: #000000; /* void canvas */
+  --color-band: #000000; /* the shell shares one canvas */
+  --color-carbon: #252525; /* charcoal — the single elevated band */
+  --color-carbon-fg: #ffffff;
+  --color-fg: #ffffff; /* bone */
+  --color-fg-strong: #ffffff;
+  --color-fg-muted: #a9a9a9;
+  --color-fg-faint: #6f6f6f;
+  --color-line: rgba(255, 255, 255, 0.18); /* bone hairline */
+  --color-line-strong: #ffffff;
+  --color-surface: rgba(37, 37, 37, 0.92); /* dock plate — charcoal */
+  --color-surface-solid: #252525; /* the one elevated card surface */
+  --color-wash: #303030; /* pressed/hover field */
+  --color-scrim: rgba(0, 0, 0, 0.6); /* void over the blur */
+  --color-action-bg: #252525; /* buttons stay charcoal — never bone fills */
+  --color-action-bg-hover: #333333;
+  --color-action-fg: #ffffff;
+  --color-link: #ffffff; /* links are bone ghosts, never colored */
+  --color-glow: rgba(255, 255, 255, 0.24); /* case-study halo — faint bone bloom */
+  --color-fill-active: #252525; /* selected tags: charcoal plate */
+  --color-fill-active-fg: #ffffff;
 
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* Type — one editorial voice: weight 400 carries body and display
-     alike; 700 is reserved for small labels and navigation. Labels
-     track wide (0.05em) like museum signage. */
+  /* Type — two voices: the grotesque (Inter, the Basis stand-in) does
+     the quiet work at weights 350–400 with tight -0.01em tracking; the
+     ultra-light serif (Cormorant Garamond, the PP Eiko stand-in) is
+     reserved for display moments, never below 40px. */
   --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-heading:
-    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --weight-thin: 400; /* body and display register */
-  --weight-light: 400;
-  --weight-label: 700; /* small labels and navigation only */
-  --tracking-label: 0.05em; /* museum-signage tracking for 11px caps labels */
+  --font-heading: var(--font-display-serif), "Cormorant Garamond", Didot, "Times New Roman", serif;
+  --weight-thin: 350; /* captioning register */
+  --weight-light: 400; /* body and interactive text */
+  --weight-label: 350; /* metadata annotations — never heavier than 400 */
+  --weight-display: 300; /* the serif's near-hairline display weight */
+  --tracking-label: -0.01em; /* the grotesque's measured voice */
 
-  /* Shape — sharp cards, 10px on everything interactive. */
-  --radius-ui: 10px;
-  --radius-card: 0px;
-  --radius-panel: 0px;
-  --radius-pill: 10px;
+  /* Shape — soft tablet-like silhouettes on everything raised or
+     interactive; pills fully round. */
+  --radius-ui: 50px;
+  --radius-card: 24px;
+  --radius-panel: 50px;
+  --radius-pill: 1000px;
 
-  /* No shadow elevation anywhere — flat, like ink on paper. */
+  /* No shadow elevation anywhere — depth is the value step void → charcoal. */
   --shadow-float: none;
 
   /* Motion — one vocabulary (see src/lib/motion.ts for the JS side). */
@@ -67,35 +69,35 @@
   --chrome-header-height: 64px;
   --chrome-dock-clearance: 140px;
   --page-margin: clamp(20px, 4vw, 56px);
-  --page-max-width: 1400px;
+  --page-max-width: 1440px;
 }
 
-:root[data-theme="dark"] {
-  /* Inverted parchment: ink canvas, parchment type, same achromatic
-     discipline. */
-  --color-bg: #1d1d1d;
-  --color-band: #1d1d1d;
-  --color-carbon: #111110; /* the vitrine goes one step darker */
-  --color-carbon-fg: #e5e4e0;
-  --color-fg: #e5e4e0;
-  --color-fg-strong: #e5e4e0;
-  --color-fg-muted: #b5b3ae;
-  --color-fg-faint: #7c7a76;
-  --color-line: rgba(229, 228, 224, 0.22);
-  --color-line-strong: #e5e4e0;
-  --color-surface: rgba(29, 29, 29, 0.96);
-  --color-surface-solid: #262523;
-  --color-wash: #333230;
-  --color-scrim: rgba(29, 29, 29, 0.55);
-  --color-action-bg: #e5e4e0;
-  --color-action-bg-hover: #cdcdc9;
-  --color-action-fg: #1d1d1d;
-  --color-link: #e5e4e0;
-  --color-glow: rgba(229, 228, 224, 0.3);
-  --color-fill-active: #e5e4e0;
-  --color-fill-active-fg: #1d1d1d;
+:root[data-theme="light"] {
+  /* Bone inverse for visitors who toggle out of the void: the same
+     achromatic system with one grey step of depth. */
+  --color-bg: #ffffff;
+  --color-band: #ffffff;
+  --color-carbon: #ebebeb;
+  --color-carbon-fg: #000000;
+  --color-fg: #000000;
+  --color-fg-strong: #000000;
+  --color-fg-muted: #5a5a5a;
+  --color-fg-faint: #9a9a9a;
+  --color-line: rgba(0, 0, 0, 0.16);
+  --color-line-strong: #000000;
+  --color-surface: rgba(235, 235, 235, 0.92);
+  --color-surface-solid: #ebebeb;
+  --color-wash: #dedede;
+  --color-scrim: rgba(255, 255, 255, 0.6);
+  --color-action-bg: #ebebeb;
+  --color-action-bg-hover: #dedede;
+  --color-action-fg: #000000;
+  --color-link: #000000;
+  --color-glow: rgba(0, 0, 0, 0.2);
+  --color-fill-active: #ebebeb;
+  --color-fill-active-fg: #000000;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* ------------------------------------------------------------------ */
@@ -123,10 +125,10 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: var(--weight-thin);
-  line-height: 1.4;
-  letter-spacing: 0.01em;
+  font-size: 16px;
+  font-weight: var(--weight-light);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

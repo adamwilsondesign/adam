@@ -22,6 +22,7 @@
 /* A ruled instrument plate, straight cuts. */
 .panel {
   position: relative;
+  border-radius: var(--radius-panel);
   width: min(560px, 100%);
   max-height: calc(100vh - 30px);
   overflow-y: auto;
@@ -50,9 +51,11 @@
 
 .title {
   margin: 0;
-  font-size: 28px;
-  font-weight: var(--weight-light);
-  line-height: 1.15;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.02em;
+  font-size: 44px;
+  line-height: 0.9;
   color: var(--color-fg);
   padding-right: 44px;
 }

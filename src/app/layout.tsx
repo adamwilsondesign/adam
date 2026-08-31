@@ -8,15 +8,23 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 /**
- * The single typeface: Inter (the reference system's stand-in for SF Pro,
- * covering both display and text roles). Bundled locally so builds never
- * fetch fonts.
+ * Two voices, both bundled locally so builds never fetch fonts: Inter is the
+ * quiet grotesque for all functional copy (the reference's Basis Grotesque
+ * stand-in), and Cormorant Garamond Light is the ultra-light display serif
+ * (the PP Eiko stand-in) reserved for the largest editorial moments.
  */
 const inter = localFont({
   src: "../fonts/inter-variable.woff2",
   weight: "100 900",
   display: "swap",
   variable: "--font-inter",
+});
+
+const displaySerif = localFont({
+  src: "../fonts/cormorant-garamond-latin-300-normal.woff2",
+  weight: "300",
+  display: "swap",
+  variable: "--font-display-serif",
 });
 
 export const metadata: Metadata = {
@@ -28,16 +36,18 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-  ],
+  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // suppressHydrationWarning: THEME_INIT_SCRIPT adjusts data-theme pre-paint.
-    <html lang="en" data-theme="light" suppressHydrationWarning className={inter.variable}>
+    <html
+      lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${inter.variable} ${displaySerif.variable}`}
+    >
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <ThemeProvider>{children}</ThemeProvider>

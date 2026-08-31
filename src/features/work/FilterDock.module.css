@@ -10,7 +10,8 @@
   flex-direction: column;
   background: var(--color-surface);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--color-line);
+  border: none;
+  border-radius: var(--radius-panel);
   outline: none;
   transition:
     background-color 360ms var(--ease-precise),
@@ -58,12 +59,12 @@
    selected state is a solid ink plate with parchment type. */
 .pill {
   flex: none;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: var(--weight-thin);
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
   min-height: 32px;
-  padding: 0 19px;
+  padding: 0 16px;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-pill);
   color: var(--color-fg);
@@ -85,7 +86,7 @@
 
 .pill[data-active] {
   background: var(--color-fill-active);
-  border-color: var(--color-fill-active);
+  border-color: var(--color-line-strong);
   color: var(--color-fill-active-fg);
 }
 
@@ -118,7 +119,7 @@
   flex: none;
   min-width: 56px;
   letter-spacing: var(--tracking-label);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: var(--weight-thin);
   font-variant-numeric: tabular-nums;
   color: var(--color-fg-muted);
@@ -132,7 +133,7 @@
   gap: 6px;
   min-height: 32px;
   padding: 0 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: var(--weight-thin);
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);

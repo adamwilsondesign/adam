@@ -105,9 +105,11 @@
 
 .title {
   margin: 0;
-  font-size: 32px;
-  font-weight: var(--weight-light);
-  line-height: 1.11;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.02em;
+  font-size: 42px;
+  line-height: 0.9;
   color: var(--color-fg);
 }
 

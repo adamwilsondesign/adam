@@ -17,16 +17,16 @@
   padding: calc(var(--chrome-header-height) + 2vh) var(--page-margin) 96px;
 }
 
-/* The display headline: all-caps ink stacked into one typographic block —
-   line-height 0.85 so the lines read as a single mass, editorial-print style. */
+/* The display headline: the ultra-light serif at commanding size — tight
+   leading and near-touching letterforms make a sculptural block of text. */
 .intro {
   margin: auto 0 0;
   max-width: 24ch;
-  font-size: clamp(34px, 4.6vw, 66px);
-  font-weight: var(--weight-thin);
-  line-height: 0.92;
-  letter-spacing: 0.013em;
-  text-transform: uppercase;
+  font-family: var(--font-heading);
+  font-size: clamp(44px, 6vw, 82px);
+  font-weight: var(--weight-display);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
   color: var(--color-fg);
   text-wrap: balance;
 }
@@ -49,11 +49,10 @@
   display: inline-flex;
   align-items: baseline;
   gap: 12px;
-  font-size: clamp(19px, 1.9vw, 24px);
-  font-weight: var(--weight-thin);
+  font-size: clamp(16px, 1.6vw, 19px);
+  font-weight: var(--weight-light);
   line-height: 1.15;
-  text-transform: uppercase;
-  letter-spacing: 0.017em;
+  letter-spacing: -0.01em;
   padding: 2px 0;
 }
 
@@ -77,7 +76,7 @@
 }
 
 .soon {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: var(--weight-label);
   color: var(--color-fg-faint);
   text-transform: uppercase;
@@ -100,8 +99,8 @@
   backdrop-filter: blur(14px) saturate(1.05);
   border-top: 1px solid var(--color-line);
   color: var(--color-fg);
-  font-size: 11px;
-  font-weight: var(--weight-thin);
+  font-size: 12px;
+  font-weight: var(--weight-label);
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
 }
