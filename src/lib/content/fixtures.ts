@@ -15,12 +15,19 @@
 import fixtureClients from "@content/fixtures/clients.json";
 import fixtureSettings from "@content/fixtures/site-settings.json";
 
-import type { CaseStudy, NavSection, SiteSettings, WorkClient } from "./model";
+import type { CaseStudy, NavSection, SiteSettings, WorkClient, WorkMedia } from "./model";
+
+type FixtureMedia = Omit<WorkMedia, "kind"> & Partial<Pick<WorkMedia, "kind">>;
+
+type FixtureStudy = Omit<CaseStudy, "hero" | "gallery"> & {
+  hero: FixtureMedia;
+  gallery: FixtureMedia[];
+};
 
 type FixtureFile = {
   clients: (Omit<WorkClient, "logoAspect" | "logoTreatment"> &
     Partial<Pick<WorkClient, "logoAspect" | "logoTreatment">>)[];
-  caseStudies: CaseStudy[];
+  caseStudies: FixtureStudy[];
 };
 
 type FixtureSettings = Omit<SiteSettings, "navigation"> & { navigation?: NavSection[] };
@@ -56,9 +63,20 @@ export function fixtureWorkIndex(): WorkClient[] {
   }));
 }
 
+/** Older fixture files predate video support; default them to images. */
+function fixtureMedia(media: FixtureMedia): WorkMedia {
+  return { ...media, kind: media.kind ?? "image", posterUrl: media.posterUrl ?? null };
+}
+
 export function fixtureCaseStudy(slug: string): CaseStudy | null {
   assertFixtures();
-  return data.caseStudies.find((study) => study.slug === slug) ?? null;
+  const study = data.caseStudies.find((item) => item.slug === slug);
+  if (!study) return null;
+  return {
+    ...study,
+    hero: fixtureMedia(study.hero),
+    gallery: study.gallery.map(fixtureMedia),
+  };
 }
 
 export function fixtureCaseStudySlugs(): { slug: string; updatedAt: string }[] {

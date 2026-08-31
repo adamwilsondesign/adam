@@ -67,8 +67,12 @@ export type LogoTreatment = {
 
 export type MediaAspect = "square" | "16:9";
 
+export type MediaKind = "image" | "video";
+
 export type WorkMedia = {
-  /** Absolute or root-relative URL of the full-size asset. */
+  /** Still image or a playable video clip. */
+  kind: MediaKind;
+  /** Absolute or root-relative URL of the full-size asset (video file for videos). */
   url: string;
   /** Intrinsic pixel dimensions, used to prevent layout shift. */
   width: number;
@@ -79,6 +83,8 @@ export type WorkMedia = {
   caption?: string | null;
   /** Low-quality placeholder (data URI) when the source provides one. */
   lqip?: string | null;
+  /** Optional still shown before a video plays; images ignore it. */
+  posterUrl?: string | null;
 };
 
 /** The lightweight case-study data shipped with the Work grid payload. */

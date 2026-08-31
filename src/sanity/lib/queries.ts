@@ -63,7 +63,17 @@ export const CASE_STUDY_QUERY =
     body,
     externalUrl,
     heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },
-    gallery[]{ _key, image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip }, alt, caption, aspect },
+    gallery[]{
+      _key,
+      mediaType,
+      image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },
+      "videoFileUrl": video.asset->url,
+      videoUrl,
+      poster,
+      alt,
+      caption,
+      aspect
+    },
     seoTitle,
     seoDescription,
     ogImage

@@ -11,6 +11,7 @@ import { validateContent, type ContentIssue } from "@/lib/content/validate";
 
 function media(overrides: Partial<WorkMedia> = {}): WorkMedia {
   return {
+    kind: "image",
     url: "/img.webp",
     width: 1920,
     height: 1080,

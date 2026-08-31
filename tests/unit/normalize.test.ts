@@ -135,6 +135,65 @@ describe("normalizeCaseStudy", () => {
     expect(study?.seo.ogImageUrl).toContain("cdn.sanity.io");
     expect(study?.gallery).toHaveLength(1);
     expect(study?.gallery[0]?.aspect).toBe("square");
+    expect(study?.gallery[0]?.kind).toBe("image");
+  });
+
+  it("maps video gallery items from uploads or URLs, preferring the upload", () => {
+    const gallery = [
+      {
+        _key: "v1",
+        mediaType: "video",
+        image: null,
+        videoFileUrl: "https://cdn.sanity.io/files/p/d/clip.mp4",
+        videoUrl: "https://videos.example.dev/ignored.mp4",
+        poster: { ...(imageRef("poster") as object) },
+        alt: "Uploaded clip",
+        caption: null,
+        aspect: "16:9",
+      },
+      {
+        _key: "v2",
+        mediaType: "video",
+        image: null,
+        videoFileUrl: null,
+        videoUrl: "https://videos.example.dev/external.mp4",
+        poster: null,
+        alt: "External clip",
+        caption: "Caption",
+        aspect: "square",
+      },
+      {
+        _key: "v3",
+        mediaType: "video",
+        image: null,
+        videoFileUrl: null,
+        videoUrl: null, // no source at all: dropped
+        poster: null,
+        alt: "Broken",
+        caption: null,
+        aspect: "16:9",
+      },
+    ];
+    const study = normalizeCaseStudy(
+      rawCaseStudy({ gallery } as Parameters<typeof rawCaseStudy>[0]),
+    );
+    expect(study?.gallery).toHaveLength(2);
+    expect(study?.gallery[0]).toMatchObject({
+      kind: "video",
+      url: "https://cdn.sanity.io/files/p/d/clip.mp4",
+      aspect: "16:9",
+      width: 1920,
+      height: 1080,
+    });
+    expect(study?.gallery[0]?.posterUrl).toContain("cdn.sanity.io");
+    expect(study?.gallery[1]).toMatchObject({
+      kind: "video",
+      url: "https://videos.example.dev/external.mp4",
+      aspect: "square",
+      width: 1600,
+      height: 1600,
+      posterUrl: null,
+    });
   });
 
   it("prefers explicit display date and SEO fields", () => {

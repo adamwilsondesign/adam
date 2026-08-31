@@ -152,6 +152,14 @@
   height: auto;
 }
 
+/* Videos reserve their declared frame before metadata loads. */
+.galleryVideo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
 .caption {
   margin-top: 8px;
   font-size: 13px;

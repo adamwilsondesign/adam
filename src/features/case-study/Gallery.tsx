@@ -91,6 +91,8 @@ export function Gallery({ media, slug, active }: GalleryProps) {
 
   const onPointerDown = (event: React.PointerEvent) => {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
+    // Pointer capture would steal clicks from video controls; let them be.
+    if ((event.target as HTMLElement).closest("video")) return;
     const node = scrollRef.current;
     if (!node) return;
     dragState.current = { startX: event.clientX, startScroll: node.scrollLeft, moved: false };
@@ -136,20 +138,32 @@ export function Gallery({ media, slug, active }: GalleryProps) {
             data-index={index}
             data-aspect={item.aspect}
           >
-            <Image
-              src={item.url}
-              alt={item.alt}
-              width={item.width}
-              height={item.height}
-              className={styles.image}
-              sizes="(max-width: 767px) 92vw, 62vw"
-              priority={index === 0 && active}
-              loading={index === 0 ? "eager" : "lazy"}
-              placeholder={item.lqip ? "blur" : "empty"}
-              blurDataURL={item.lqip ?? undefined}
-              draggable={false}
-              unoptimized={item.url.endsWith(".svg")}
-            />
+            {item.kind === "video" ? (
+              <video
+                src={item.url}
+                className={styles.image}
+                poster={item.posterUrl ?? undefined}
+                controls
+                playsInline
+                preload="metadata"
+                aria-label={item.alt}
+              />
+            ) : (
+              <Image
+                src={item.url}
+                alt={item.alt}
+                width={item.width}
+                height={item.height}
+                className={styles.image}
+                sizes="(max-width: 767px) 92vw, 62vw"
+                priority={index === 0 && active}
+                loading={index === 0 ? "eager" : "lazy"}
+                placeholder={item.lqip ? "blur" : "empty"}
+                blurDataURL={item.lqip ?? undefined}
+                draggable={false}
+                unoptimized={item.url.endsWith(".svg")}
+              />
+            )}
             {item.caption ? (
               <figcaption className={styles.caption}>{item.caption}</figcaption>
             ) : null}

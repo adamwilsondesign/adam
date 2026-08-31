@@ -22,9 +22,30 @@ export type SanityImageAssetReference = {
   [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
 };
 
+export type SanityFileAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+};
+
 export type CaseStudyMedia = {
   _type: "caseStudyMedia";
+  mediaType?: "image" | "video";
   image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  video?: {
+    asset?: SanityFileAssetReference;
+    media?: unknown;
+    _type: "file";
+  };
+  videoUrl?: string;
+  poster?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
@@ -159,13 +180,6 @@ export type Engagement = {
   tags?: Array<string>;
   label?: string;
   description?: string;
-};
-
-export type SanityFileAssetReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
 };
 
 export type Client = {
@@ -374,10 +388,10 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | SanityImageAssetReference
+  | SanityFileAssetReference
   | CaseStudyMedia
   | CaseStudy
   | Engagement
-  | SanityFileAssetReference
   | Client
   | SanityImageCrop
   | SanityImageHotspot
@@ -528,7 +542,7 @@ export type WORK_INDEX_QUERY_RESULT = Array<{
 
 // Source: src/sanity/lib/queries.ts
 // Variable: CASE_STUDY_QUERY
-// Query: *[_type == "client" && caseStudy.slug.current == $slug && hidden != true][0]{  "clientId": _id,  "clientName": name,  "logoUrl": logo.asset->url,  engagements[]{ startYear, endYear, tags },  caseStudy{    "slug": slug.current,    title,    subtitle,    displayDate,    shortDescription,    body,    externalUrl,    heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },    gallery[]{ _key, image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip }, alt, caption, aspect },    seoTitle,    seoDescription,    ogImage  }}
+// Query: *[_type == "client" && caseStudy.slug.current == $slug && hidden != true][0]{  "clientId": _id,  "clientName": name,  "logoUrl": logo.asset->url,  engagements[]{ startYear, endYear, tags },  caseStudy{    "slug": slug.current,    title,    subtitle,    displayDate,    shortDescription,    body,    externalUrl,    heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },    gallery[]{      _key,      mediaType,      image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },      "videoFileUrl": video.asset->url,      videoUrl,      poster,      alt,      caption,      aspect    },    seoTitle,    seoDescription,    ogImage  }}
 export type CASE_STUDY_QUERY_RESULT = {
   clientId: string;
   clientName: string | null;
@@ -643,6 +657,7 @@ export type CASE_STUDY_QUERY_RESULT = {
     } | null;
     gallery: Array<{
       _key: string;
+      mediaType: "image" | "video" | null;
       image: {
         asset?: SanityImageAssetReference;
         media?: unknown;
@@ -651,6 +666,15 @@ export type CASE_STUDY_QUERY_RESULT = {
         _type: "image";
         dimensions: SanityImageDimensions | null;
         lqip: string | null;
+      } | null;
+      videoFileUrl: string | null;
+      videoUrl: string | null;
+      poster: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
       } | null;
       alt: string | null;
       caption: string | null;
@@ -682,7 +706,7 @@ declare module "@sanity/client" {
   interface SanityQueries {
     '*[_type == "siteSettings"][0]{\n  title,\n  description,\n  "logoUrl": logo.asset->url,\n  contactUrl,\n  linkedinUrl,\n  navigation[]{ label, href, available },\n  workStartYear,\n  workEndYear,\n  seoTitle,\n  seoDescription,\n  defaultOgImage,\n  "faviconUrl": favicon.asset->url\n}': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "client" && hidden != true] | order(name asc){\n  "id": _id,\n  name,\n  "slug": slug.current,\n  "logoUrl": logo.asset->url,\n  logoAspect,\n  logoTreatment{\n    scale,\n    padding,\n    alignment,\n    "lightUrl": logoLight.asset->url,\n    "darkUrl": logoDark.asset->url,\n    "compactUrl": compactLogo.asset->url\n  },\n  description,\n  engagements[]{ startYear, endYear, tags, description },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    heroImage\n  }\n}': WORK_INDEX_QUERY_RESULT;
-    '*[_type == "client" && caseStudy.slug.current == $slug && hidden != true][0]{\n  "clientId": _id,\n  "clientName": name,\n  "logoUrl": logo.asset->url,\n  engagements[]{ startYear, endYear, tags },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    subtitle,\n    displayDate,\n    shortDescription,\n    body,\n    externalUrl,\n    heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },\n    gallery[]{ _key, image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip }, alt, caption, aspect },\n    seoTitle,\n    seoDescription,\n    ogImage\n  }\n}': CASE_STUDY_QUERY_RESULT;
+    '*[_type == "client" && caseStudy.slug.current == $slug && hidden != true][0]{\n  "clientId": _id,\n  "clientName": name,\n  "logoUrl": logo.asset->url,\n  engagements[]{ startYear, endYear, tags },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    subtitle,\n    displayDate,\n    shortDescription,\n    body,\n    externalUrl,\n    heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },\n    gallery[]{\n      _key,\n      mediaType,\n      image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },\n      "videoFileUrl": video.asset->url,\n      videoUrl,\n      poster,\n      alt,\n      caption,\n      aspect\n    },\n    seoTitle,\n    seoDescription,\n    ogImage\n  }\n}': CASE_STUDY_QUERY_RESULT;
     '*[_type == "client" && defined(caseStudy.slug.current) && hidden != true]{\n  "slug": caseStudy.slug.current,\n  "updatedAt": _updatedAt\n}': CASE_STUDY_SLUGS_QUERY_RESULT;
   }
 }

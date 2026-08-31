@@ -240,17 +240,30 @@ export function MobileCaseSheet({
           <div className={styles.gallery}>
             {study.gallery.map((item, index) => (
               <figure key={`${item.url}-${index}`} className={styles.galleryItem}>
-                <Image
-                  src={item.url}
-                  alt={item.alt}
-                  width={item.width}
-                  height={item.height}
-                  className={styles.galleryImage}
-                  sizes="94vw"
-                  loading={index === 0 ? "eager" : "lazy"}
-                  placeholder={item.lqip ? "blur" : "empty"}
-                  blurDataURL={item.lqip ?? undefined}
-                />
+                {item.kind === "video" ? (
+                  <video
+                    src={item.url}
+                    className={styles.galleryVideo}
+                    style={{ aspectRatio: item.aspect === "square" ? "1 / 1" : "16 / 9" }}
+                    poster={item.posterUrl ?? undefined}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    aria-label={item.alt}
+                  />
+                ) : (
+                  <Image
+                    src={item.url}
+                    alt={item.alt}
+                    width={item.width}
+                    height={item.height}
+                    className={styles.galleryImage}
+                    sizes="94vw"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    placeholder={item.lqip ? "blur" : "empty"}
+                    blurDataURL={item.lqip ?? undefined}
+                  />
+                )}
                 {item.caption ? (
                   <figcaption className={styles.caption}>{item.caption}</figcaption>
                 ) : null}

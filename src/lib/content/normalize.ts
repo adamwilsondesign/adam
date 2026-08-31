@@ -143,12 +143,31 @@ type RawCaseStudyMedia = NonNullable<
 function normalizeMedia(item: RawCaseStudyMedia): WorkMedia | null {
   const aspect = stegaClean(item.aspect) as MediaAspect | null;
   if (aspect !== "square" && aspect !== "16:9") return null;
+  const fallback =
+    aspect === "square" ? { width: 1600, height: 1600 } : { width: 1920, height: 1080 };
+
+  if (stegaClean(item.mediaType) === "video") {
+    // Uploaded files win over external URLs when both are set.
+    const url = item.videoFileUrl ?? stegaClean(item.videoUrl) ?? null;
+    if (!url) return null;
+    return {
+      kind: "video",
+      url,
+      width: fallback.width,
+      height: fallback.height,
+      aspect,
+      alt: item.alt ?? "",
+      caption: item.caption ?? null,
+      lqip: null,
+      posterUrl: imageUrl(item.poster, GALLERY_WIDTH),
+    };
+  }
+
   const url = imageUrl(item.image, GALLERY_WIDTH);
   if (!url) return null;
   const dimensions = item.image?.dimensions;
-  const fallback =
-    aspect === "square" ? { width: 1600, height: 1600 } : { width: 1920, height: 1080 };
   return {
+    kind: "image",
     url,
     width: dimensions?.width ?? fallback.width,
     height: dimensions?.height ?? fallback.height,
@@ -156,6 +175,7 @@ function normalizeMedia(item: RawCaseStudyMedia): WorkMedia | null {
     alt: item.alt ?? "",
     caption: item.caption ?? null,
     lqip: item.image?.lqip ?? null,
+    posterUrl: null,
   };
 }
 
@@ -175,6 +195,7 @@ export function normalizeCaseStudy(raw: CASE_STUDY_QUERY_RESULT): CaseStudy | nu
 
   const heroDimensions = study.heroImage?.dimensions;
   const hero: WorkMedia = {
+    kind: "image",
     url: heroUrl,
     width: heroDimensions?.width ?? 1920,
     height: heroDimensions?.height ?? 1080,
