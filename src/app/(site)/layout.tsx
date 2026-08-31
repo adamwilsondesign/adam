@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 
 import { SiteChrome } from "@/components/chrome/SiteChrome";
+import { CloudsBackground } from "@/features/home/CloudsBackground";
 import { getSiteSettings } from "@/lib/content";
 import { siteUrl } from "@/lib/site-url";
 import { isSanityConfigured } from "@/sanity/env";
@@ -40,6 +41,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const settings = await getSiteSettings();
   return (
     <>
+      <CloudsBackground />
       <SiteChrome
         title={settings.title}
         logoUrl={settings.logoUrl}

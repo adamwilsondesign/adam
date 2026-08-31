@@ -1,17 +1,32 @@
+/* The blurred margin: the work grid and sky stay visible around the modal,
+   frosted so the spread reads as a floating layer over one continuous page. */
 .root {
   position: fixed;
   inset: 0;
   z-index: 55;
+  padding: clamp(16px, 3vw, 44px);
+  background: var(--color-scrim);
+  /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
+  backdrop-filter: blur(18px);
+}
+
+/* The spread itself: one rounded charcoal-on-void surface. */
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: grid;
   grid-template-columns: minmax(380px, 1fr) 2fr;
   background: var(--color-bg);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
 }
 
 /* Text-only control in the hairline register. */
 .close {
   position: absolute;
-  top: 10px;
-  left: calc(var(--page-margin) - 10px);
+  top: 18px;
+  left: 26px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -51,12 +66,14 @@
   min-width: 0;
 }
 
+/* The column header: the mark rests dead-centre in its own strip. */
 .logoBox {
   position: relative;
   width: min(220px, 60%);
   height: 96px;
   color: var(--color-fg);
   flex: none;
+  align-self: center;
 }
 
 .content {

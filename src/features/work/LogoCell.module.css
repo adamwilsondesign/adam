@@ -6,8 +6,6 @@
   width: 100%;
   height: 100%;
   color: var(--color-fg);
-  opacity: 0.8;
-  transition: opacity 160ms var(--ease-precise);
 }
 
 .cell[data-align="start"] {
@@ -18,11 +16,6 @@
 .cell[data-align="end"] {
   justify-content: flex-end;
   padding-right: 6%;
-}
-
-.cell:hover,
-.cell:focus-visible {
-  opacity: 1;
 }
 
 /* A clear square focus treatment that survives complex image masks. */
@@ -45,8 +38,8 @@
   /* width/height set inline from the optical normalization. */
 }
 
-/* Case-study cells lift slightly under hover and focus — a quiet cue on
-   top of the glow, without touching layout. */
+/* Case-study cells lift slightly under hover and focus — the quiet cue
+   that a deeper page exists, without touching layout. */
 @media (prefers-reduced-motion: no-preference) {
   a.cell .logoBox {
     transition: transform 240ms var(--ease-precise);
@@ -55,38 +48,5 @@
   a.cell:hover .logoBox,
   a.cell:focus-visible .logoBox {
     transform: scale(1.05);
-  }
-}
-
-/* The case-study signature: a bright, tight halo radiating from directly
-   behind the mark (it lives inside the logo box, under the mask), breathing
-   slowly. Hover and focus hold it at full brightness. */
-.glow {
-  position: absolute;
-  inset: -38%;
-  pointer-events: none;
-  background: radial-gradient(closest-side, var(--color-glow), transparent 58%);
-  opacity: 0.75;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .glow {
-    animation: glow-breathe 4.2s var(--ease-precise) infinite;
-  }
-
-  a.cell:hover .glow,
-  a.cell:focus-visible .glow {
-    animation: none;
-    opacity: 1;
-  }
-}
-
-@keyframes glow-breathe {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
   }
 }

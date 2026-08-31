@@ -44,18 +44,22 @@ function isDarkTheme(): boolean {
 }
 
 /**
- * The homepage's interactive sky: Vanta's WebGL cloud field, mounted as a
- * background layer behind the index. Vanta tracks the pointer on `window`,
- * so content stacked above stays interactive while the sky drifts with the
- * cursor. Skipped entirely under prefers-reduced-motion, and torn down on
- * navigation so nothing renders behind other routes.
+ * The site's interactive sky: Vanta's WebGL cloud field, mounted once in the
+ * site layout as the global backdrop. It persists across route changes so
+ * navigation reads as one continuous page. Vanta tracks the pointer on
+ * `window`, so content stacked above stays interactive while the sky drifts
+ * with the cursor. Skipped entirely under prefers-reduced-motion.
  */
+/** Hermetic test builds exclude the WebGL sky — it is pure scenery, and its
+ * software-rendered init skews animation timing under test. */
+const SKY_DISABLED = process.env.NEXT_PUBLIC_DISABLE_SKY === "1";
+
 export function CloudsBackground() {
   const ref = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (reducedMotion || !ref.current) return;
+    if (SKY_DISABLED || reducedMotion || !ref.current) return;
     const el = ref.current;
 
     let disposed = false;

@@ -31,7 +31,6 @@
   --color-action-bg-hover: #333333;
   --color-action-fg: #ffffff;
   --color-link: #ffffff; /* links are bone ghosts, never colored */
-  --color-glow: rgba(255, 255, 255, 0.24); /* case-study halo — faint bone bloom */
   --color-fill-active: #252525; /* selected tags: charcoal plate */
   --color-fill-active-fg: #ffffff;
 
@@ -93,7 +92,6 @@
   --color-action-bg-hover: #dedede;
   --color-action-fg: #000000;
   --color-link: #000000;
-  --color-glow: rgba(0, 0, 0, 0.2);
   --color-fill-active: #ebebeb;
   --color-fill-active-fg: #000000;
 

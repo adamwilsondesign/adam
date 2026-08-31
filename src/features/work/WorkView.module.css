@@ -1,7 +1,8 @@
 .root {
   position: fixed;
   inset: 0;
-  background: var(--color-band);
+  /* No fill of its own: the global sky backdrop shows through, so the
+     home → work transition reads as one continuous page. */
 }
 
 /* Full-viewport layer so the dock's fixed positioning survives the

@@ -29,28 +29,7 @@
   min-width: 44px;
   min-height: 44px;
   color: var(--color-fg);
-  opacity: 0.8;
   -webkit-tap-highlight-color: transparent;
-}
-
-.cellCase {
-  opacity: 1;
-}
-
-/* Case-study cells carry the bright, tight halo radiating from directly
-   behind the mark (inside the logo box, under the mask). */
-.glow {
-  position: absolute;
-  inset: -38%;
-  pointer-events: none;
-  background: radial-gradient(closest-side, var(--color-glow), transparent 58%);
-  opacity: 0.75;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .glow {
-    animation: glow-breathe 4.2s var(--ease-precise) infinite;
-  }
 }
 
 @keyframes glow-breathe {

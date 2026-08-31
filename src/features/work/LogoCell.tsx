@@ -96,7 +96,6 @@ export function LogoCell({
         }}
       >
         <span className={styles.logoBox} style={logoBoxStyle}>
-          <span className={styles.glow} aria-hidden />
           <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} />
         </span>
       </Link>

@@ -116,9 +116,7 @@ Content Lake automatically, and `/studio` mounts the Studio.
 - **Logos** are Sanity _file_ assets restricted to SVG. Uploads should have a
   transparent background, clean vector paths, a sensible `viewBox`, and no
   unnecessary fixed colours — the site recolours them per theme and uses
-  them as alpha masks for the case-study morph transitions. In the grid,
-  case-study logos are distinguished by a soft animated glow that follows
-  the cursor on desktop.
+  them as alpha masks for the case-study morph transitions.
 - **Live content:** published edits reach visitors without a redeploy (Live
   Content API via `defineLive`; `<SanityLive />` is mounted in the site
   layout).

@@ -323,7 +323,6 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
         }}
       >
         <span className={styles.logoBox} style={logoBoxStyle}>
-          <span className={styles.glow} aria-hidden />
           <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} compact={compact} />
         </span>
       </Link>

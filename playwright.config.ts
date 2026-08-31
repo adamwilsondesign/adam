@@ -52,6 +52,7 @@ export default defineConfig({
     // makes the facade treat Sanity as unconfigured).
     env: {
       NEXT_PUBLIC_CONTENT_SOURCE: "fixtures",
+      NEXT_PUBLIC_DISABLE_SKY: "1",
       NEXT_PUBLIC_SANITY_PROJECT_ID: "",
       SANITY_API_READ_TOKEN: "",
       SANITY_API_WRITE_TOKEN: "",

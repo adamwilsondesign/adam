@@ -127,73 +127,84 @@ export function DesktopCaseModal({
         delay: phase === "closing" ? 0.2 : 0,
       }}
     >
-      <button
-        type="button"
-        data-close
-        className={styles.close}
-        aria-label="Close case study"
-        onClick={requestClose}
-      >
-        <CloseIcon />
-        <span className={styles.closeLabel}>Close</span>
-      </button>
+      <div className={styles.frame}>
+        <button
+          type="button"
+          data-close
+          className={styles.close}
+          aria-label="Close case study"
+          onClick={requestClose}
+        >
+          <CloseIcon />
+          <span className={styles.closeLabel}>Close</span>
+        </button>
 
-      <div className={styles.panel}>
-        <motion.div ref={logoBoxRef} className={styles.logoBox} animate={logoControls} aria-hidden>
-          <LogoMark logoUrl={study.logoUrl} />
-        </motion.div>
+        <div className={styles.panel}>
+          <motion.div
+            ref={logoBoxRef}
+            className={styles.logoBox}
+            animate={logoControls}
+            aria-hidden
+          >
+            <LogoMark logoUrl={study.logoUrl} />
+          </motion.div>
+
+          <motion.div
+            className={styles.content}
+            variants={origin ? contentStagger : undefined}
+            initial={origin ? "hidden" : false}
+            animate={contentVisible ? "visible" : "hidden"}
+          >
+            <motion.h1 id="case-study-title" className={styles.title} variants={contentItem}>
+              {study.title}
+            </motion.h1>
+            {study.subtitle ? (
+              <motion.p className={styles.subtitle} variants={contentItem}>
+                {study.subtitle}
+              </motion.p>
+            ) : null}
+            <motion.p className={styles.meta} variants={contentItem}>
+              <span className={styles.client}>{study.clientName}</span>
+              <span className={styles.metaSep}> · </span>
+              {study.displayDate}
+              <span className={styles.metaSep}> · </span>
+              {study.tags.join(", ")}
+            </motion.p>
+            <motion.div className={styles.body} variants={contentItem}>
+              <PortableTextBody value={study.body} fallback={study.summary} />
+            </motion.div>
+            {study.externalUrl ? (
+              <motion.a
+                className={styles.external}
+                variants={contentItem}
+                href={study.externalUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() =>
+                  track({
+                    name: "external_link_followed",
+                    slug: study.slug,
+                    url: study.externalUrl!,
+                  })
+                }
+              >
+                Visit project
+                <ArrowUpRightIcon />
+                <span className="visually-hidden">(external site, opens in a new tab)</span>
+              </motion.a>
+            ) : null}
+          </motion.div>
+        </div>
 
         <motion.div
-          className={styles.content}
-          variants={origin ? contentStagger : undefined}
-          initial={origin ? "hidden" : false}
-          animate={contentVisible ? "visible" : "hidden"}
+          className={styles.media}
+          initial={origin ? { opacity: 0, x: 36 } : false}
+          animate={contentVisible ? { opacity: 1, x: 0 } : { opacity: 0 }}
+          transition={{ duration: 0.65, ease: EASE_OUT, delay: contentVisible ? 0.12 : 0 }}
         >
-          <motion.h1 id="case-study-title" className={styles.title} variants={contentItem}>
-            {study.title}
-          </motion.h1>
-          {study.subtitle ? (
-            <motion.p className={styles.subtitle} variants={contentItem}>
-              {study.subtitle}
-            </motion.p>
-          ) : null}
-          <motion.p className={styles.meta} variants={contentItem}>
-            <span className={styles.client}>{study.clientName}</span>
-            <span className={styles.metaSep}> · </span>
-            {study.displayDate}
-            <span className={styles.metaSep}> · </span>
-            {study.tags.join(", ")}
-          </motion.p>
-          <motion.div className={styles.body} variants={contentItem}>
-            <PortableTextBody value={study.body} fallback={study.summary} />
-          </motion.div>
-          {study.externalUrl ? (
-            <motion.a
-              className={styles.external}
-              variants={contentItem}
-              href={study.externalUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() =>
-                track({ name: "external_link_followed", slug: study.slug, url: study.externalUrl! })
-              }
-            >
-              Visit project
-              <ArrowUpRightIcon />
-              <span className="visually-hidden">(external site, opens in a new tab)</span>
-            </motion.a>
-          ) : null}
+          <Gallery media={study.gallery} slug={study.slug} active={active && phase === "open"} />
         </motion.div>
       </div>
-
-      <motion.div
-        className={styles.media}
-        initial={origin ? { opacity: 0, x: 36 } : false}
-        animate={contentVisible ? { opacity: 1, x: 0 } : { opacity: 0 }}
-        transition={{ duration: 0.65, ease: EASE_OUT, delay: contentVisible ? 0.12 : 0 }}
-      >
-        <Gallery media={study.gallery} slug={study.slug} active={active && phase === "open"} />
-      </motion.div>
     </motion.div>
   );
 }

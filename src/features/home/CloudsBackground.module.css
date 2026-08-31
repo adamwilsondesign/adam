@@ -1,7 +1,10 @@
 .clouds {
-  position: absolute;
+  /* The global backdrop: one persistent sky behind every route, so page
+     changes read as content moving over a continuous surface. Negative
+     z keeps it under all content, positioned or not. */
+  position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   /* The sky is scenery: never a hit target. Vanta reads the pointer from
      window events, so interaction survives this. */
   pointer-events: none;
