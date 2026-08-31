@@ -91,7 +91,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 15px var(--page-margin) max(15px, env(safe-area-inset-bottom, 0px));
-  background: color-mix(in srgb, var(--color-bg) 38%, transparent);
+  background: transparent;
   /* Unprefixed only — Lightning CSS emits the -webkit- twin itself. */
   backdrop-filter: blur(14px) saturate(1.05);
   border-top: 1px solid var(--color-line);
