@@ -199,11 +199,11 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
     : {
         initial: { opacity: 0, y: 18 },
         animate: { opacity: 1, y: 0 },
-        // Under the star entrance the dock lands as the first waves resolve,
-        // fully interactive around the 800–900ms mark.
+        // Under the star entrance the dock fades in as settling completes;
+        // the entrance lock keeps it non-interactive until then.
         transition: {
-          duration: entrance === "stars" ? 0.4 : DUR.slow,
-          delay: entrance === "stars" ? 0.5 : 0.18,
+          duration: entrance === "stars" ? 0.25 : DUR.slow,
+          delay: entrance === "stars" ? 0.85 : 0.18,
           ease: EASE_OUT,
         },
       };
@@ -234,6 +234,9 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
         ease: leaving ? EASE_EXIT : EASE_OUT,
       }}
       data-leaving={leaving || undefined}
+      // Scopes the mark-hiding rule and locks out all interaction (hover,
+      // tooltips, filters, gestures) until the entrance has settled.
+      data-star-entrance={entrance === "stars" || undefined}
     >
       <a className={styles.skipLink} href="#work-filters" onClick={skipToFilters}>
         Skip to filters
@@ -247,6 +250,7 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
             onInfoOpen={openInfo}
             gesturesEnabled={gesturesEnabled}
             starEntrance={entrance === "stars"}
+            onEntranceOrder={state.onEntranceOrder}
             onEntranceSettled={() => setEntrance("normal")}
           />
           <motion.div className={styles.dockLayer} {...dockEntrance}>
@@ -267,6 +271,7 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
             clients={state.visibleClients}
             openSlug={openSlug}
             starEntrance={entrance === "stars"}
+            onEntranceOrder={state.onEntranceOrder}
             onEntranceSettled={() => setEntrance("normal")}
           />
           <motion.div className={styles.dockLayer} {...dockEntrance}>

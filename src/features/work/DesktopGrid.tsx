@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useMotionValue, useReducedMotion } from "motio
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { measureStarTargets, provideWorkTargets } from "@/features/sky/sky-director";
+import { assignEntranceOrder } from "@/features/sky/star-field";
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
 
@@ -24,6 +25,8 @@ type DesktopGridProps = {
   openSlug: string | null;
   /** True while the star-to-logo entrance owns cell visibility. */
   starEntrance?: boolean;
+  /** Adopts the star→cell assignment as this entrance's composition. */
+  onEntranceOrder?: (order: string[]) => void;
   /** Fired once the star flight has resolved every logo. */
   onEntranceSettled?: () => void;
 };
@@ -47,6 +50,7 @@ export function DesktopGrid({
   clients,
   openSlug,
   starEntrance = false,
+  onEntranceOrder,
   onEntranceSettled,
 }: DesktopGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -174,31 +178,6 @@ export function DesktopGrid({
     return () => window.clearTimeout(timeout);
   }, []);
 
-  // ---- Star entrance: measure the logo boxes once and hand them to the
-  // sky director, which flies each project star into its cell and owns the
-  // crossfade. Provided exactly once per entrance.
-  const providedTargets = useRef(false);
-  const settled = useRef(onEntranceSettled);
-  useEffect(() => {
-    settled.current = onEntranceSettled;
-  }, [onEntranceSettled]);
-  const cellsMeasurable = size !== null;
-  useEffect(() => {
-    if (!starEntrance || providedTargets.current || !cellsMeasurable) return;
-    providedTargets.current = true;
-    if (clients.length === 0) {
-      settled.current?.();
-      return;
-    }
-    // Two frames: cells commit, then motion applies their initial rects.
-    let raf = requestAnimationFrame(() => {
-      raf = requestAnimationFrame(() => {
-        provideWorkTargets(measureStarTargets(), () => settled.current?.());
-      });
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [starEntrance, cellsMeasurable, clients.length]);
-
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -231,6 +210,47 @@ export function DesktopGrid({
       columns: Math.max(1, layout.columns),
     };
   }, [clients.length, size]);
+
+  // ---- Star entrance. Two deterministic steps, each exactly once:
+  // 1. Match every project star to its nearest grid cell (pure math over the
+  //    slot geometry) and adopt that assignment as the entrance composition.
+  // 2. After the reorder commits, measure the logo boxes and hand them to
+  //    the sky director, which advances the camera and owns the crossfade.
+  const entranceStarted = useRef(false);
+  const measureTimer = useRef(0);
+  const settled = useRef(onEntranceSettled);
+  useEffect(() => {
+    settled.current = onEntranceSettled;
+  }, [onEntranceSettled]);
+  const cellsMeasurable = size !== null && rects.length === clients.length;
+  useEffect(() => {
+    if (!starEntrance || entranceStarted.current || !cellsMeasurable) return;
+    entranceStarted.current = true;
+    if (clients.length === 0) {
+      settled.current?.();
+      return;
+    }
+    const origin = containerRef.current?.getBoundingClientRect() ?? { x: 0, y: 0 };
+    const centers = rects.map((rect) => ({
+      x: origin.x + rect.x + rect.width / 2,
+      y: origin.y + rect.y + rect.height / 2,
+    }));
+    const order = assignEntranceOrder(
+      clients.map((client) => client.id),
+      centers,
+      { x: window.innerWidth, y: window.innerHeight },
+    );
+    if (order.length === clients.length) onEntranceOrder?.(order);
+    // The reorder snaps while cells are hidden; measure two frames later.
+    measureTimer.current = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          provideWorkTargets(measureStarTargets(), () => settled.current?.());
+        });
+      });
+    }, 30);
+  }, [starEntrance, cellsMeasurable, clients, rects, onEntranceOrder]);
+  useEffect(() => () => window.clearTimeout(measureTimer.current), []);
 
   // ---- Roving tabindex ---------------------------------------------------
   const [focusIndex, setFocusIndex] = useState(0);
@@ -319,7 +339,15 @@ export function DesktopGrid({
                     transition: { duration: reducedMotion ? 0.12 : 0.26, ease: EASE_INOUT },
                   }}
                   transition={{
-                    duration: reducedMotion ? 0.16 : entering ? DUR.slow : DUR.grid,
+                    // The entrance assignment reorders hidden cells: snap,
+                    // so measured targets are final before the camera moves.
+                    duration: starEntrance
+                      ? 0
+                      : reducedMotion
+                        ? 0.16
+                        : entering
+                          ? DUR.slow
+                          : DUR.grid,
                     ease: entering ? EASE_OUT : EASE_INOUT,
                     delay: entranceDelay,
                   }}

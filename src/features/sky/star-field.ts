@@ -1,27 +1,26 @@
 /**
- * The night sky's data model: deterministic star placement and flight timing.
+ * The night sky's data model: a fixed field of stars in 3D and the single
+ * camera that moves through it.
  *
- * Every client owns exactly one "project star". Its position is seeded from
- * the client id alone, so it is identical on the server, after hydration and
- * across re-renders — the star IS the logo, seen from very far away, and that
- * identity must never drift. Ambient stars are seeded from a fixed constant.
- *
- * All coordinates are normalized (0–1 of the viewport); the renderer projects
- * them to pixels and applies depth parallax.
+ * Every client owns exactly one "project star" with immutable x, y, z
+ * coordinates seeded from the client id alone — identical on the server,
+ * after hydration and across re-renders. Nothing in the field ever animates
+ * its own position: all apparent movement comes from projecting the fixed
+ * points through the camera (forward travel plus a lateral parallax offset),
+ * so every star travels a straight radial line from the shared vanishing
+ * point and depth alone controls apparent speed and arrival order.
  */
 
 export type ProjectStar = {
   clientId: string;
-  /** Normalized sky position. */
+  /** Normalized rest-screen position (projection at camera zero). */
   x: number;
   y: number;
-  /** 0 = deepest (barely moves, flies last), 1 = nearest (flies first). */
-  depth: number;
-  /** Point radius in CSS pixels at depth 1. */
+  /** World depth. Larger is deeper; the camera never passes a star. */
+  z: number;
+  /** Point radius in CSS pixels at rest. */
   size: number;
-  /** Which of the overlapping entrance waves this star belongs to. */
-  wave: number;
-  /** Twinkle parameters — phase offset and period (seconds); 0 period = steady. */
+  /** Twinkle parameters — phase offset and period (seconds); 0 = steady. */
   twinklePhase: number;
   twinklePeriod: number;
 };
@@ -29,7 +28,7 @@ export type ProjectStar = {
 export type AmbientStar = {
   x: number;
   y: number;
-  depth: number;
+  z: number;
   size: number;
   alpha: number;
   twinklePhase: number;
@@ -39,34 +38,49 @@ export type AmbientStar = {
 /** The homepage headline block (lower-left column) that stars must respect. */
 export const HEADLINE_EXCLUSION = { x: 0, y: 0.5, width: 0.66, height: 0.5 } as const;
 
-export const WAVE_COUNT = 4;
+/** The shared vanishing point every radial line passes through. */
+export const VANISHING_POINT = { x: 0.5, y: 0.42 } as const;
 
 /**
- * Entrance choreography (desktop, milliseconds). Waves overlap: the nearest
- * stars leave first, deeper ones follow almost immediately.
+ * Camera geometry. Project stars live in z ∈ [Z_NEAR, Z_FAR]; the camera
+ * advances from 0 to TRAVEL and never reaches Z_NEAR, so no star ever blows
+ * up past the lens. Ambient stars sit deeper still and only drift outward.
  */
-export const ENTRANCE = {
-  total: 1450,
-  waveDelays: [150, 260, 380, 520],
-  travel: 900,
-  /** Portion of a star's travel spent on the forward depth run. */
-  depthPortion: 0.58,
+export const CAMERA = {
+  travel: 1.05,
+  zNear: 1.2,
+  zFar: 3.2,
+  ambientNear: 2.4,
+  ambientFar: 9,
 } as const;
 
-/** Mobile entrance: same shape, compressed. */
-export const ENTRANCE_MOBILE = {
-  total: 1050,
-  waveDelays: [90, 170, 260, 360],
-  travel: 660,
-  depthPortion: 0.58,
+/**
+ * Every star expands at least this much before resolving, so no logo can
+ * appear before its point has visibly travelled its radial line. Cells that
+ * sit inside a star's rest radius are scored against this same minimum, so
+ * the assignment naturally hands central cells to stars near the vanishing
+ * point.
+ */
+export const MIN_EXPANSION = 1.5;
+
+/** Entrance timing (ms, relative to camera start ≈ 250ms after the click). */
+export const ENTRANCE_MS = {
+  camera: 550,
+  crossfade: 190,
+  settle: 300,
 } as const;
 
-/** The return home: shorter, one breath out. */
-export const RETURN = {
-  total: 900,
-  contract: 240,
-  waveDelays: [0, 60, 120, 180],
-  travel: 620,
+/** Mobile entrance: the same camera, slightly quicker. */
+export const ENTRANCE_MOBILE_MS = {
+  camera: 480,
+  crossfade: 170,
+  settle: 260,
+} as const;
+
+/** The return home: one reversed camera move. */
+export const RETURN_MS = {
+  camera: 800,
+  contract: 200,
 } as const;
 
 /** FNV-1a — a stable 32-bit hash of the client id. */
@@ -100,17 +114,6 @@ function insideExclusion(x: number, y: number): boolean {
   );
 }
 
-/** The floor of the seeded depth range (see starForClient). */
-export const DEPTH_MIN = 0.25;
-
-export function waveForDepth(depth: number): number {
-  // Nearest stars (depth → 1) are wave 0; deepest are the last wave. The
-  // quantizer spans the actual seeded depth range so all waves participate.
-  const normalized = (1 - depth) / (1 - DEPTH_MIN);
-  const wave = Math.floor(normalized * WAVE_COUNT);
-  return Math.min(WAVE_COUNT - 1, Math.max(0, wave));
-}
-
 /**
  * The one deterministic project star for a client. Placement scatters across
  * the upper sky, rejected out of the headline block; depth, size and twinkle
@@ -128,16 +131,15 @@ export function starForClient(clientId: string): ProjectStar {
     // Deterministic last resort: lift the star into the open sky band.
     y = 0.03 + (y % 0.4);
   }
-  const depth = DEPTH_MIN + random() * (1 - DEPTH_MIN);
+  const z = CAMERA.zNear + random() * (CAMERA.zFar - CAMERA.zNear);
   // Roughly 40% of project stars breathe; the rest hold steady.
   const twinkles = random() < 0.4;
   return {
     clientId,
     x,
     y,
-    depth,
+    z,
     size: 1.1 + random() * 1.1,
-    wave: waveForDepth(depth),
     twinklePhase: random() * Math.PI * 2,
     twinklePeriod: twinkles ? 3.5 + random() * 4 : 0,
   };
@@ -149,19 +151,19 @@ export function projectStarsFor(clientIds: readonly string[]): ProjectStar[] {
 
 const AMBIENT_SEED = 0x5eed5;
 
-/** The restrained ambient field: smaller, dimmer, spread over the whole sky. */
+/** The restrained ambient field: smaller, dimmer, deeper than every flight. */
 export function ambientStarsFor(count: number): AmbientStar[] {
   const random = seededRandom(AMBIENT_SEED);
   const stars: AmbientStar[] = [];
   for (let i = 0; i < count; i++) {
     const x = random();
     const y = random() * 0.86;
-    const depth = 0.1 + random() * 0.8;
+    const z = CAMERA.ambientNear + random() * (CAMERA.ambientFar - CAMERA.ambientNear);
     const twinkles = random() < 0.25;
     stars.push({
       x,
       y,
-      depth,
+      z,
       size: 0.4 + random() * 0.9,
       // Keep faint stars near the headline effectively invisible.
       alpha: (0.16 + random() * 0.3) * (insideExclusion(x, y) ? 0.45 : 1),
@@ -172,13 +174,121 @@ export function ambientStarsFor(count: number): AmbientStar[] {
   return stars;
 }
 
-/** Per-star flight schedule: when it leaves and how long it travels. */
-export function flightWindow(
-  star: Pick<ProjectStar, "wave" | "depth">,
-  timing: { waveDelays: readonly number[]; travel: number },
-): { delay: number; duration: number } {
-  const waveDelay = timing.waveDelays[star.wave] ?? 0;
-  // Slight in-wave spread from depth so members of a wave don't move as one.
-  const spread = (1 - star.depth) * 90;
-  return { delay: waveDelay + spread, duration: timing.travel };
+// ---------------------------------------------------------------------------
+// Perspective projection
+// ---------------------------------------------------------------------------
+
+export type Vec = { x: number; y: number };
+
+/**
+ * Projection scale for a star at depth z with the camera at cameraZ: the
+ * fixed point's screen offset from the vanishing point is its rest offset
+ * multiplied by this factor. Monotonic in cameraZ; shallower z grows faster.
+ */
+export function projectionFactor(z: number, cameraZ: number): number {
+  return z / (z - cameraZ);
+}
+
+/** The camera position at which a star's projection reaches factor k. */
+export function cameraForFactor(z: number, k: number): number {
+  return z * (1 - 1 / k);
+}
+
+/**
+ * Screen position of a fixed star for the current camera. `parallax` is the
+ * camera's lateral offset in pixels at depth 1 — divided by depth, so whole
+ * depth layers shift together and deeper layers move less. Everything is one
+ * camera transform; stars never move individually.
+ */
+export function projectPoint(rest: Vec, z: number, cameraZ: number, vp: Vec, parallax: Vec): Vec {
+  const denom = z - cameraZ;
+  const k = z / denom;
+  return {
+    x: vp.x + (rest.x - vp.x) * k - parallax.x / denom,
+    y: vp.y + (rest.y - vp.y) * k - parallax.y / denom,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Star → grid-cell assignment
+// ---------------------------------------------------------------------------
+
+/** Radial ray of a star: origin, unit direction and rest radius (pixels). */
+export function starRay(star: Pick<ProjectStar, "clientId" | "x" | "y">, viewport: Vec) {
+  const vp = { x: VANISHING_POINT.x * viewport.x, y: VANISHING_POINT.y * viewport.y };
+  const rest = { x: star.x * viewport.x, y: star.y * viewport.y };
+  let dx = rest.x - vp.x;
+  let dy = rest.y - vp.y;
+  let r0 = Math.hypot(dx, dy);
+  if (r0 < 1) {
+    // Degenerate rest-on-vanishing-point: a deterministic outward direction.
+    const angle = (hashString(star.clientId) % 360) * (Math.PI / 180);
+    dx = Math.cos(angle);
+    dy = Math.sin(angle);
+    r0 = 1;
+  } else {
+    dx /= r0;
+    dy /= r0;
+  }
+  return { vp, rest, dir: { x: dx, y: dy }, r0 };
+}
+
+/**
+ * Deterministic minimum-distance matching between project stars and grid
+ * cells. Each star's straight radial line is fixed; the score of a (star,
+ * cell) pair is the distance from the cell's center to the nearest point on
+ * that ray at or beyond the star's rest radius. Greedy over globally sorted
+ * pairs (score, then ids) — stable for identical inputs.
+ *
+ * Returns the entrance composition: `order[cellIndex] = clientId`.
+ */
+export function assignEntranceOrder(
+  clientIds: readonly string[],
+  cellCenters: readonly Vec[],
+  viewport: Vec,
+): string[] {
+  const count = Math.min(clientIds.length, cellCenters.length);
+  const pairs: { score: number; id: string; idIndex: number; cell: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const id = clientIds[i]!;
+    const ray = starRay(starForClient(id), viewport);
+    for (let cell = 0; cell < count; cell++) {
+      const c = cellCenters[cell]!;
+      const s = (c.x - ray.vp.x) * ray.dir.x + (c.y - ray.vp.y) * ray.dir.y;
+      const t = Math.max(s, ray.r0 * MIN_EXPANSION);
+      const nx = ray.vp.x + ray.dir.x * t;
+      const ny = ray.vp.y + ray.dir.y * t;
+      pairs.push({ score: Math.hypot(c.x - nx, c.y - ny), id, idIndex: i, cell });
+    }
+  }
+  pairs.sort((a, b) => a.score - b.score || a.id.localeCompare(b.id) || a.cell - b.cell);
+  const byCell = new Array<string | null>(count).fill(null);
+  const placed = new Set<string>();
+  for (const pair of pairs) {
+    if (placed.has(pair.id) || byCell[pair.cell] !== null) continue;
+    byCell[pair.cell] = pair.id;
+    placed.add(pair.id);
+    if (placed.size === count) break;
+  }
+  // Guaranteed complete for equal counts; fill defensively regardless.
+  for (let i = count; i < clientIds.length; i++) placed.add(clientIds[i]!);
+  const leftovers = clientIds.filter((id) => !placed.has(id));
+  return byCell.map((id) => id ?? leftovers.shift() ?? "").filter((id) => id !== "");
+}
+
+/**
+ * The camera progress (0–1) at which a star's straight radial line carries it
+ * to its assigned cell — the moment it resolves into the logo. Depth and the
+ * required expansion set arrival order naturally.
+ */
+export function arrivalProgress(
+  star: Pick<ProjectStar, "clientId" | "x" | "y" | "z">,
+  cellCenter: Vec,
+  viewport: Vec,
+): number {
+  const ray = starRay(star, viewport);
+  const s = (cellCenter.x - ray.vp.x) * ray.dir.x + (cellCenter.y - ray.vp.y) * ray.dir.y;
+  const k = Math.min(12, Math.max(MIN_EXPANSION, s / ray.r0));
+  const cameraZ = cameraForFactor(star.z, k);
+  return Math.min(1, Math.max(0.12, cameraZ / CAMERA.travel));
 }

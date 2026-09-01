@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { measureStarTargets, provideWorkTargets } from "@/features/sky/sky-director";
+import { assignEntranceOrder } from "@/features/sky/star-field";
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
 import { EASE_INOUT } from "@/lib/motion";
@@ -37,6 +38,8 @@ type MobileCanvasProps = {
   gesturesEnabled: boolean;
   /** True while the star-to-logo entrance owns cell visibility. */
   starEntrance?: boolean;
+  /** Adopts the star→cell assignment as this entrance's composition. */
+  onEntranceOrder?: (order: string[]) => void;
   /** Fired once the star flight has resolved every logo. */
   onEntranceSettled?: () => void;
 };
@@ -54,6 +57,7 @@ export function MobileCanvas({
   onInfoOpen,
   gesturesEnabled,
   starEntrance = false,
+  onEntranceOrder,
   onEntranceSettled,
 }: MobileCanvasProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -100,28 +104,45 @@ export function MobileCanvas({
     };
   }, [columns]);
 
-  // Star entrance: measure the (scroll-restored) logo boxes once and hand
-  // them to the sky director. Offscreen cells still take part — their stars
-  // fly toward positions past the fold and fade en route.
-  const providedTargets = useRef(false);
+  // Star entrance, two deterministic steps (see DesktopGrid): match stars to
+  // the scroll-restored cell slots and adopt that composition, then measure
+  // the logo boxes and hand them to the sky director. Offscreen cells still
+  // take part — their stars head past the fold along their straight lines.
+  const entranceStarted = useRef(false);
+  const measureTimer = useRef(0);
   const settled = useRef(onEntranceSettled);
   useEffect(() => {
     settled.current = onEntranceSettled;
   }, [onEntranceSettled]);
   useEffect(() => {
-    if (!starEntrance || providedTargets.current) return;
-    providedTargets.current = true;
+    if (!starEntrance || entranceStarted.current) return;
+    entranceStarted.current = true;
     if (clients.length === 0) {
       settled.current?.();
       return;
     }
-    let raf = requestAnimationFrame(() => {
-      raf = requestAnimationFrame(() => {
-        provideWorkTargets(measureStarTargets(), () => settled.current?.());
+    const cells = scrollerRef.current?.querySelectorAll<HTMLElement>("[data-client-cell]");
+    if (cells && cells.length === clients.length) {
+      const centers = [...cells].map((cell) => {
+        const rect = cell.getBoundingClientRect();
+        return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
       });
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [starEntrance, clients.length]);
+      const order = assignEntranceOrder(
+        clients.map((client) => client.id),
+        centers,
+        { x: window.innerWidth, y: window.innerHeight },
+      );
+      if (order.length === clients.length) onEntranceOrder?.(order);
+    }
+    measureTimer.current = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          provideWorkTargets(measureStarTargets(), () => settled.current?.());
+        });
+      });
+    }, 30);
+  }, [starEntrance, clients, onEntranceOrder]);
+  useEffect(() => () => window.clearTimeout(measureTimer.current), []);
 
   useGesture(
     {
@@ -172,7 +193,9 @@ export function MobileCanvas({
           {clients.map((client) => (
             <motion.div
               key={client.id}
-              layout={!reducedMotion}
+              // The entrance assignment reorders hidden cells: snap, so the
+              // measured targets are final before the camera moves.
+              layout={!reducedMotion && !starEntrance}
               className={styles.cellBox}
               initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.88 }}
               animate={{ opacity: 1, scale: 1 }}

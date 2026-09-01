@@ -44,6 +44,12 @@ export type WorkState = {
   onShuffle: () => void;
   onYearsChange: (candidate: YearRange, moved: "start" | "end") => void;
   onYearsInteractionEnd: () => void;
+  /**
+   * Adopts the star-entrance composition (each project star matched to its
+   * nearest grid cell). Ignored unless it is a permutation of the currently
+   * visible clients, so filters and restoration cannot be disturbed.
+   */
+  onEntranceOrder: (order: string[]) => void;
 };
 
 type InitialState = {
@@ -200,6 +206,17 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
     }
   }, [clients.length, commitFilter]);
 
+  const onEntranceOrder = useCallback(
+    (order: string[]) => {
+      const visible = new Set(filterClients(clients, filterRef.current).map((c) => c.id));
+      if (order.length !== visible.size || order.some((id) => !visible.has(id))) return;
+      orderRef.current = order;
+      setDisplayOrder(order);
+      persist(filterRef.current, order);
+    },
+    [clients, persist],
+  );
+
   const onShuffle = useCallback(() => {
     if (isEmptySelection(filterRef.current)) return;
     const shuffled = shuffleWithSeed(orderRef.current, newSeed());
@@ -305,5 +322,6 @@ export function useWorkState(clients: WorkClient[], bounds: YearRange): WorkStat
     onShuffle,
     onYearsChange,
     onYearsInteractionEnd,
+    onEntranceOrder,
   };
 }

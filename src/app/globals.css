@@ -153,9 +153,15 @@ svg {
 
 /* While the star-to-logo entrance owns the Work grid, the logo marks stay
    hidden until the sky director fades each one in at the exact position its
-   star arrives (inline styles written per frame override this rule). */
+   star arrives (inline styles written per frame override this rule), and
+   the whole view stays non-interactive — no hover, tooltips or filters —
+   until settling completes. */
 [data-star-entrance] [data-star-target] {
   opacity: 0;
+}
+
+[data-star-entrance] {
+  pointer-events: none;
 }
 
 @media (max-width: 767px) {

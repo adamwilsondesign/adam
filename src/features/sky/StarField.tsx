@@ -5,12 +5,16 @@ import { useEffect, useRef } from "react";
 
 import {
   ambientStarsFor,
-  ENTRANCE,
-  ENTRANCE_MOBILE,
-  flightWindow,
+  arrivalProgress,
+  CAMERA,
+  ENTRANCE_MOBILE_MS,
+  ENTRANCE_MS,
+  projectPoint,
   projectStarsFor,
-  RETURN,
+  RETURN_MS,
+  VANISHING_POINT,
   type ProjectStar,
+  type Vec,
 } from "./star-field";
 import {
   measureStarTargets,
@@ -23,50 +27,50 @@ import styles from "./StarField.module.css";
 
 /** Sky presence per route: home is full, everything else recedes. */
 const WORK_PRESENCE = 0.32;
-const POINTER_AMP_HOME = 14;
-const POINTER_AMP_WORK = 6;
-const VANISHING_POINT = { x: 0.5, y: 0.42 };
-
-type Vec = { x: number; y: number };
+/** Lateral camera offset (px at depth 1) driven by the pointer. */
+const POINTER_AMP_HOME = 22;
+const POINTER_AMP_WORK = 9;
 
 type StarRuntime = {
   star: ProjectStar;
-  /** Current rendered position (CSS px) and presentation. */
-  px: number;
-  py: number;
-  alpha: number;
-  radius: number;
-  phase: "sky" | "toWork" | "resolved" | "toHome";
-  /** Flight state (valid while phase is a flight or "resolved"). */
-  start: Vec;
-  rayEnd: Vec;
-  control: Vec;
-  target: TargetRect | null;
-  delay: number;
-  duration: number;
-  /** Target element for the DOM crossfade, resolved at flight start. */
+  /** Assigned cell for the current/last flight, or null when unassigned. */
+  cell: TargetRect | null;
+  /** Camera progress (0–1) at which this star meets its cell. */
+  arrival: number;
+  /** Arrival instant on the eased flight clock (ms). */
+  arrivalTime: number;
+  /** True once the star has handed off to its logo (never drawn again). */
+  resolved: boolean;
+  /** Star flew but had no cell in the last entrance (stays a point). */
+  unassigned: boolean;
   el: HTMLElement | null;
 };
 
-const easeInCubic = (t: number) => t * t * t;
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-function quadBezier(a: Vec, c: Vec, b: Vec, t: number): Vec {
-  const u = 1 - t;
-  return {
-    x: u * u * a.x + 2 * u * t * c.x + t * t * b.x,
-    y: u * u * a.y + 2 * u * t * c.y + t * t * b.y,
-  };
+/** Numeric inverse of the camera easing (monotonic on [0, 1]). */
+function invEaseInOutCubic(value: number): number {
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (easeInOutCubic(mid) < value) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
 }
 
 /**
- * The persistent night sky: a Canvas 2D star field above the clouds, mounted
- * once in the site layout. Forty seeded "project stars" correspond 1:1 with
- * the client list; on Work entry they accelerate through depth and resolve
- * into the measured logo cells (the DOM crossfade happens here, imperatively,
- * so React never renders per frame). Canvas 2D keeps the sky alive when
+ * The persistent night sky: a fixed 3D field of stars drawn on Canvas 2D,
+ * mounted once in the site layout. Forty seeded "project stars" correspond
+ * 1:1 with the client list. All movement — the Work entrance, the return
+ * home, pointer parallax — is one camera transform: a forward translation
+ * (global cameraProgress) plus a depth-divided lateral offset, projected in
+ * perspective. Stars never animate individually; each travels its straight
+ * radial line from the shared vanishing point, and depth alone decides
+ * apparent speed and arrival order. Canvas 2D keeps the sky alive when
  * WebGL is unavailable — it is its own fallback.
  */
 export function StarField({ clientIds }: { clientIds: string[] }) {
@@ -108,7 +112,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       ambient = ambientStarsFor(isMobile() ? 55 : 110);
     };
 
-    // ---- Star model -------------------------------------------------------
+    // ---- The fixed field --------------------------------------------------
     const projectStars = projectStarsFor(clientIds);
     let ambient = ambientStarsFor(window.innerWidth < 768 ? 55 : 110);
     const runtimes = new Map<string, StarRuntime>(
@@ -116,23 +120,26 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         star.clientId,
         {
           star,
-          px: 0,
-          py: 0,
-          alpha: 1,
-          radius: star.size,
-          phase: "sky" as const,
-          start: { x: 0, y: 0 },
-          rayEnd: { x: 0, y: 0 },
-          control: { x: 0, y: 0 },
-          target: null,
-          delay: 0,
-          duration: 0,
+          cell: null,
+          arrival: 1,
+          arrivalTime: 0,
+          resolved: false,
+          unassigned: false,
           el: null,
         },
       ]),
     );
 
-    // ---- Pointer parallax (lerped; deeper stars move less) ----------------
+    // ---- The camera -------------------------------------------------------
+    // One global progress value. Flights ease it between 0 (home) and
+    // CAMERA.travel (work); outside flights it relaxes toward the route's
+    // resting position. The pointer contributes a lateral offset divided by
+    // depth — whole layers shift together, never individual stars.
+    let cameraZ = pathnameRef.current === "/" ? 0 : CAMERA.travel;
+    const cameraTarget = () => (pathnameRef.current === "/" ? 0 : CAMERA.travel);
+    let presence = pathnameRef.current === "/" ? 1 : WORK_PRESENCE;
+    const presenceTarget = () => (pathnameRef.current === "/" ? 1 : WORK_PRESENCE);
+
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
     const onPointerMove = (event: PointerEvent) => {
       pointer.tx = event.clientX / width - 0.5;
@@ -148,111 +155,103 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
 
-    // ---- Route presence (home bright, work dim) ---------------------------
-    let presence = pathnameRef.current === "/" ? 1 : WORK_PRESENCE;
-    const presenceTarget = () => (pathnameRef.current === "/" ? 1 : WORK_PRESENCE);
-
-    // ---- Flight engine ----------------------------------------------------
-    let flight: {
+    // ---- Flights ----------------------------------------------------------
+    type Flight = {
       kind: "toWork" | "toHome";
       startedAt: number;
-      total: number;
+      camera: number;
+      /** The camera eases fromCam → toCam, so interruptions never snap. */
+      fromCam: number;
+      toCam: number;
+      crossfade: number;
+      settle: number;
       done: (() => void) | null;
+      settleEnd: number;
       cleanupAt: number | null;
-    } | null = null;
+    };
+    let flight: Flight | null = null;
 
-    const skyPosition = (star: ProjectStar, amp: number): Vec => {
-      const depthFactor = 0.35 + 0.65 * star.depth;
-      return {
-        x: star.x * width + pointer.x * amp * depthFactor,
-        y: star.y * height + pointer.y * amp * depthFactor,
-      };
+    /** Flight time at which the eased camera passes absolute position z. */
+    const timeForCamera = (z: number, f: Pick<Flight, "fromCam" | "toCam" | "camera">) => {
+      const span = f.toCam - f.fromCam;
+      if (Math.abs(span) < 1e-6) return 0;
+      const value = clamp01((z - f.fromCam) / span);
+      return f.camera * invEaseInOutCubic(value);
     };
 
+    const cellCenter = (cell: TargetRect): Vec => ({
+      x: cell.x + cell.width / 2,
+      y: cell.y + cell.height / 2,
+    });
+
     const prepareWorkFlight = (targets: WorkTargets, done: () => void) => {
-      const timing = isMobile() ? ENTRANCE_MOBILE : ENTRANCE;
-      const diag = Math.hypot(width, height);
-      for (const runtime of runtimes.values()) {
-        const { star } = runtime;
-        const target = targets.get(star.clientId) ?? null;
-        runtime.target = target;
-        runtime.el = target
-          ? document.querySelector<HTMLElement>(`[data-star-target="${CSS.escape(star.clientId)}"]`)
-          : null;
-        // Per-frame transform writes must not fight the stylesheet's hover
-        // transition; inline none wins for the duration of the flight.
-        if (runtime.el) runtime.el.style.transition = "none";
-        if (!target) {
-          // Filtered out this visit: recede into the ambient treatment.
-          runtime.phase = "sky";
-          continue;
-        }
-        const start = { x: runtime.px, y: runtime.py };
-        const vp = { x: VANISHING_POINT.x * width, y: VANISHING_POINT.y * height };
-        let dx = start.x - vp.x;
-        let dy = start.y - vp.y;
-        const len = Math.hypot(dx, dy) || 1;
-        dx /= len;
-        dy /= len;
-        const rayLen = diag * (0.06 + 0.11 * star.depth);
-        const rayEnd = { x: start.x + dx * rayLen, y: start.y + dy * rayLen };
-        const center = {
-          x: target.x + target.width / 2,
-          y: target.y + target.height / 2,
-        };
-        const bend = Math.hypot(center.x - rayEnd.x, center.y - rayEnd.y) * 0.28;
-        const schedule = flightWindow(star, timing);
-        runtime.phase = "toWork";
-        runtime.start = start;
-        runtime.rayEnd = rayEnd;
-        runtime.control = { x: rayEnd.x + dx * bend, y: rayEnd.y + dy * bend };
-        runtime.delay = schedule.delay;
-        runtime.duration = schedule.duration;
-      }
-      flight = {
+      const timing = isMobile() ? ENTRANCE_MOBILE_MS : ENTRANCE_MS;
+      const viewport = { x: width, y: height };
+      const next: Flight = {
         kind: "toWork",
         startedAt: performance.now(),
-        total: timing.total,
+        camera: timing.camera,
+        fromCam: cameraZ,
+        toCam: CAMERA.travel,
+        crossfade: timing.crossfade,
+        settle: timing.settle,
         done,
+        settleEnd: timing.camera,
         cleanupAt: null,
       };
+      for (const runtime of runtimes.values()) {
+        const { star } = runtime;
+        const cell = targets.get(star.clientId) ?? null;
+        runtime.cell = cell;
+        runtime.resolved = false;
+        runtime.unassigned = cell === null;
+        runtime.el = cell
+          ? document.querySelector<HTMLElement>(`[data-star-target="${CSS.escape(star.clientId)}"]`)
+          : null;
+        // Per-frame style writes must not fight the stylesheet's hover
+        // transition; inline none wins for the duration of the flight.
+        if (runtime.el) runtime.el.style.transition = "none";
+        if (!cell) continue;
+        runtime.arrival = arrivalProgress(star, cellCenter(cell), viewport);
+        runtime.arrivalTime = timeForCamera(runtime.arrival * CAMERA.travel, next);
+        next.settleEnd = Math.max(next.settleEnd, runtime.arrivalTime + timing.settle);
+      }
+      flight = next;
     };
 
     const prepareHomeFlight = (targets: WorkTargets, domIsLive: boolean) => {
-      const now = performance.now();
+      const viewport = { x: width, y: height };
       for (const runtime of runtimes.values()) {
-        const { star } = runtime;
-        const target = targets.get(star.clientId) ?? null;
-        if (!target) {
-          runtime.phase = "sky";
-          continue;
+        const cell = targets.get(runtime.star.clientId) ?? null;
+        runtime.cell = cell;
+        runtime.resolved = cell !== null;
+        runtime.unassigned = false;
+        if (cell) {
+          runtime.arrival = arrivalProgress(runtime.star, cellCenter(cell), viewport);
         }
-        const center = { x: target.x + target.width / 2, y: target.y + target.height / 2 };
-        const schedule = flightWindow(star, RETURN);
-        runtime.phase = "toHome";
-        runtime.target = target;
-        runtime.start = center;
-        runtime.delay = schedule.delay + (domIsLive ? RETURN.contract : 40);
-        runtime.duration = RETURN.travel;
-        runtime.px = center.x;
-        runtime.py = center.y;
-        // Contract the DOM logo into the point before the canvas takes over.
-        if (domIsLive) {
+        // The logos fade down in place as the camera starts pulling back —
+        // no per-star motion, just a straight local contraction.
+        if (cell && domIsLive) {
           const el = document.querySelector<HTMLElement>(
-            `[data-star-target="${CSS.escape(star.clientId)}"]`,
+            `[data-star-target="${CSS.escape(runtime.star.clientId)}"]`,
           );
           if (el?.isConnected) {
-            el.style.transition = `transform ${RETURN.contract}ms cubic-bezier(0.4, 0, 0.6, 1) ${schedule.delay}ms, opacity ${RETURN.contract}ms linear ${schedule.delay}ms`;
-            el.style.transform = "scale(0.12)";
+            el.style.transition = `transform ${RETURN_MS.contract}ms ease-in, opacity ${RETURN_MS.contract}ms linear`;
+            el.style.transform = "scale(0.3)";
             el.style.opacity = "0";
           }
         }
       }
       flight = {
         kind: "toHome",
-        startedAt: now,
-        total: RETURN.total,
+        startedAt: performance.now(),
+        camera: RETURN_MS.camera,
+        fromCam: cameraZ,
+        toCam: 0,
+        crossfade: 150,
+        settle: 0,
         done: null,
+        settleEnd: RETURN_MS.camera,
         cleanupAt: null,
       };
     };
@@ -261,10 +260,15 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       flyToWork: (targets, done) => {
         if (reducedMotion) {
           // Short crossfade: the concept survives without spatial motion.
-          for (const runtime of runtimes.values()) runtime.phase = "sky";
+          for (const runtime of runtimes.values()) {
+            runtime.resolved = targets.has(runtime.star.clientId);
+            runtime.unassigned = !runtime.resolved;
+          }
+          cameraZ = CAMERA.travel;
           const els = document.querySelectorAll<HTMLElement>("[data-star-target]");
           els.forEach((el) => {
-            el.style.transition = "opacity 320ms linear";
+            el.style.transition = "opacity 320ms linear, transform 320ms ease-out";
+            el.style.transform = "scale(1)";
             el.style.opacity = "1";
           });
           window.setTimeout(() => {
@@ -273,6 +277,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
               els.forEach((el) => {
                 el.style.transition = "";
                 el.style.opacity = "";
+                el.style.transform = "";
               });
             }, 150);
           }, 340);
@@ -281,14 +286,21 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         prepareWorkFlight(targets, done);
       },
       flyToHome: (targets, options) => {
-        if (reducedMotion) return;
+        if (reducedMotion) {
+          for (const runtime of runtimes.values()) {
+            runtime.resolved = false;
+            runtime.unassigned = false;
+          }
+          cameraZ = 0;
+          return;
+        }
         prepareHomeFlight(targets, options.domIsLive);
       },
     });
 
     // Browser Back from /work to /: the DOM is about to vanish — snapshot the
-    // cells synchronously (React hasn't re-rendered yet) and reverse from
-    // there. Forward navigation into /work stays a plain fade by design.
+    // cells synchronously (React hasn't re-rendered yet) and reverse the
+    // camera from there. Forward navigation into /work stays a plain fade.
     const onPopState = () => {
       if (reducedMotion) return;
       const wasWork = pathnameRef.current.startsWith("/work");
@@ -305,20 +317,9 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     let running = true;
     let frameParity = 0;
 
-    const drawStar = (x: number, y: number, radius: number, alpha: number, glow: number) => {
+    const drawPoint = (x: number, y: number, radius: number, alpha: number) => {
       if (alpha <= 0.004) return;
-      if (glow > 0.01) {
-        const glowRadius = radius * (2.5 + glow * 4);
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
-        gradient.addColorStop(0, `rgba(246, 247, 244, ${alpha})`);
-        gradient.addColorStop(0.45, `rgba(238, 240, 236, ${alpha * 0.35 * glow})`);
-        gradient.addColorStop(1, "rgba(238, 240, 236, 0)");
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
-        ctx.fill();
-        return;
-      }
+      if (x < -40 || x > width + 40 || y < -40 || y > height + 40) return;
       ctx.fillStyle = `rgba(244, 245, 242, ${alpha})`;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -329,110 +330,91 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       if (!running) return;
       frame = requestAnimationFrame(render);
       frameParity ^= 1;
-      // Idle sky renders at half rate; flights get every frame.
-      if (!flight && frameParity === 0 && !reducedMotion) return;
+      const cameraSettled = Math.abs(cameraZ - cameraTarget()) < 0.0005;
+      // The idle sky renders at half rate; camera movement gets every frame.
+      if (!flight && cameraSettled && frameParity === 0 && !reducedMotion) return;
 
-      // Pointer + presence easing.
       if (!reducedMotion) {
         pointer.x += (pointer.tx - pointer.x) * 0.06;
         pointer.y += (pointer.ty - pointer.y) * 0.06;
       }
       presence += (presenceTarget() - presence) * 0.05;
 
+      // ---- One global cameraProgress drives everything. ----
+      const elapsed = flight ? now - flight.startedAt : 0;
+      if (flight) {
+        const t = clamp01(elapsed / flight.camera);
+        cameraZ = flight.fromCam + (flight.toCam - flight.fromCam) * easeInOutCubic(t);
+      } else if (!cameraSettled) {
+        cameraZ += (cameraTarget() - cameraZ) * 0.08;
+        if (Math.abs(cameraZ - cameraTarget()) < 0.0005) cameraZ = cameraTarget();
+      }
+      const progress = cameraZ / CAMERA.travel;
+
       ctx.clearRect(0, 0, width, height);
       const seconds = now / 1000;
-      const amp = presence > 0.7 ? POINTER_AMP_HOME : POINTER_AMP_WORK;
+      const amp = (presence > 0.7 ? POINTER_AMP_HOME : POINTER_AMP_WORK) * (reducedMotion ? 0 : 1);
+      const parallax = { x: pointer.x * amp, y: pointer.y * amp };
+      const vp = { x: VANISHING_POINT.x * width, y: VANISHING_POINT.y * height };
 
-      // Ambient field.
+      // Ambient field: fixed deep points, projected through the same camera.
       for (const star of ambient) {
-        const depthFactor = 0.35 + 0.65 * star.depth;
-        const x = star.x * width + (reducedMotion ? 0 : pointer.x * amp * depthFactor);
-        const y = star.y * height + (reducedMotion ? 0 : pointer.y * amp * depthFactor);
+        const pos = projectPoint(
+          { x: star.x * width, y: star.y * height },
+          star.z,
+          cameraZ,
+          vp,
+          parallax,
+        );
         const twinkle =
           star.twinklePeriod > 0 && !reducedMotion
             ? 1 + 0.25 * Math.sin((seconds / star.twinklePeriod) * Math.PI * 2 + star.twinklePhase)
             : 1;
-        drawStar(x, y, star.size, star.alpha * twinkle * (0.35 + 0.65 * presence), 0);
+        drawPoint(pos.x, pos.y, star.size, star.alpha * twinkle * (0.35 + 0.65 * presence));
       }
 
-      const elapsed = flight ? now - flight.startedAt : 0;
-
-      // Project stars.
-      let flying = 0;
+      // Project stars: fixed points too. Resolved ones are their logos now
+      // and are never drawn; the rest project through the same camera.
+      const inWorkRest = !flight && presence < 0.55;
       for (const runtime of runtimes.values()) {
         const { star } = runtime;
-        if (runtime.phase === "sky") {
-          const home = skyPosition(star, reducedMotion ? 0 : amp);
-          runtime.px = home.x;
-          runtime.py = home.y;
-          const twinkle =
-            star.twinklePeriod > 0 && !reducedMotion
-              ? 1 +
-                0.22 * Math.sin((seconds / star.twinklePeriod) * Math.PI * 2 + star.twinklePhase)
-              : 1;
-          // Project stars sit slightly brighter than ambient — points, not logos.
-          const alpha = (0.55 + 0.2 * star.depth) * twinkle * (0.3 + 0.7 * presence);
-          drawStar(runtime.px, runtime.py, star.size, alpha, 0);
-          continue;
-        }
+        if (runtime.resolved && (!flight || flight.kind !== "toHome")) continue;
+        // At the Work resting state, only stars left unassigned by the last
+        // entrance remain as points; a direct /work load shows none (their
+        // logos are simply present, never both).
+        if (inWorkRest && !runtime.unassigned) continue;
 
-        if (runtime.phase === "resolved") continue;
+        const pos = projectPoint(
+          { x: star.x * width, y: star.y * height },
+          star.z,
+          cameraZ,
+          vp,
+          parallax,
+        );
+        const twinkle =
+          star.twinklePeriod > 0 && !reducedMotion && !flight
+            ? 1 + 0.22 * Math.sin((seconds / star.twinklePeriod) * Math.PI * 2 + star.twinklePhase)
+            : 1;
+        const restAlpha =
+          (0.55 + 0.2 * (1 - (star.z - CAMERA.zNear) / (CAMERA.zFar - CAMERA.zNear))) * twinkle;
 
-        if (runtime.phase === "toWork" && runtime.target) {
-          const t = clamp01((elapsed - runtime.delay) / runtime.duration);
-          if (t < 1) flying++;
-          const timing = isMobile() ? ENTRANCE_MOBILE : ENTRANCE;
-          const split = timing.depthPortion;
-          const center = {
-            x: runtime.target.x + runtime.target.width / 2,
-            y: runtime.target.y + runtime.target.height / 2,
-          };
-          if (t <= 0) {
-            // Waiting for its wave: intensify slightly in place.
-            drawStar(runtime.px, runtime.py, star.size * 1.2, 0.85, 0.1);
-            continue;
+        if (flight?.kind === "toWork" && runtime.cell) {
+          const fadeStart = runtime.arrivalTime - flight.crossfade;
+          const fade = clamp01((elapsed - fadeStart) / flight.crossfade);
+          if (fade < 1) {
+            // The point, slightly brightening as it approaches its cell.
+            drawPoint(pos.x, pos.y, star.size + fade * 1.4, (1 - fade) * Math.max(restAlpha, 0.8));
           }
-          if (t < split) {
-            const u = easeInCubic(t / split);
-            const x = runtime.start.x + (runtime.rayEnd.x - runtime.start.x) * u;
-            const y = runtime.start.y + (runtime.rayEnd.y - runtime.start.y) * u;
-            runtime.px = x;
-            runtime.py = y;
-            const radius = star.size * (1 + u * 2.2);
-            // Light streak while accelerating (desktop only, restrained).
-            if (!isMobile() && u > 0.15) {
-              const trail = 10 + u * 26;
-              const dx = runtime.rayEnd.x - runtime.start.x;
-              const dy = runtime.rayEnd.y - runtime.start.y;
-              const len = Math.hypot(dx, dy) || 1;
-              ctx.strokeStyle = `rgba(240, 242, 238, ${0.28 * u})`;
-              ctx.lineWidth = radius * 0.9;
-              ctx.lineCap = "round";
-              ctx.beginPath();
-              ctx.moveTo(x - (dx / len) * trail, y - (dy / len) * trail);
-              ctx.lineTo(x, y);
-              ctx.stroke();
-            }
-            drawStar(x, y, radius, 1, 0.25 * u);
-            continue;
-          }
-          const v = easeOutCubic((t - split) / (1 - split));
-          const pos = quadBezier(runtime.rayEnd, runtime.control, center, v);
-          runtime.px = pos.x;
-          runtime.py = pos.y;
-          // The point swells into an indistinct glow, then hands off to the logo.
-          const maxBlob = Math.min(runtime.target.width, runtime.target.height) * 0.34;
-          const blob = star.size * 3 + (maxBlob - star.size * 3) * v;
-          const crossfade = clamp01((v - 0.55) / 0.45);
-          drawStar(pos.x, pos.y, blob, (1 - crossfade) * 0.95, 0.85);
           if (runtime.el?.isConnected) {
-            runtime.el.style.opacity = String(crossfade);
-            const scale =
-              0.92 + 0.08 * easeOutCubic(crossfade) + 0.004 * Math.sin(crossfade * Math.PI);
+            // Crossfade + scale-up happens at the cell itself — the logo is
+            // never dragged; the star's straight line simply meets it.
+            const settle = clamp01((elapsed - runtime.arrivalTime) / flight.settle);
+            const scale = 0.3 + 0.42 * fade + 0.28 * easeOutCubic(settle);
+            runtime.el.style.opacity = fade.toFixed(3);
             runtime.el.style.transform = `scale(${scale.toFixed(4)})`;
           }
-          if (t >= 1) {
-            runtime.phase = "resolved";
+          if (elapsed >= runtime.arrivalTime + flight.settle) {
+            runtime.resolved = true;
             if (runtime.el?.isConnected) {
               runtime.el.style.opacity = "1";
               runtime.el.style.transform = "scale(1)";
@@ -441,33 +423,28 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           continue;
         }
 
-        if (runtime.phase === "toHome") {
-          const t = clamp01((elapsed - runtime.delay) / runtime.duration);
-          if (t < 1) flying++;
-          const home = skyPosition(star, 0);
-          if (t <= 0) {
-            // The logo is still contracting; a growing point takes its place.
-            const warm = clamp01(elapsed / RETURN.contract);
-            drawStar(runtime.start.x, runtime.start.y, star.size * (0.6 + warm), warm * 0.9, 0.4);
-            continue;
+        if (flight?.kind === "toHome" && runtime.cell) {
+          // The star re-emerges on its ray as the camera passes back below
+          // its arrival progress; the logo has already faded in place.
+          const reveal = clamp01((runtime.arrival - progress) * 8);
+          if (reveal > 0) {
+            runtime.resolved = false;
+            drawPoint(pos.x, pos.y, star.size + (1 - reveal) * 1.2, reveal * restAlpha);
           }
-          const u = easeInOutCubic(t);
-          const x = runtime.start.x + (home.x - runtime.start.x) * u;
-          const y = runtime.start.y + (home.y - runtime.start.y) * u;
-          runtime.px = x;
-          runtime.py = y;
-          drawStar(x, y, star.size * (2.4 - 1.4 * u), 0.95 - 0.3 * u, 0.35 * (1 - u));
-          if (t >= 1) runtime.phase = "sky";
           continue;
         }
+
+        // Resting sky (home) or unassigned point behind Work.
+        const dim = runtime.unassigned && presence < 0.7 ? 0.5 : 1;
+        drawPoint(pos.x, pos.y, star.size, restAlpha * (0.3 + 0.7 * presence) * dim);
       }
 
       // Flight bookkeeping.
-      if (flight && elapsed > flight.total && flying === 0) {
-        if (flight.kind === "toWork") {
+      if (flight) {
+        if (flight.kind === "toWork" && elapsed >= flight.settleEnd) {
           flight.done?.();
           flight.done = null;
-          if (flight.cleanupAt === null) flight.cleanupAt = now + 350;
+          if (flight.cleanupAt === null) flight.cleanupAt = now + 250;
           if (now >= flight.cleanupAt) {
             for (const runtime of runtimes.values()) {
               if (runtime.el?.isConnected) {
@@ -479,8 +456,14 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
             }
             flight = null;
           }
-        } else {
+        } else if (flight.kind === "toHome" && elapsed >= flight.camera) {
+          for (const runtime of runtimes.values()) {
+            runtime.resolved = false;
+            runtime.unassigned = false;
+            runtime.cell = null;
+          }
           flight = null;
+          cameraZ = 0;
         }
       }
     };

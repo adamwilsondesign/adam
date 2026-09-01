@@ -19,7 +19,8 @@ type HomeViewProps = {
   workRange: YearRange;
 };
 
-const EXIT_DURATION = 0.3;
+/** Homepage copy fades and interactions release within the first 200ms. */
+const EXIT_DURATION = 0.2;
 
 /**
  * The homepage shell: a fixed viewport with the introductory statement and
