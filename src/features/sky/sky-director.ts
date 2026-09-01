@@ -56,6 +56,20 @@ export function consumeWorkEntrance(): boolean {
   return performance.now() - pendingWorkFlightAt < PENDING_ENTRANCE_TTL;
 }
 
+/**
+ * True while a star entrance has been requested but its flight has not yet
+ * claimed the targets. The canvas holds its resting camera during this gap —
+ * otherwise the route change would start easing the camera toward the Work
+ * position on its own and eat the flight's run-up.
+ */
+export function isWorkEntrancePending(): boolean {
+  return (
+    !SKY_DISABLED &&
+    pendingWorkFlightAt !== null &&
+    performance.now() - pendingWorkFlightAt < PENDING_ENTRANCE_TTL
+  );
+}
+
 /** The grid measured its logo boxes; hand them to the canvas to animate. */
 export function provideWorkTargets(targets: WorkTargets, done: () => void): void {
   pendingWorkFlightAt = null;

@@ -18,6 +18,7 @@ import {
   type Vec,
 } from "./star-field";
 import {
+  isWorkEntrancePending,
   measureStarTargets,
   registerFlightHandler,
   SKY_DISABLED,
@@ -161,9 +162,8 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       kind: "toWork" | "toHome";
       startedAt: number;
       camera: number;
-      /** The camera eases fromCam → toCam, so interruptions never snap. */
-      fromCam: number;
-      toCam: number;
+      /** The single camera's position at a given flight time (clamped). */
+      camAt: (elapsed: number) => number;
       crossfade: number;
       settle: number;
       done: (() => void) | null;
@@ -171,14 +171,6 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       cleanupAt: number | null;
     };
     let flight: Flight | null = null;
-
-    /** Flight time at which the eased camera passes absolute position z. */
-    const timeForCamera = (z: number, f: Pick<Flight, "fromCam" | "toCam" | "camera">) => {
-      const span = f.toCam - f.fromCam;
-      if (Math.abs(span) < 1e-6) return 0;
-      const value = clamp01((z - f.fromCam) / span);
-      return f.camera * invEaseInOutCubic(value);
-    };
 
     const cellCenter = (cell: TargetRect): Vec => ({
       x: cell.x + cell.width / 2,
@@ -188,12 +180,32 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     const prepareWorkFlight = (targets: WorkTargets, done: () => void) => {
       const timing = isMobile() ? ENTRANCE_MOBILE_MS : ENTRANCE_MS;
       const viewport = { x: width, y: height };
+      const fromCam = cameraZ;
+      // From (near) home the camera first dollies back — the whole field
+      // recedes toward the vanishing point — then makes the long forward
+      // run. An interrupted flight (camera already advanced) skips the
+      // recede and eases straight on.
+      const recede = fromCam < CAMERA.travel * 0.2;
+      const backCam = recede ? CAMERA.back : fromCam;
+      const turnTime = recede ? timing.camera * timing.recedePortion : 0;
+      const forwardSpan = timing.camera - turnTime;
+      const camAt = (elapsed: number) => {
+        if (elapsed < turnTime) {
+          return fromCam + (backCam - fromCam) * easeInOutCubic(clamp01(elapsed / turnTime));
+        }
+        const p = clamp01((elapsed - turnTime) / forwardSpan);
+        return backCam + (CAMERA.travel - backCam) * easeInOutCubic(p);
+      };
+      /** Flight time at which the forward run passes camera position z. */
+      const timeForCamera = (z: number) =>
+        turnTime +
+        forwardSpan * invEaseInOutCubic(clamp01((z - backCam) / (CAMERA.travel - backCam)));
+
       const next: Flight = {
         kind: "toWork",
         startedAt: performance.now(),
         camera: timing.camera,
-        fromCam: cameraZ,
-        toCam: CAMERA.travel,
+        camAt,
         crossfade: timing.crossfade,
         settle: timing.settle,
         done,
@@ -214,7 +226,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         if (runtime.el) runtime.el.style.transition = "none";
         if (!cell) continue;
         runtime.arrival = arrivalProgress(star, cellCenter(cell), viewport);
-        runtime.arrivalTime = timeForCamera(runtime.arrival * CAMERA.travel, next);
+        runtime.arrivalTime = timeForCamera(runtime.arrival * CAMERA.travel);
         next.settleEnd = Math.max(next.settleEnd, runtime.arrivalTime + timing.settle);
       }
       flight = next;
@@ -243,12 +255,12 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           }
         }
       }
+      const fromCam = cameraZ;
       flight = {
         kind: "toHome",
         startedAt: performance.now(),
         camera: RETURN_MS.camera,
-        fromCam: cameraZ,
-        toCam: 0,
+        camAt: (elapsed) => fromCam * (1 - easeInOutCubic(clamp01(elapsed / RETURN_MS.camera))),
         crossfade: 150,
         settle: 0,
         done: null,
@@ -344,9 +356,10 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       // ---- One global cameraProgress drives everything. ----
       const elapsed = flight ? now - flight.startedAt : 0;
       if (flight) {
-        const t = clamp01(elapsed / flight.camera);
-        cameraZ = flight.fromCam + (flight.toCam - flight.fromCam) * easeInOutCubic(t);
-      } else if (!cameraSettled) {
+        cameraZ = flight.camAt(elapsed);
+      } else if (!cameraSettled && !isWorkEntrancePending()) {
+        // No flight owns the camera: relax toward the route's resting
+        // position — but never while an entrance is about to claim it.
         cameraZ += (cameraTarget() - cameraZ) * 0.08;
         if (Math.abs(cameraZ - cameraTarget()) < 0.0005) cameraZ = cameraTarget();
       }
@@ -358,10 +371,12 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       const parallax = { x: pointer.x * amp, y: pointer.y * amp };
       const vp = { x: VANISHING_POINT.x * width, y: VANISHING_POINT.y * height };
 
-      // Perspective size: a point nearing the camera grows gently with its
-      // projection factor — still a tiny point, never a blob.
+      // Perspective treatment: points stay tiny — receded stars (factor < 1)
+      // shrink and dim so the field reads as genuinely far away; approaching
+      // stars barely grow at all. Depth is carried by motion, not dot size.
       const perspectiveRadius = (size: number, z: number) =>
-        size * Math.min(2, Math.sqrt(projectionFactor(z, cameraZ)));
+        size * Math.min(1.25, Math.sqrt(Math.max(0.3, projectionFactor(z, cameraZ))));
+      const depthDim = (z: number) => Math.min(1, 0.25 + 0.75 * projectionFactor(z, cameraZ));
 
       // Ambient field: fixed deep points, projected through the same camera.
       for (const star of ambient) {
@@ -380,7 +395,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           pos.x,
           pos.y,
           perspectiveRadius(star.size, star.z),
-          star.alpha * twinkle * (0.35 + 0.65 * presence),
+          star.alpha * twinkle * (0.35 + 0.65 * presence) * depthDim(star.z),
         );
       }
 
@@ -418,7 +433,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
               pos.x,
               pos.y,
               perspectiveRadius(star.size, star.z) + fade * 1.2,
-              (1 - fade) * Math.max(restAlpha, 0.8),
+              (1 - fade) * Math.max(restAlpha, 0.8) * depthDim(star.z),
             );
           }
           if (runtime.el?.isConnected) {
@@ -461,7 +476,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           pos.x,
           pos.y,
           perspectiveRadius(star.size, star.z),
-          restAlpha * (0.3 + 0.7 * presence) * dim,
+          restAlpha * (0.3 + 0.7 * presence) * dim * depthDim(star.z),
         );
       }
 
