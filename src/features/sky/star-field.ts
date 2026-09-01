@@ -52,13 +52,6 @@ export const CAMERA = {
   zFar: 4.4,
   ambientNear: 2.8,
   ambientFar: 12,
-  /**
-   * The entrance begins with a dolly back to this camera position: the whole
-   * field recedes toward the vanishing point — the stars read as genuinely
-   * far away — before the long forward run brings them into view as logos.
-   * Still the same single camera on the same fixed field.
-   */
-  back: -2.4,
 } as const;
 
 /** The largest expansion a star can reach before the camera stops. */
@@ -77,19 +70,16 @@ export const MIN_EXPANSION = 1.5;
 
 /** Entrance timing (ms, relative to camera start ≈ 250ms after the click). */
 export const ENTRANCE_MS = {
-  camera: 1100,
+  camera: 1400,
   crossfade: 280,
   settle: 380,
-  /** Share of the camera time spent on the initial dolly back. */
-  recedePortion: 0.26,
 } as const;
 
 /** Mobile entrance: the same camera, slightly quicker. */
 export const ENTRANCE_MOBILE_MS = {
-  camera: 960,
+  camera: 1150,
   crossfade: 260,
   settle: 340,
-  recedePortion: 0.26,
 } as const;
 
 /** The return home: one reversed camera move. */

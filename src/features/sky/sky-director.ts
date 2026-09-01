@@ -39,6 +39,25 @@ export function registerFlightHandler(next: FlightHandler | null): void {
   handler = next;
 }
 
+/**
+ * The cloud layer's contribution to the flight: while the camera runs
+ * forward, the clouds surge — rapidly scrolling past so the viewer feels
+ * the travel. Registered by the clouds component when its WebGL scene is
+ * live; a missing handler (fallback sky, reduced motion) is a quiet no-op.
+ */
+type CloudSurgeHandler = (durationMs: number, intensity: number) => void;
+
+let cloudSurgeHandler: CloudSurgeHandler | null = null;
+
+export function registerCloudSurgeHandler(next: CloudSurgeHandler | null): void {
+  cloudSurgeHandler = next;
+}
+
+export function surgeClouds(durationMs: number, intensity: number): void {
+  if (SKY_DISABLED) return;
+  cloudSurgeHandler?.(durationMs, intensity);
+}
+
 /** The homepage Work link was activated: the next Work mount flies stars. */
 export function beginWorkFlight(): void {
   if (SKY_DISABLED) return;

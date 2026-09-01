@@ -22,6 +22,7 @@ import {
   measureStarTargets,
   registerFlightHandler,
   SKY_DISABLED,
+  surgeClouds,
   type TargetRect,
   type WorkTargets,
 } from "./sky-director";
@@ -181,25 +182,15 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       const timing = isMobile() ? ENTRANCE_MOBILE_MS : ENTRANCE_MS;
       const viewport = { x: width, y: height };
       const fromCam = cameraZ;
-      // From (near) home the camera first dollies back — the whole field
-      // recedes toward the vanishing point — then makes the long forward
-      // run. An interrupted flight (camera already advanced) skips the
-      // recede and eases straight on.
-      const recede = fromCam < CAMERA.travel * 0.2;
-      const backCam = recede ? CAMERA.back : fromCam;
-      const turnTime = recede ? timing.camera * timing.recedePortion : 0;
-      const forwardSpan = timing.camera - turnTime;
-      const camAt = (elapsed: number) => {
-        if (elapsed < turnTime) {
-          return fromCam + (backCam - fromCam) * easeInOutCubic(clamp01(elapsed / turnTime));
-        }
-        const p = clamp01((elapsed - turnTime) / forwardSpan);
-        return backCam + (CAMERA.travel - backCam) * easeInOutCubic(p);
-      };
+      // One long forward run — the camera only ever advances. The clouds
+      // surge underneath for the duration, so the travel is felt in the
+      // whole environment, not just the star geometry.
+      const camAt = (elapsed: number) =>
+        fromCam + (CAMERA.travel - fromCam) * easeInOutCubic(clamp01(elapsed / timing.camera));
       /** Flight time at which the forward run passes camera position z. */
       const timeForCamera = (z: number) =>
-        turnTime +
-        forwardSpan * invEaseInOutCubic(clamp01((z - backCam) / (CAMERA.travel - backCam)));
+        timing.camera * invEaseInOutCubic(clamp01((z - fromCam) / (CAMERA.travel - fromCam)));
+      surgeClouds(timing.camera + timing.settle, 1);
 
       const next: Flight = {
         kind: "toWork",
@@ -256,6 +247,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         }
       }
       const fromCam = cameraZ;
+      surgeClouds(RETURN_MS.camera, 0.45);
       flight = {
         kind: "toHome",
         startedAt: performance.now(),

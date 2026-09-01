@@ -4,6 +4,8 @@ import { useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { registerCloudSurgeHandler } from "@/features/sky/sky-director";
+
 import styles from "./CloudsBackground.module.css";
 
 /**
@@ -19,6 +21,10 @@ const NIGHT = {
   sunGlareColor: 0x6e3a26,
   sunlightColor: 0x7c4a2e,
 };
+
+/** The clouds' resting drift and how hard they rush during a star flight. */
+const CLOUD_SPEED_REST = 0.7;
+const CLOUD_SPEED_SURGE = 30;
 
 /** Hermetic test builds exclude the WebGL sky — it is pure scenery, and its
  * software-rendered init skews animation timing under test. */
@@ -55,6 +61,7 @@ export function CloudsBackground() {
     let disposed = false;
     let effect: import("vanta/dist/vanta.clouds.min").VantaCloudsEffect | null = null;
     let cleanupTouch: (() => void) | null = null;
+    let surgeFrame = 0;
 
     (async () => {
       const [THREE, { default: CLOUDS }] = await Promise.all([
@@ -73,7 +80,7 @@ export function CloudsBackground() {
           gyroControls: false,
           minHeight: 200,
           minWidth: 200,
-          speed: 0.7,
+          speed: CLOUD_SPEED_REST,
           ...NIGHT,
         });
         if (!effect) throw new Error("no effect");
@@ -91,10 +98,34 @@ export function CloudsBackground() {
       };
       window.addEventListener("touchmove", onTouchMove, { passive: true });
       cleanupTouch = () => window.removeEventListener("touchmove", onTouchMove);
+
+      // While a star flight runs, the clouds rush: their evolution speed
+      // ramps up hard, holds through the run and settles back to the drift.
+      // Vanta accumulates shader time incrementally (t += speed · dt), so
+      // speed changes are perfectly smooth — pure acceleration, no jump.
+      registerCloudSurgeHandler((durationMs, intensity) => {
+        cancelAnimationFrame(surgeFrame);
+        const startedAt = performance.now();
+        const peak = CLOUD_SPEED_REST + (CLOUD_SPEED_SURGE - CLOUD_SPEED_REST) * intensity;
+        const tick = (now: number) => {
+          if (disposed || !effect) return;
+          const t = Math.min(1, (now - startedAt) / durationMs);
+          // Fast ramp in (~18%), cruise, gentle ease-out over the last 35%.
+          const up = Math.min(1, t / 0.18);
+          const down = t > 0.65 ? (t - 0.65) / 0.35 : 0;
+          const envelope = (1 - Math.pow(1 - up, 3)) * (1 - down * down * (3 - 2 * down));
+          effect.setOptions({ speed: CLOUD_SPEED_REST + (peak - CLOUD_SPEED_REST) * envelope });
+          if (t < 1) surgeFrame = requestAnimationFrame(tick);
+          else effect.setOptions({ speed: CLOUD_SPEED_REST });
+        };
+        surgeFrame = requestAnimationFrame(tick);
+      });
     })();
 
     return () => {
       disposed = true;
+      cancelAnimationFrame(surgeFrame);
+      registerCloudSurgeHandler(null);
       cleanupTouch?.();
       effect?.destroy();
       effect = null;
