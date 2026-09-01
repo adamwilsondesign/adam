@@ -9,6 +9,7 @@ import {
   CAMERA,
   ENTRANCE_MOBILE_MS,
   ENTRANCE_MS,
+  projectionFactor,
   projectPoint,
   projectStarsFor,
   RETURN_MS,
@@ -357,6 +358,11 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       const parallax = { x: pointer.x * amp, y: pointer.y * amp };
       const vp = { x: VANISHING_POINT.x * width, y: VANISHING_POINT.y * height };
 
+      // Perspective size: a point nearing the camera grows gently with its
+      // projection factor — still a tiny point, never a blob.
+      const perspectiveRadius = (size: number, z: number) =>
+        size * Math.min(2, Math.sqrt(projectionFactor(z, cameraZ)));
+
       // Ambient field: fixed deep points, projected through the same camera.
       for (const star of ambient) {
         const pos = projectPoint(
@@ -370,7 +376,12 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           star.twinklePeriod > 0 && !reducedMotion
             ? 1 + 0.25 * Math.sin((seconds / star.twinklePeriod) * Math.PI * 2 + star.twinklePhase)
             : 1;
-        drawPoint(pos.x, pos.y, star.size, star.alpha * twinkle * (0.35 + 0.65 * presence));
+        drawPoint(
+          pos.x,
+          pos.y,
+          perspectiveRadius(star.size, star.z),
+          star.alpha * twinkle * (0.35 + 0.65 * presence),
+        );
       }
 
       // Project stars: fixed points too. Resolved ones are their logos now
@@ -403,7 +414,12 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           const fade = clamp01((elapsed - fadeStart) / flight.crossfade);
           if (fade < 1) {
             // The point, slightly brightening as it approaches its cell.
-            drawPoint(pos.x, pos.y, star.size + fade * 1.4, (1 - fade) * Math.max(restAlpha, 0.8));
+            drawPoint(
+              pos.x,
+              pos.y,
+              perspectiveRadius(star.size, star.z) + fade * 1.2,
+              (1 - fade) * Math.max(restAlpha, 0.8),
+            );
           }
           if (runtime.el?.isConnected) {
             // Crossfade + scale-up happens at the cell itself — the logo is
@@ -429,14 +445,24 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           const reveal = clamp01((runtime.arrival - progress) * 8);
           if (reveal > 0) {
             runtime.resolved = false;
-            drawPoint(pos.x, pos.y, star.size + (1 - reveal) * 1.2, reveal * restAlpha);
+            drawPoint(
+              pos.x,
+              pos.y,
+              perspectiveRadius(star.size, star.z) + (1 - reveal) * 1.2,
+              reveal * restAlpha,
+            );
           }
           continue;
         }
 
         // Resting sky (home) or unassigned point behind Work.
         const dim = runtime.unassigned && presence < 0.7 ? 0.5 : 1;
-        drawPoint(pos.x, pos.y, star.size, restAlpha * (0.3 + 0.7 * presence) * dim);
+        drawPoint(
+          pos.x,
+          pos.y,
+          perspectiveRadius(star.size, star.z),
+          restAlpha * (0.3 + 0.7 * presence) * dim,
+        );
       }
 
       // Flight bookkeeping.

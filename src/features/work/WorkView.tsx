@@ -60,7 +60,7 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   // Never leave the interface hidden if the flight cannot complete.
   useEffect(() => {
     if (entrance !== "stars") return;
-    const guard = window.setTimeout(() => setEntrance("normal"), 2600);
+    const guard = window.setTimeout(() => setEntrance("normal"), 4200);
     return () => window.clearTimeout(guard);
   }, [entrance]);
   const [info, setInfo] = useState<InfoOverlayState | null>(null);
@@ -202,8 +202,8 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
         // Under the star entrance the dock fades in as settling completes;
         // the entrance lock keeps it non-interactive until then.
         transition: {
-          duration: entrance === "stars" ? 0.25 : DUR.slow,
-          delay: entrance === "stars" ? 0.85 : 0.18,
+          duration: entrance === "stars" ? 0.3 : DUR.slow,
+          delay: entrance === "stars" ? 1.55 : 0.18,
           ease: EASE_OUT,
         },
       };

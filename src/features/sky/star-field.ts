@@ -47,12 +47,17 @@ export const VANISHING_POINT = { x: 0.5, y: 0.42 } as const;
  * up past the lens. Ambient stars sit deeper still and only drift outward.
  */
 export const CAMERA = {
-  travel: 1.05,
-  zNear: 1.2,
-  zFar: 3.2,
-  ambientNear: 2.4,
-  ambientFar: 9,
+  travel: 2.1,
+  zNear: 2.25,
+  zFar: 4.4,
+  ambientNear: 2.8,
+  ambientFar: 12,
 } as const;
+
+/** The largest expansion a star can reach before the camera stops. */
+export function maxExpansion(z: number): number {
+  return projectionFactor(z, CAMERA.travel);
+}
 
 /**
  * Every star expands at least this much before resolving, so no logo can
@@ -65,16 +70,16 @@ export const MIN_EXPANSION = 1.5;
 
 /** Entrance timing (ms, relative to camera start ≈ 250ms after the click). */
 export const ENTRANCE_MS = {
-  camera: 550,
-  crossfade: 190,
-  settle: 300,
+  camera: 1100,
+  crossfade: 280,
+  settle: 380,
 } as const;
 
 /** Mobile entrance: the same camera, slightly quicker. */
 export const ENTRANCE_MOBILE_MS = {
-  camera: 480,
-  crossfade: 170,
-  settle: 260,
+  camera: 960,
+  crossfade: 260,
+  settle: 340,
 } as const;
 
 /** The return home: one reversed camera move. */
@@ -251,11 +256,16 @@ export function assignEntranceOrder(
   const pairs: { score: number; id: string; idIndex: number; cell: number }[] = [];
   for (let i = 0; i < count; i++) {
     const id = clientIds[i]!;
-    const ray = starRay(starForClient(id), viewport);
+    const star = starForClient(id);
+    const ray = starRay(star, viewport);
+    // The reachable stretch of this star's ray: it must expand at least the
+    // minimum, and it cannot pass the point where the camera stops.
+    const tMin = ray.r0 * MIN_EXPANSION;
+    const tMax = Math.max(tMin, ray.r0 * maxExpansion(star.z));
     for (let cell = 0; cell < count; cell++) {
       const c = cellCenters[cell]!;
       const s = (c.x - ray.vp.x) * ray.dir.x + (c.y - ray.vp.y) * ray.dir.y;
-      const t = Math.max(s, ray.r0 * MIN_EXPANSION);
+      const t = Math.min(Math.max(s, tMin), tMax);
       const nx = ray.vp.x + ray.dir.x * t;
       const ny = ray.vp.y + ray.dir.y * t;
       pairs.push({ score: Math.hypot(c.x - nx, c.y - ny), id, idIndex: i, cell });
@@ -288,7 +298,8 @@ export function arrivalProgress(
 ): number {
   const ray = starRay(star, viewport);
   const s = (cellCenter.x - ray.vp.x) * ray.dir.x + (cellCenter.y - ray.vp.y) * ray.dir.y;
-  const k = Math.min(12, Math.max(MIN_EXPANSION, s / ray.r0));
+  // Clamp to what this star can actually reach before the camera stops.
+  const k = Math.min(maxExpansion(star.z), Math.max(MIN_EXPANSION, s / ray.r0));
   const cameraZ = cameraForFactor(star.z, k);
   return Math.min(1, Math.max(0.12, cameraZ / CAMERA.travel));
 }
