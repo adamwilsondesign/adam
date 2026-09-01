@@ -186,7 +186,7 @@ test.describe("work filtering", () => {
 
     // All normal chrome is gone; only the way back remains.
     await expect(page.getByRole("button", { name: "back" })).toBeVisible();
-    expect(await page.getByRole("button", { name: "Toggle colour theme" }).count()).toBe(0);
+    expect(await page.getByRole("button", { name: "Contact" }).count()).toBe(0);
     expect(await page.getByRole("button", { name: "Menu" }).count()).toBe(0);
 
     await page.getByRole("button", { name: "back" }).click();

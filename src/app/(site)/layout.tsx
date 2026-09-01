@@ -3,7 +3,8 @@ import { draftMode } from "next/headers";
 
 import { SiteChrome } from "@/components/chrome/SiteChrome";
 import { CloudsBackground } from "@/features/home/CloudsBackground";
-import { getSiteSettings } from "@/lib/content";
+import { StarField } from "@/features/sky/StarField";
+import { getSiteSettings, getWorkIndex } from "@/lib/content";
 import { siteUrl } from "@/lib/site-url";
 import { isSanityConfigured } from "@/sanity/env";
 
@@ -43,10 +44,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getSiteSettings();
+  const [settings, clients] = await Promise.all([getSiteSettings(), getWorkIndex()]);
   return (
     <>
       <CloudsBackground />
+      {/* Painted above the clouds: one project star per client, always. */}
+      <StarField clientIds={clients.map((client) => client.id)} />
       <SiteChrome
         title={settings.title}
         logoUrl={settings.logoUrl}

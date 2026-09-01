@@ -5,6 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { TunnelTransition } from "@/components/secret/TunnelTransition";
+import {
+  beginHomeFlight,
+  consumeWorkEntrance,
+  measureStarTargets,
+} from "@/features/sky/sky-director";
 import { track } from "@/lib/analytics";
 import type { WorkClient, YearRange } from "@/lib/content/model";
 import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
@@ -42,6 +47,22 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   const [leaving, setLeaving] = useState(false);
   /** True while falling through the secret doorway. */
   const [falling, setFalling] = useState(false);
+  /**
+   * "stars": this mount arrived from the homepage Work link, so the project
+   * stars fly into the grid and the cells crossfade in under the sky
+   * director's control. A star entrance only occurs on soft navigation
+   * (never hydration — a hard load has no pending flight), so resolving it
+   * in the initializer cannot mismatch the server render.
+   */
+  const [entrance, setEntrance] = useState<"normal" | "stars">(() =>
+    typeof window !== "undefined" && consumeWorkEntrance() ? "stars" : "normal",
+  );
+  // Never leave the interface hidden if the flight cannot complete.
+  useEffect(() => {
+    if (entrance !== "stars") return;
+    const guard = window.setTimeout(() => setEntrance("normal"), 2600);
+    return () => window.clearTimeout(guard);
+  }, [entrance]);
   const [info, setInfo] = useState<InfoOverlayState | null>(null);
   /** Direction of the latest card step (drives the slide animation). */
   const [infoStep, setInfoStep] = useState<0 | 1 | -1>(0);
@@ -60,9 +81,14 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   }, []);
 
   // Shell navigation (back control, logo, menu) plays the reverse of the
-  // entry transition: the logo field disperses before the route changes.
+  // entry transition: going home, the logos contract into points and retreat
+  // to their sky positions; the star layer carries the retreat across the
+  // route change.
   useEffect(() => {
     setShellNavigationInterceptor((href) => {
+      if (href === "/" && !reducedMotion) {
+        beginHomeFlight(measureStarTargets(), { domIsLive: true });
+      }
       setLeaving(true);
       window.setTimeout(() => router.push(href), reducedMotion ? 0 : EXIT_DURATION * 1000);
       return true;
@@ -173,7 +199,13 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
     : {
         initial: { opacity: 0, y: 18 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: DUR.slow, delay: 0.18, ease: EASE_OUT },
+        // Under the star entrance the dock lands as the first waves resolve,
+        // fully interactive around the 800–900ms mark.
+        transition: {
+          duration: entrance === "stars" ? 0.4 : DUR.slow,
+          delay: entrance === "stars" ? 0.5 : 0.18,
+          ease: EASE_OUT,
+        },
       };
 
   // Once a logo activation begins (info overlay or case-study navigation),
@@ -214,6 +246,8 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
             infoClientId={info?.client.id ?? null}
             onInfoOpen={openInfo}
             gesturesEnabled={gesturesEnabled}
+            starEntrance={entrance === "stars"}
+            onEntranceSettled={() => setEntrance("normal")}
           />
           <motion.div className={styles.dockLayer} {...dockEntrance}>
             <FilterDock state={state} variant="mobile" />
@@ -229,7 +263,12 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
         </>
       ) : (
         <>
-          <DesktopGrid clients={state.visibleClients} openSlug={openSlug} />
+          <DesktopGrid
+            clients={state.visibleClients}
+            openSlug={openSlug}
+            starEntrance={entrance === "stars"}
+            onEntranceSettled={() => setEntrance("normal")}
+          />
           <motion.div className={styles.dockLayer} {...dockEntrance}>
             <FilterDock state={state} variant="desktop" />
           </motion.div>

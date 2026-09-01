@@ -13,25 +13,20 @@ type LogoMarkProps = {
 };
 
 /**
- * A monochrome client logo rendered as a CSS alpha mask over currentColor,
- * so it follows the theme. Theme-specific asset overrides swap the mask URL
- * per theme; a compact override swaps in a denser mark for very small cells.
+ * A monochrome client logo rendered as a CSS alpha mask over currentColor.
+ * The night palette is permanent, so the dark-variant override (when a
+ * client carries one) is the mask; a compact override swaps in a denser
+ * mark for very small cells.
  */
 export function LogoMark({ logoUrl, treatment, compact = false }: LogoMarkProps) {
   const base = (compact && treatment?.compactUrl) || logoUrl;
-  const lightUrl = treatment?.lightUrl ?? base;
-  const darkUrl = treatment?.darkUrl ?? base;
+  const maskUrl = treatment?.darkUrl ?? base;
 
   return (
     <span
       data-logo-mask
       className={styles.mask}
-      style={
-        {
-          "--logo-mask": `url("${lightUrl}")`,
-          "--logo-mask-dark": `url("${darkUrl}")`,
-        } as React.CSSProperties
-      }
+      style={{ "--logo-mask": `url("${maskUrl}")` } as React.CSSProperties}
       aria-hidden
     />
   );

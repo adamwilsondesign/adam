@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { beginWorkFlight, isReturnFlightActive } from "@/features/sky/sky-director";
 import type { NavSection, YearRange } from "@/lib/content/model";
 import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
 
@@ -30,6 +31,11 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
   const reducedMotion = useReducedMotion();
   const [leaving, setLeaving] = useState(false);
   const navigatingRef = useRef(false);
+  // Arriving via the reverse star flight: hold the copy back briefly so the
+  // retreating points clear the headline area before text returns.
+  const [returnDelay] = useState(() =>
+    typeof window !== "undefined" && isReturnFlightActive() ? 0.28 : 0,
+  );
 
   const openWork = (event: React.MouseEvent<HTMLAnchorElement>) => {
     // Plain anchor semantics stay intact for modified clicks / new tabs.
@@ -38,6 +44,9 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
     event.preventDefault();
     if (navigatingRef.current) return;
     navigatingRef.current = true;
+    // The stars begin their run as the copy fades; the star layer persists
+    // across the route change, so the flight continues into Work.
+    if (!reducedMotion) beginWorkFlight();
     setLeaving(true);
     window.setTimeout(() => router.push("/work"), reducedMotion ? 0 : EXIT_DURATION * 1000);
   };
@@ -52,7 +61,7 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
       : {
           initial: { opacity: 0, y: 16 },
           animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.7, delay, ease: EASE_OUT },
+          transition: { duration: 0.7, delay: delay + returnDelay, ease: EASE_OUT },
         };
 
   return (

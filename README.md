@@ -39,7 +39,7 @@ uses — every feature works, including case-study deep links.
 | `npm run format`         | Prettier (write) — `format:check` to verify                                                          |
 | `npm run typecheck`      | `tsc --noEmit`                                                                                       |
 | `npm test`               | Vitest unit tests (filtering, grid math, normalization)                                              |
-| `npm run test:e2e`       | Playwright tests (routing, state restoration, theme, mobile)                                         |
+| `npm run test:e2e`       | Playwright tests (routing, state restoration, night mode, mobile)                                    |
 | `npm run placeholders`   | Regenerate fixture data, SVG logos, WebP imagery, icons                                              |
 | `npm run sanity:studio`  | Standalone Studio dev server (Studio is also embedded at `/studio`)                                  |
 | `npm run sanity:schema`  | Extract `schema.json` from the Studio schema                                                         |
@@ -208,7 +208,7 @@ src/
         @modal/(.)[slug]  intercepted overlay above the live grid
     studio/[[...tool]]    embedded Sanity Studio
     api/draft-mode/       preview enable/disable
-  components/             shell chrome, theme, icons, 404 view
+  components/             shell chrome, icons, 404 view
   features/
     home | work | case-study
   lib/
@@ -250,14 +250,15 @@ collapse forward) and newcomers append in a deterministic per-session order
 (`nextOrder` in `src/features/work/shuffle.ts`). The quiet shuffle control in
 the dock is the one way to re-randomize.
 
-**Theming.** `data-theme` on `<html>`, stamped before paint by an inline
-script (stored preference, else system), persisted in `localStorage`.
+**Night, permanently.** The deep green-black night environment is the art
+direction, not a theme: there is no toggle, no stored preference and no
+theme initialization. One palette in `globals.css` serves every surface.
 
 ## Analytics
 
 `src/lib/analytics.ts` defines typed events (opening/leaving Work, tag and
 year changes, informational opens, case-study opens, media views, external
-links, theme changes) and logs them in development. Connect any provider
+links) and logs them in development. Connect any provider
 without touching interface code:
 
 ```ts
@@ -276,7 +277,7 @@ npm run test:e2e    # Playwright: direct URLs + refresh, 404s, Back/Forward
                     # zero-result rejection, survivor stability, rapid filter
                     # interruption, roving tabindex + skip link, tooltip
                     # hover/focus/sticky, slider keyboard, reduced motion,
-                    # theme persistence, mobile flows
+                    # night mode, mobile flows
 ```
 
 Playwright builds and serves the fixture bundle itself. In sandboxes with a

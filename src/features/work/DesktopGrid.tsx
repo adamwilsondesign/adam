@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useMotionValue, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { measureStarTargets, provideWorkTargets } from "@/features/sky/sky-director";
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
 
@@ -21,6 +22,10 @@ const TOOLTIP_CLOSE_GRACE_MS = 140;
 type DesktopGridProps = {
   clients: WorkClient[];
   openSlug: string | null;
+  /** True while the star-to-logo entrance owns cell visibility. */
+  starEntrance?: boolean;
+  /** Fired once the star flight has resolved every logo. */
+  onEntranceSettled?: () => void;
 };
 
 type TooltipState = TooltipAnchor & {
@@ -38,7 +43,12 @@ type TooltipState = TooltipAnchor & {
  * Keyboard: the grid is one tab stop (roving tabindex); arrows move between
  * cells, Home/End jump to the first and last.
  */
-export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
+export function DesktopGrid({
+  clients,
+  openSlug,
+  starEntrance = false,
+  onEntranceSettled,
+}: DesktopGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
@@ -164,6 +174,31 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
     return () => window.clearTimeout(timeout);
   }, []);
 
+  // ---- Star entrance: measure the logo boxes once and hand them to the
+  // sky director, which flies each project star into its cell and owns the
+  // crossfade. Provided exactly once per entrance.
+  const providedTargets = useRef(false);
+  const settled = useRef(onEntranceSettled);
+  useEffect(() => {
+    settled.current = onEntranceSettled;
+  }, [onEntranceSettled]);
+  const cellsMeasurable = size !== null;
+  useEffect(() => {
+    if (!starEntrance || providedTargets.current || !cellsMeasurable) return;
+    providedTargets.current = true;
+    if (clients.length === 0) {
+      settled.current?.();
+      return;
+    }
+    // Two frames: cells commit, then motion applies their initial rects.
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => {
+        provideWorkTargets(measureStarTargets(), () => settled.current?.());
+      });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [starEntrance, cellsMeasurable, clients.length]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -243,14 +278,19 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
   );
 
   return (
-    <div ref={containerRef} className={styles.field} onPointerMove={onFieldPointerMove}>
+    <div
+      ref={containerRef}
+      className={styles.field}
+      data-star-entrance={starEntrance || undefined}
+      onPointerMove={onFieldPointerMove}
+    >
       <ul ref={listRef} className={styles.list} aria-label="Clients" onKeyDown={onGridKeyDown}>
         <AnimatePresence initial={false}>
           {size &&
             clients.map((client, index) => {
               const rect = rects[index];
               if (!rect) return null;
-              const entranceDelay = entering ? Math.min(index * 0.02, 0.36) : 0;
+              const entranceDelay = entering && !starEntrance ? Math.min(index * 0.02, 0.36) : 0;
               return (
                 <motion.li
                   key={client.id}
@@ -260,8 +300,10 @@ export function DesktopGrid({ clients, openSlug }: DesktopGridProps) {
                     y: rect.y,
                     width: rect.width,
                     height: rect.height,
-                    opacity: 0,
-                    scale: reducedMotion ? 1 : 0.9,
+                    // Under the star entrance the cell frame is present from
+                    // the first frame; the sky director fades the mark in.
+                    opacity: starEntrance ? 1 : 0,
+                    scale: reducedMotion || starEntrance ? 1 : 0.9,
                   }}
                   animate={{
                     x: rect.x,

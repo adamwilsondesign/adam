@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
-import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { siteUrl } from "@/lib/site-url";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
 
@@ -41,17 +39,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // suppressHydrationWarning: THEME_INIT_SCRIPT adjusts data-theme pre-paint.
-    <html
-      lang="en"
-      data-theme="dark"
-      suppressHydrationWarning
-      className={`${inter.variable} ${displaySerif.variable}`}
-    >
-      <body>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+    // Night is the permanent art direction: one palette, no theme switching,
+    // nothing to initialize before paint.
+    <html lang="en" className={`${inter.variable} ${displaySerif.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

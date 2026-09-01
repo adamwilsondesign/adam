@@ -71,33 +71,6 @@
   --page-max-width: 1440px;
 }
 
-:root[data-theme="light"] {
-  /* Bone inverse for visitors who toggle out of the void: the same
-     achromatic system with one grey step of depth. */
-  --color-bg: #ffffff;
-  --color-band: #ffffff;
-  --color-carbon: #ebebeb;
-  --color-carbon-fg: #000000;
-  --color-fg: #000000;
-  --color-fg-strong: #000000;
-  --color-fg-muted: #5a5a5a;
-  --color-fg-faint: #9a9a9a;
-  --color-line: rgba(0, 0, 0, 0.16);
-  --color-line-strong: #000000;
-  --color-surface: rgba(235, 235, 235, 0.66);
-  --color-surface-solid: #ebebeb;
-  --color-wash: #dedede;
-  --color-scrim: rgba(255, 255, 255, 0.6);
-  --color-action-bg: #ebebeb;
-  --color-action-bg-hover: #dedede;
-  --color-action-fg: #000000;
-  --color-link: #000000;
-  --color-fill-active: #ebebeb;
-  --color-fill-active-fg: #000000;
-
-  color-scheme: light;
-}
-
 /* ------------------------------------------------------------------ */
 /* Base                                                                */
 /* ------------------------------------------------------------------ */
@@ -129,14 +102,6 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-
-/* Theme switches glide instead of snapping. */
-body,
-main {
-  transition:
-    background-color 360ms var(--ease-precise),
-    color 360ms var(--ease-precise);
 }
 
 a {
@@ -186,11 +151,11 @@ svg {
   border: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  body,
-  main {
-    transition: none;
-  }
+/* While the star-to-logo entrance owns the Work grid, the logo marks stay
+   hidden until the sky director fades each one in at the exact position its
+   star arrives (inline styles written per frame override this rule). */
+[data-star-entrance] [data-star-target] {
+  opacity: 0;
 }
 
 @media (max-width: 767px) {

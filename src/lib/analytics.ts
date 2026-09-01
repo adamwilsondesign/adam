@@ -19,7 +19,6 @@
  *   case_study_opened                 case study opened (grid or direct URL)
  *   case_study_media_viewed           a gallery item scrolled into view
  *   external_link_followed            outbound project link clicked
- *   theme_changed                     light/dark toggle
  */
 
 import type { WorkTag } from "@/lib/content/model";
@@ -36,8 +35,7 @@ export type AnalyticsEvent =
   | { name: "client_info_opened"; clientId: string }
   | { name: "case_study_opened"; slug: string; source: "grid" | "direct" | "sibling" }
   | { name: "case_study_media_viewed"; slug: string; index: number }
-  | { name: "external_link_followed"; slug: string; url: string }
-  | { name: "theme_changed"; theme: "light" | "dark" };
+  | { name: "external_link_followed"; slug: string; url: string };
 
 export type AnalyticsProvider = (event: AnalyticsEvent) => void;
 

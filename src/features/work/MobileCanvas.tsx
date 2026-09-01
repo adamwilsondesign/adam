@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { measureStarTargets, provideWorkTargets } from "@/features/sky/sky-director";
 import { track } from "@/lib/analytics";
 import type { WorkClient } from "@/lib/content/model";
 import { EASE_INOUT } from "@/lib/motion";
@@ -34,6 +35,10 @@ type MobileCanvasProps = {
   onInfoOpen: (client: WorkClient, rect: DOMRect) => void;
   /** False the moment a logo activation begins — pinches freeze instantly. */
   gesturesEnabled: boolean;
+  /** True while the star-to-logo entrance owns cell visibility. */
+  starEntrance?: boolean;
+  /** Fired once the star flight has resolved every logo. */
+  onEntranceSettled?: () => void;
 };
 
 /**
@@ -48,6 +53,8 @@ export function MobileCanvas({
   infoClientId,
   onInfoOpen,
   gesturesEnabled,
+  starEntrance = false,
+  onEntranceSettled,
 }: MobileCanvasProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
@@ -93,6 +100,29 @@ export function MobileCanvas({
     };
   }, [columns]);
 
+  // Star entrance: measure the (scroll-restored) logo boxes once and hand
+  // them to the sky director. Offscreen cells still take part — their stars
+  // fly toward positions past the fold and fade en route.
+  const providedTargets = useRef(false);
+  const settled = useRef(onEntranceSettled);
+  useEffect(() => {
+    settled.current = onEntranceSettled;
+  }, [onEntranceSettled]);
+  useEffect(() => {
+    if (!starEntrance || providedTargets.current) return;
+    providedTargets.current = true;
+    if (clients.length === 0) {
+      settled.current?.();
+      return;
+    }
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => {
+        provideWorkTargets(measureStarTargets(), () => settled.current?.());
+      });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [starEntrance, clients.length]);
+
   useGesture(
     {
       onPinch: ({ first, last, movement: [scale], event }) => {
@@ -131,7 +161,12 @@ export function MobileCanvas({
   };
 
   return (
-    <div ref={scrollerRef} className={styles.scroller} onClickCapture={suppressAccidentalTap}>
+    <div
+      ref={scrollerRef}
+      className={styles.scroller}
+      data-star-entrance={starEntrance || undefined}
+      onClickCapture={suppressAccidentalTap}
+    >
       <div className={styles.grid} style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         <AnimatePresence initial={false}>
           {clients.map((client) => (
@@ -207,7 +242,7 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
-        <span className={styles.logoBox} style={logoBoxStyle}>
+        <span className={styles.logoBox} data-star-target={client.id} style={logoBoxStyle}>
           <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} compact={compact} />
         </span>
       </Link>
@@ -227,7 +262,7 @@ function MobileCell({ client, openSlug, hidden, onInfoOpen, compact }: MobileCel
       style={hidden ? { opacity: 0, pointerEvents: "none" } : undefined}
       onClick={() => onInfoOpen(client, markRect())}
     >
-      <span className={styles.logoBox} style={logoBoxStyle}>
+      <span className={styles.logoBox} data-star-target={client.id} style={logoBoxStyle}>
         <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} compact={compact} />
       </span>
     </button>

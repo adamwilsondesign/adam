@@ -4,8 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { ArrowLeftIcon, LinkedInIcon, MailIcon, MenuIcon, ThemeIcon } from "@/components/icons";
-import { useTheme } from "@/components/theme/ThemeProvider";
+import { ArrowLeftIcon, LinkedInIcon, MailIcon, MenuIcon } from "@/components/icons";
 import type { NavSection } from "@/lib/content/model";
 import { interceptShellNavigation } from "@/lib/shell-navigation";
 
@@ -43,7 +42,6 @@ export function SiteChrome({
 }: SiteChromeProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -140,17 +138,9 @@ export function SiteChrome({
           </button>
         </div>
 
-        {/* Theme, contact and LinkedIn stay available on every route. */}
+        {/* Contact and LinkedIn stay available on every route. */}
         <div className={`${styles.slot} ${styles.rightSlot}`}>
           <div className={`${styles.slotItem} ${styles.controlGroup}`}>
-            <button
-              type="button"
-              className={styles.control}
-              aria-label="Toggle colour theme"
-              onClick={toggleTheme}
-            >
-              <ThemeIcon />
-            </button>
             {contactUrl ? (
               <button
                 type="button"

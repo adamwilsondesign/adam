@@ -10,6 +10,43 @@
   pointer-events: none;
 }
 
-.clouds canvas {
+.scene,
+.fallback {
+  position: absolute;
+  inset: 0;
+  transition: filter 700ms var(--ease-precise);
+}
+
+/* Away from the homepage the atmosphere recedes ~15–20% — clearly present,
+   slightly darker and less saturated, so white logos stay legible. */
+.clouds[data-dimmed] .scene,
+.clouds[data-dimmed] .fallback {
+  filter: brightness(0.84) saturate(0.86);
+}
+
+.scene canvas {
   display: block;
+}
+
+/* WebGL-unavailable / reduced-motion atmosphere: the same deep green-black
+   night, ember horizon, painted statically. Never an empty background. */
+.fallback {
+  background:
+    radial-gradient(120% 55% at 50% 108%, rgba(124, 74, 46, 0.28) 0%, rgba(124, 74, 46, 0) 60%),
+    radial-gradient(90% 60% at 24% 96%, rgba(31, 40, 51, 0.55) 0%, rgba(31, 40, 51, 0) 70%),
+    radial-gradient(110% 70% at 78% 90%, rgba(31, 40, 51, 0.4) 0%, rgba(31, 40, 51, 0) 72%),
+    linear-gradient(to bottom, #000000 0%, #060a0f 55%, #0a1118 100%);
+}
+
+/* The restrained contrast veil over the dimmed sky while Work is open. */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.14);
+  opacity: 0;
+  transition: opacity 700ms var(--ease-precise);
+}
+
+.veil[data-active] {
+  opacity: 1;
 }

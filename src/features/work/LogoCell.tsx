@@ -95,7 +95,7 @@ export function LogoCell({
           track({ name: "case_study_opened", slug: caseStudy.slug, source: "grid" });
         }}
       >
-        <span className={styles.logoBox} style={logoBoxStyle}>
+        <span className={styles.logoBox} data-star-target={client.id} style={logoBoxStyle}>
           <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} />
         </span>
       </Link>
@@ -131,7 +131,7 @@ export function LogoCell({
       onBlur={() => tooltip.focusEnd()}
       onClick={() => tooltip.stickyToggle(client, markRect())}
     >
-      <span className={styles.logoBox} style={logoBoxStyle}>
+      <span className={styles.logoBox} data-star-target={client.id} style={logoBoxStyle}>
         <LogoMark logoUrl={client.logoUrl} treatment={client.logoTreatment} />
       </span>
     </button>

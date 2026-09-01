@@ -13,10 +13,3 @@
   -webkit-mask-position: center;
   -webkit-mask-size: contain;
 }
-
-/* Theme-specific asset overrides (identical to the base mask for clients
-   without them, so this rule is inert in the common case). */
-:global([data-theme="dark"]) .mask {
-  mask-image: var(--logo-mask-dark);
-  -webkit-mask-image: var(--logo-mask-dark);
-}

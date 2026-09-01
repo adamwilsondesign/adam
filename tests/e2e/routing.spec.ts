@@ -111,8 +111,7 @@ test.describe("case-study routing", () => {
     await expect(page).toHaveURL(/\/work$/);
     await expect(page.locator("a[data-case-cell]").first()).toBeVisible();
 
-    // Theme, contact and LinkedIn stay available on sub pages.
-    await expect(page.getByRole("button", { name: "Toggle colour theme" })).toBeVisible();
+    // Contact and LinkedIn stay available on sub pages.
     await expect(page.getByRole("button", { name: "Contact" })).toBeVisible();
     await expect(page.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
 

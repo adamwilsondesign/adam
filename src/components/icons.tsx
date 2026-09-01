@@ -86,13 +86,3 @@ export function ShuffleIcon({ size = 16 }: IconProps) {
     </svg>
   );
 }
-
-/** Half-filled disc — theme toggle. */
-export function ThemeIcon({ size = 20 }: IconProps) {
-  return (
-    <svg {...iconAttributes(size)}>
-      <circle cx="10" cy="10" r="7" />
-      <path d="M10 3a7 7 0 0 1 0 14z" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
