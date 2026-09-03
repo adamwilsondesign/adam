@@ -93,3 +93,26 @@ test.describe("mobile work canvas", () => {
     await expect(page).toHaveURL(/\/work$/);
   });
 });
+
+test.describe("mobile about page", () => {
+  test("renders the opening viewport, stacked shelves and timeline peek", async ({ page }) => {
+    await page.goto("/about");
+    await expect(page.getByText(/I'm a designer who likes building the thing/)).toBeVisible();
+    await expect(page.getByText("Toronto, Canada")).toBeVisible();
+
+    // The shelves stack vertically on mobile.
+    const marquees = page.locator("[data-marquee]");
+    await expect(marquees).toHaveCount(2);
+    const first = await marquees.nth(0).boundingBox();
+    const second = await marquees.nth(1).boundingBox();
+    expect(second!.y).toBeGreaterThan(first!.y + first!.height - 1);
+
+    // The timeline shows roughly one entry with the neighbour peeking in.
+    const timeline = page.getByRole("list", { name: "Experience" });
+    const entry = timeline.getByRole("listitem").first();
+    const entryBox = await entry.boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(entryBox!.width).toBeGreaterThan(viewport.width * 0.45);
+    expect(entryBox!.width).toBeLessThan(viewport.width * 0.95);
+  });
+});

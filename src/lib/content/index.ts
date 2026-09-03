@@ -3,16 +3,26 @@ import "server-only";
 import { isSanityConfigured } from "@/sanity/env";
 
 import {
+  fixtureAboutPage,
   fixtureCaseStudy,
   fixtureCaseStudySlugs,
+  fixtureHomePage,
   fixtureSiteSettings,
   fixtureWorkIndex,
 } from "./fixtures";
-import type { CaseStudy, SiteSettings, WorkClient } from "./model";
+import type {
+  AboutPageContent,
+  CaseStudy,
+  HomePageContent,
+  SiteSettings,
+  WorkClient,
+} from "./model";
 import { sanitizeContactUrl, sanitizeExternalUrl } from "./placeholder-guard";
 import {
+  sanityAboutPage,
   sanityCaseStudy,
   sanityCaseStudySlugs,
+  sanityHomePage,
   sanitySiteSettings,
   sanityWorkIndex,
 } from "./sanity-source";
@@ -153,6 +163,16 @@ export async function getCaseStudy(slug: string): Promise<CaseStudy | null> {
   if (!study) return null;
   // A placeholder project URL never ships as a CTA.
   return { ...study, externalUrl: sanitizeExternalUrl(study.externalUrl) };
+}
+
+export async function getHomePage(): Promise<HomePageContent> {
+  await ensureValidated();
+  return resolveContentSource() === "sanity" ? sanityHomePage() : fixtureHomePage();
+}
+
+export async function getAboutPage(): Promise<AboutPageContent> {
+  await ensureValidated();
+  return resolveContentSource() === "sanity" ? sanityAboutPage() : fixtureAboutPage();
 }
 
 export async function getCaseStudySlugs(): Promise<{ slug: string; updatedAt: string }[]> {

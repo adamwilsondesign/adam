@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0c1013"/>
+      <stop offset="1" stop-color="#04070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#field)"/>
+  
+        <path d="M -40 465.03328232094646 Q 200 327.3685948131606 440 465.03328232094646"
+          fill="none" stroke="#b0885f" stroke-opacity="0.34" stroke-width="2"/>
+        <circle cx="275" cy="248" r="18"
+          fill="#b0885f" fill-opacity="0.5"/>
+  <text x="200" y="150" text-anchor="middle"
+            font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#f2f3f0">The Lives</text><text x="200" y="218" text-anchor="middle"
+            font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#f2f3f0">of Brian</text>
+  <text x="200" y="566" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="14" letter-spacing="2" fill="#b0885f" fill-opacity="0.85">BRIAN JOHNSON</text>
+  <rect x="10.5" y="10.5" width="379" height="579" fill="none"
+    stroke="#f2f3f0" stroke-opacity="0.14"/>
+</svg>

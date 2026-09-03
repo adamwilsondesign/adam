@@ -248,6 +248,83 @@ export type Slug = {
   source?: string;
 };
 
+export type AboutPage = {
+  _id: string;
+  _type: "aboutPage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  intro?: string;
+  facts?: Array<{
+    label?: string;
+    value?: string;
+    _type: "fact";
+    _key: string;
+  }>;
+  careerStatement?: string;
+  experienceLabel?: string;
+  experience?: Array<{
+    year?: string;
+    title?: string;
+    employer?: string;
+    _type: "experienceEntry";
+    _key: string;
+  }>;
+  principlesLabel?: string;
+  principles?: Array<{
+    title?: string;
+    body?: string;
+    _type: "principle";
+    _key: string;
+  }>;
+  moviesLabel?: string;
+  movies?: Array<{
+    title?: string;
+    year?: number;
+    cover?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    alt?: string;
+    _type: "movieItem";
+    _key: string;
+  }>;
+  booksLabel?: string;
+  books?: Array<{
+    title?: string;
+    author?: string;
+    cover?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    alt?: string;
+    _type: "bookItem";
+    _key: string;
+  }>;
+  contactHeading?: string;
+  contactBody?: string;
+  contactCtaLabel?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+};
+
+export type HomePage = {
+  _id: string;
+  _type: "homePage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  intro?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+};
+
 export type SiteSettings = {
   _id: string;
   _type: "siteSettings";
@@ -396,6 +473,8 @@ export type AllSanitySchemaTypes =
   | SanityImageCrop
   | SanityImageHotspot
   | Slug
+  | AboutPage
+  | HomePage
   | SiteSettings
   | SanityImagePaletteSwatch
   | SanityImagePalette
@@ -693,6 +772,69 @@ export type CASE_STUDY_QUERY_RESULT = {
 } | null;
 
 // Source: src/sanity/lib/queries.ts
+// Variable: HOME_PAGE_QUERY
+// Query: *[_type == "homePage"][0]{  intro,  seoTitle,  seoDescription}
+export type HOME_PAGE_QUERY_RESULT = {
+  intro: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+} | null;
+
+// Source: src/sanity/lib/queries.ts
+// Variable: ABOUT_PAGE_QUERY
+// Query: *[_type == "aboutPage"][0]{  intro,  facts[]{ label, value },  careerStatement,  experienceLabel,  experience[]{ year, title, employer },  principlesLabel,  principles[]{ title, body },  moviesLabel,  movies[]{ title, year, cover, alt },  booksLabel,  books[]{ title, author, cover, alt },  contactHeading,  contactBody,  contactCtaLabel,  seoTitle,  seoDescription}
+export type ABOUT_PAGE_QUERY_RESULT = {
+  intro: string | null;
+  facts: Array<{
+    label: string | null;
+    value: string | null;
+  }> | null;
+  careerStatement: string | null;
+  experienceLabel: string | null;
+  experience: Array<{
+    year: string | null;
+    title: string | null;
+    employer: string | null;
+  }> | null;
+  principlesLabel: string | null;
+  principles: Array<{
+    title: string | null;
+    body: string | null;
+  }> | null;
+  moviesLabel: string | null;
+  movies: Array<{
+    title: string | null;
+    year: number | null;
+    cover: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    alt: string | null;
+  }> | null;
+  booksLabel: string | null;
+  books: Array<{
+    title: string | null;
+    author: string | null;
+    cover: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    alt: string | null;
+  }> | null;
+  contactHeading: string | null;
+  contactBody: string | null;
+  contactCtaLabel: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+} | null;
+
+// Source: src/sanity/lib/queries.ts
 // Variable: CASE_STUDY_SLUGS_QUERY
 // Query: *[_type == "client" && defined(caseStudy.slug.current) && hidden != true]{  "slug": caseStudy.slug.current,  "updatedAt": _updatedAt}
 export type CASE_STUDY_SLUGS_QUERY_RESULT = Array<{
@@ -707,6 +849,8 @@ declare module "@sanity/client" {
     '*[_type == "siteSettings"][0]{\n  title,\n  description,\n  "logoUrl": logo.asset->url,\n  contactUrl,\n  linkedinUrl,\n  navigation[]{ label, href, available },\n  workStartYear,\n  workEndYear,\n  seoTitle,\n  seoDescription,\n  defaultOgImage,\n  "faviconUrl": favicon.asset->url\n}': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "client" && hidden != true] | order(name asc){\n  "id": _id,\n  name,\n  "slug": slug.current,\n  "logoUrl": logo.asset->url,\n  logoAspect,\n  logoTreatment{\n    scale,\n    padding,\n    alignment,\n    "lightUrl": logoLight.asset->url,\n    "darkUrl": logoDark.asset->url,\n    "compactUrl": compactLogo.asset->url\n  },\n  description,\n  engagements[]{ startYear, endYear, tags, description },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    heroImage\n  }\n}': WORK_INDEX_QUERY_RESULT;
     '*[_type == "client" && caseStudy.slug.current == $slug && hidden != true][0]{\n  "clientId": _id,\n  "clientName": name,\n  "logoUrl": logo.asset->url,\n  engagements[]{ startYear, endYear, tags },\n  caseStudy{\n    "slug": slug.current,\n    title,\n    subtitle,\n    displayDate,\n    shortDescription,\n    body,\n    externalUrl,\n    heroImage{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },\n    gallery[]{\n      _key,\n      mediaType,\n      image{ ..., "dimensions": asset->metadata.dimensions, "lqip": asset->metadata.lqip },\n      "videoFileUrl": video.asset->url,\n      videoUrl,\n      poster,\n      alt,\n      caption,\n      aspect\n    },\n    seoTitle,\n    seoDescription,\n    ogImage\n  }\n}': CASE_STUDY_QUERY_RESULT;
+    '*[_type == "homePage"][0]{\n  intro,\n  seoTitle,\n  seoDescription\n}': HOME_PAGE_QUERY_RESULT;
+    '*[_type == "aboutPage"][0]{\n  intro,\n  facts[]{ label, value },\n  careerStatement,\n  experienceLabel,\n  experience[]{ year, title, employer },\n  principlesLabel,\n  principles[]{ title, body },\n  moviesLabel,\n  movies[]{ title, year, cover, alt },\n  booksLabel,\n  books[]{ title, author, cover, alt },\n  contactHeading,\n  contactBody,\n  contactCtaLabel,\n  seoTitle,\n  seoDescription\n}': ABOUT_PAGE_QUERY_RESULT;
     '*[_type == "client" && defined(caseStudy.slug.current) && hidden != true]{\n  "slug": caseStudy.slug.current,\n  "updatedAt": _updatedAt\n}': CASE_STUDY_SLUGS_QUERY_RESULT;
   }
 }

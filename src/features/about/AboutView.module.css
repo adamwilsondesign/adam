@@ -1,0 +1,221 @@
+.root {
+  position: fixed;
+  inset: 0;
+}
+
+/* Direct loads and history entries: the settled environment fades in short
+   and quiet — no descent. */
+.root[data-settled-entry] {
+  animation: settledEntry 420ms var(--ease-precise) both;
+}
+
+@keyframes settledEntry {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The page's own scroller (the body is a fixed shell). The copy holds back
+   during the descent and fades ahead of the reverse. */
+.scroller {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 0;
+  transition: opacity 620ms var(--ease-precise);
+}
+
+.root[data-revealed] .scroller {
+  opacity: 1;
+}
+
+.root[data-leaving] .scroller {
+  transition-duration: 180ms;
+}
+
+.root[data-locked] .scroller {
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Shared text column, aligned with the homepage column. */
+.column {
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-margin);
+}
+
+/* ---- Opening viewport: intro + facts between ceiling and range ---- */
+
+.hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10vh 0 16vh;
+}
+
+.intro {
+  margin: 0;
+  max-width: 26ch;
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 4.6vw, 64px);
+  font-weight: var(--weight-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-fg);
+  text-wrap: balance;
+}
+
+.facts {
+  margin: clamp(28px, 5vh, 48px) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(24px, 4vw, 64px);
+}
+
+.fact dt {
+  font-size: 11px;
+  font-weight: var(--weight-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-fg-faint);
+}
+
+.fact dd {
+  margin: 6px 0 0;
+  font-size: clamp(15px, 1.4vw, 17px);
+  font-weight: var(--weight-light);
+  color: var(--color-fg);
+}
+
+/* ---- Editorial body ---- */
+
+.body {
+  position: relative;
+  padding: clamp(48px, 10vh, 120px) 0 0;
+}
+
+.section {
+  padding: clamp(56px, 11vh, 128px) 0;
+}
+
+.sectionLabel {
+  margin: 0 0 clamp(24px, 4vh, 40px);
+  font-size: 12px;
+  font-weight: var(--weight-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-fg-muted);
+}
+
+.statement {
+  margin: 0;
+  max-width: 34ch;
+  font-family: var(--font-heading);
+  font-size: clamp(26px, 3.2vw, 44px);
+  font-weight: var(--weight-display);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--color-fg);
+  text-wrap: balance;
+}
+
+.principles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(28px, 4vw, 56px);
+}
+
+.principle h3 {
+  margin: 0;
+  font-size: clamp(17px, 1.6vw, 20px);
+  font-weight: var(--weight-light);
+  color: var(--color-fg);
+}
+
+.principle p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  font-weight: var(--weight-thin);
+  line-height: 1.55;
+  color: var(--color-fg-muted);
+  max-width: 34ch;
+}
+
+/* Movies and books share the row on desktop, stack on mobile. */
+.shelves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+}
+
+.shelf {
+  min-width: 0;
+}
+
+@media (max-width: 899px) {
+  .shelves {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+}
+
+/* ---- Contact invitation ---- */
+
+.contact {
+  padding: clamp(72px, 14vh, 160px) 0 clamp(96px, 18vh, 200px);
+}
+
+.contactHeading {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: var(--weight-display);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--color-fg);
+}
+
+.contactBody {
+  margin: 20px 0 0;
+  max-width: 46ch;
+  font-size: clamp(15px, 1.5vw, 17px);
+  font-weight: var(--weight-thin);
+  line-height: 1.6;
+  color: var(--color-fg-muted);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 32px;
+  padding: 13px 28px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  color: var(--color-fg);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: var(--weight-light);
+  transition:
+    background 220ms var(--ease-precise),
+    color 220ms var(--ease-precise),
+    border-color 220ms var(--ease-precise);
+}
+
+.cta:hover,
+.cta:focus-visible {
+  background: var(--color-fg);
+  border-color: var(--color-fg);
+  color: var(--color-bg);
+}

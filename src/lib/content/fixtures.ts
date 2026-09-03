@@ -15,7 +15,16 @@
 import fixtureClients from "@content/fixtures/clients.json";
 import fixtureSettings from "@content/fixtures/site-settings.json";
 
-import type { CaseStudy, NavSection, SiteSettings, WorkClient, WorkMedia } from "./model";
+import { ABOUT_PAGE_DEFAULTS, HOME_PAGE_DEFAULTS } from "./about-defaults";
+import type {
+  AboutPageContent,
+  CaseStudy,
+  HomePageContent,
+  NavSection,
+  SiteSettings,
+  WorkClient,
+  WorkMedia,
+} from "./model";
 
 type FixtureMedia = Omit<WorkMedia, "kind"> & Partial<Pick<WorkMedia, "kind">>;
 
@@ -77,6 +86,14 @@ export function fixtureCaseStudy(slug: string): CaseStudy | null {
     hero: fixtureMedia(study.hero),
     gallery: study.gallery.map(fixtureMedia),
   };
+}
+
+export function fixtureHomePage(): HomePageContent {
+  return HOME_PAGE_DEFAULTS;
+}
+
+export function fixtureAboutPage(): AboutPageContent {
+  return ABOUT_PAGE_DEFAULTS;
 }
 
 export function fixtureCaseStudySlugs(): { slug: string; updatedAt: string }[] {

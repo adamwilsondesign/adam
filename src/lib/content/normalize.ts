@@ -12,18 +12,24 @@ import { stegaClean } from "next-sanity";
 
 import { urlFor } from "@/sanity/lib/image";
 import type {
+  ABOUT_PAGE_QUERY_RESULT,
   CASE_STUDY_QUERY_RESULT,
   CASE_STUDY_SLUGS_QUERY_RESULT,
+  HOME_PAGE_QUERY_RESULT,
   SITE_SETTINGS_QUERY_RESULT,
   WORK_INDEX_QUERY_RESULT,
 } from "@/sanity/types.generated";
 
+import { ABOUT_PAGE_DEFAULTS, HOME_PAGE_DEFAULTS } from "./about-defaults";
 import {
   formatYearRange,
   isWorkTag,
   WORK_TAGS,
+  type AboutPageContent,
   type CaseStudy,
+  type CoverItem,
   type Engagement,
+  type HomePageContent,
   type LogoAlignment,
   type LogoTreatment,
   type MediaAspect,
@@ -280,6 +286,99 @@ export function normalizeSiteSettings(raw: SITE_SETTINGS_QUERY_RESULT): SiteSett
       description: stegaClean(raw?.seoDescription) ?? stegaClean(description),
       ogImageUrl: imageUrl(raw?.defaultOgImage, 1200),
       faviconUrl: raw?.faviconUrl ?? null,
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Page content (homepage / About)                                     */
+/* ------------------------------------------------------------------ */
+
+const COVER_WIDTH = 600;
+
+/**
+ * A missing document (or any missing field) falls back to the local
+ * placeholder content, so the pages render fully before the Studio documents
+ * exist and partial edits never blank a section.
+ */
+export function normalizeHomePage(raw: HOME_PAGE_QUERY_RESULT): HomePageContent {
+  return {
+    intro: raw?.intro ?? HOME_PAGE_DEFAULTS.intro,
+    seo: {
+      title: stegaClean(raw?.seoTitle) ?? null,
+      description: stegaClean(raw?.seoDescription) ?? null,
+    },
+  };
+}
+
+type RawCoverItem = {
+  title: string | null;
+  cover?: RawImage | null;
+  alt: string | null;
+  author?: string | null;
+  year?: number | null;
+};
+
+function normalizeCovers(
+  raw: RawCoverItem[] | null | undefined,
+  defaults: CoverItem[],
+): CoverItem[] {
+  const items = (raw ?? []).flatMap<CoverItem>((item) => {
+    if (!item.title) return [];
+    const title = item.title;
+    // Uploaded artwork wins; otherwise reuse the local placeholder cover for
+    // a matching default title so a text-only Studio edit still shows art.
+    const fallback = defaults.find(
+      (candidate) => stegaClean(candidate.title).toLowerCase() === stegaClean(title).toLowerCase(),
+    );
+    const coverUrl = imageUrl(item.cover, COVER_WIDTH) ?? fallback?.coverUrl;
+    if (!coverUrl) return [];
+    return [
+      {
+        title,
+        coverUrl,
+        alt: item.alt ?? fallback?.alt ?? `Cover artwork for “${stegaClean(title)}”`,
+        author: item.author ?? null,
+        year: item.year ?? null,
+      },
+    ];
+  });
+  return items.length > 0 ? items : defaults;
+}
+
+export function normalizeAboutPage(raw: ABOUT_PAGE_QUERY_RESULT): AboutPageContent {
+  const defaults = ABOUT_PAGE_DEFAULTS;
+
+  const facts = (raw?.facts ?? []).flatMap((fact) =>
+    fact.label && fact.value ? [{ label: fact.label, value: fact.value }] : [],
+  );
+  const experience = (raw?.experience ?? []).flatMap((entry) =>
+    entry.year && entry.title && entry.employer
+      ? [{ year: entry.year, title: entry.title, employer: entry.employer }]
+      : [],
+  );
+  const principles = (raw?.principles ?? []).flatMap((principle) =>
+    principle.title && principle.body ? [{ title: principle.title, body: principle.body }] : [],
+  );
+
+  return {
+    intro: raw?.intro ?? defaults.intro,
+    facts: facts.length > 0 ? facts : defaults.facts,
+    careerStatement: raw?.careerStatement ?? defaults.careerStatement,
+    experienceLabel: raw?.experienceLabel ?? defaults.experienceLabel,
+    experience: experience.length > 0 ? experience : defaults.experience,
+    principlesLabel: raw?.principlesLabel ?? defaults.principlesLabel,
+    principles: principles.length > 0 ? principles : defaults.principles,
+    moviesLabel: raw?.moviesLabel ?? defaults.moviesLabel,
+    booksLabel: raw?.booksLabel ?? defaults.booksLabel,
+    movies: normalizeCovers(raw?.movies, defaults.movies),
+    books: normalizeCovers(raw?.books, defaults.books),
+    contactHeading: raw?.contactHeading ?? defaults.contactHeading,
+    contactBody: raw?.contactBody ?? defaults.contactBody,
+    contactCtaLabel: raw?.contactCtaLabel ?? defaults.contactCtaLabel,
+    seo: {
+      title: stegaClean(raw?.seoTitle) ?? defaults.seo.title,
+      description: stegaClean(raw?.seoDescription) ?? defaults.seo.description,
     },
   };
 }

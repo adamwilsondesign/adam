@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1414"/>
+      <stop offset="1" stop-color="#04070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#field)"/>
+  <circle cx="-30" cy="231" r="51.395416693761945"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.255" stroke-width="1.5"/><circle cx="-30" cy="231" r="88.45970789715648"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.210" stroke-width="1.5"/><circle cx="-30" cy="231" r="146.1817914135754"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.165" stroke-width="1.5"/><circle cx="-30" cy="231" r="182.95864821225405"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.120" stroke-width="1.5"/><circle cx="-30" cy="231" r="259.0944094583392"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.075" stroke-width="1.5"/>
+  <text x="44" y="436"
+            font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#f2f3f0">The Dark</text><text x="44" y="504"
+            font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#f2f3f0">Knight</text>
+  <text x="200" y="566" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="14" letter-spacing="2" fill="#6f9c94" fill-opacity="0.85">2008</text>
+  <rect x="10.5" y="10.5" width="379" height="579" fill="none"
+    stroke="#f2f3f0" stroke-opacity="0.14"/>
+</svg>

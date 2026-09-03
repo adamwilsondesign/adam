@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { beginAboutArrival } from "@/features/about/about-transition";
 import { beginWorkFlight, isReturnFlightActive } from "@/features/sky/sky-director";
 import type { NavSection, YearRange } from "@/lib/content/model";
 import { DUR, EASE_EXIT, EASE_OUT } from "@/lib/motion";
@@ -38,18 +39,21 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
     typeof window !== "undefined" && isReturnFlightActive() ? 0.28 : 0,
   );
 
-  const openWork = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const openSection = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     // Plain anchor semantics stay intact for modified clicks / new tabs.
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
       return;
     event.preventDefault();
     if (navigatingRef.current) return;
     navigatingRef.current = true;
-    // The stars begin their run as the copy fades; the star layer persists
-    // across the route change, so the flight continues into Work.
-    if (!reducedMotion) beginWorkFlight();
+    // The environment starts moving as the copy fades: the star layer's
+    // flight carries into Work; About descends through the cloud deck.
+    if (!reducedMotion) {
+      if (href === "/work") beginWorkFlight();
+      if (href === "/about") beginAboutArrival();
+    }
     setLeaving(true);
-    window.setTimeout(() => router.push("/work"), reducedMotion ? 0 : EXIT_DURATION * 1000);
+    window.setTimeout(() => router.push(href), reducedMotion ? 0 : EXIT_DURATION * 1000);
   };
 
   const enter = (delay: number) =>
@@ -88,7 +92,7 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
                   <Link
                     className={styles.navLink}
                     href={section.href}
-                    onClick={section.href === "/work" ? openWork : undefined}
+                    onClick={(event) => openSection(event, section.href)}
                   >
                     {section.label}
                   </Link>

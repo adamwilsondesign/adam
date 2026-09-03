@@ -102,10 +102,10 @@ test.describe("case-study routing", () => {
 
   test("home → work → home traversal with persistent header controls", async ({ page }) => {
     await page.goto("/");
-    // The homepage index teases the unreleased sections without linking them.
-    await expect(page.getByText("About", { exact: false })).toBeVisible();
+    // Live sections link; unreleased ones are teased without linking.
+    await expect(page.getByRole("link", { name: /^About/ })).toBeVisible();
     await expect(page.getByText("Side Quests", { exact: false })).toBeVisible();
-    expect(await page.getByRole("link", { name: /About/ }).count()).toBe(0);
+    expect(await page.getByRole("link", { name: /Side Quests/ }).count()).toBe(0);
 
     await page.getByRole("link", { name: /^Work/ }).click();
     await expect(page).toHaveURL(/\/work$/);

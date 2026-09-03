@@ -19,7 +19,8 @@
     "sanity:schema": "sanity schema extract",
     "sanity:typegen": "sanity schema extract && sanity typegen generate",
     "sanity:setup": "tsx scripts/setup-sanity.ts",
-    "sanity:seed": "tsx scripts/seed-sanity.ts"
+    "sanity:seed": "tsx scripts/seed-sanity.ts",
+    "sanity:seed-about": "tsx scripts/seed-about.ts"
   },
   "dependencies": {
     "@portabletext/react": "^8.0.1",

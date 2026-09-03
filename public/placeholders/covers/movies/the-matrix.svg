@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1414"/>
+      <stop offset="1" stop-color="#04070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#field)"/>
+  <circle cx="-30" cy="134" r="47.021153470501304"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.255" stroke-width="1.5"/><circle cx="-30" cy="134" r="89.54544482007623"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.210" stroke-width="1.5"/><circle cx="-30" cy="134" r="141.1695074401796"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.165" stroke-width="1.5"/><circle cx="-30" cy="134" r="197.3749288469553"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.120" stroke-width="1.5"/><circle cx="-30" cy="134" r="227.72935873828828"
+          fill="none" stroke="#6f9c94" stroke-opacity="0.075" stroke-width="1.5"/>
+  <text x="200" y="300" text-anchor="middle"
+            font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" font-weight="600" letter-spacing="3"
+            fill="#f2f3f0">THE MATRIX</text>
+  <text x="200" y="566" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="14" letter-spacing="2" fill="#6f9c94" fill-opacity="0.85">1999</text>
+  <rect x="10.5" y="10.5" width="379" height="579" fill="none"
+    stroke="#f2f3f0" stroke-opacity="0.14"/>
+</svg>

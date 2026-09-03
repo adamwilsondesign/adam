@@ -80,6 +80,31 @@ export const CASE_STUDY_QUERY =
   }
 }`);
 
+export const HOME_PAGE_QUERY = defineQuery(`*[_type == "homePage"][0]{
+  intro,
+  seoTitle,
+  seoDescription
+}`);
+
+export const ABOUT_PAGE_QUERY = defineQuery(`*[_type == "aboutPage"][0]{
+  intro,
+  facts[]{ label, value },
+  careerStatement,
+  experienceLabel,
+  experience[]{ year, title, employer },
+  principlesLabel,
+  principles[]{ title, body },
+  moviesLabel,
+  movies[]{ title, year, cover, alt },
+  booksLabel,
+  books[]{ title, author, cover, alt },
+  contactHeading,
+  contactBody,
+  contactCtaLabel,
+  seoTitle,
+  seoDescription
+}`);
+
 export const CASE_STUDY_SLUGS_QUERY =
   defineQuery(`*[_type == "client" && defined(caseStudy.slug.current) && hidden != true]{
   "slug": caseStudy.slug.current,

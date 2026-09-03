@@ -1,0 +1,101 @@
+/* Full-bleed band: the timeline escapes the text column to run edge to edge. */
+.root {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  cursor: grab;
+  padding: 8px 0 16px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.viewport[data-dragging] {
+  scroll-snap-type: none;
+  cursor: grabbing;
+}
+
+.viewport:focus-visible {
+  outline: 2px solid var(--color-fg);
+  outline-offset: -2px;
+}
+
+.track {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  padding: 0 max(var(--page-margin), 8vw);
+  min-width: 100%;
+}
+
+/* The continuous line the years sit on. */
+.line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Below the large year block (its clamp height + gap), through the markers. */
+  top: calc(clamp(56px, 7vw, 96px) + 21px);
+  border-top: 1px solid var(--color-line);
+}
+
+.entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-shrink: 0;
+  margin-left: var(--gap, 0px);
+  scroll-snap-align: center;
+  min-width: 150px;
+}
+
+/* Large year markers — the years are the display element, not cards. */
+.year {
+  font-family: var(--font-heading);
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: var(--weight-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-fg);
+  height: clamp(56px, 7vw, 96px);
+}
+
+.marker {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-fg);
+  margin: 18px 0 16px 2px;
+}
+
+.role {
+  font-size: clamp(15px, 1.4vw, 17px);
+  font-weight: var(--weight-light);
+  color: var(--color-fg);
+}
+
+.employer {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: var(--weight-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-fg-muted);
+}
+
+/* Mobile: one entry in view with the next peeking in from the edge. */
+@media (max-width: 767px) {
+  .entry {
+    min-width: 62vw;
+    margin-left: calc(var(--gap, 0px) * 0.25);
+  }
+}

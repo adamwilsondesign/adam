@@ -195,3 +195,53 @@ export function formatYearRange(range: YearRange | null): string {
   if (!range) return "";
   return range.start === range.end ? `${range.start}` : `${range.start}–${range.end}`;
 }
+
+/* ------------------------------------------------------------------ */
+/* Page content (homepage / About)                                     */
+/* ------------------------------------------------------------------ */
+
+export type HomePageContent = {
+  /** The homepage display headline (first-person introduction). */
+  intro: string;
+  /** Optional metadata overrides; site settings fill the gaps. */
+  seo: { title: string | null; description: string | null };
+};
+
+export type AboutFact = { label: string; value: string };
+
+export type ExperienceEntry = {
+  /** Display year of the role's start, e.g. "2015". */
+  year: string;
+  title: string;
+  employer: string;
+};
+
+export type AboutPrinciple = { title: string; body: string };
+
+/** One cover in the movies/books marquees. The cover carries the title. */
+export type CoverItem = {
+  title: string;
+  coverUrl: string;
+  alt: string;
+  /** Books carry an author; movies a year. Stored even when not displayed. */
+  author?: string | null;
+  year?: number | null;
+};
+
+export type AboutPageContent = {
+  intro: string;
+  facts: AboutFact[];
+  careerStatement: string;
+  experienceLabel: string;
+  experience: ExperienceEntry[];
+  principlesLabel: string;
+  principles: AboutPrinciple[];
+  moviesLabel: string;
+  booksLabel: string;
+  movies: CoverItem[];
+  books: CoverItem[];
+  contactHeading: string;
+  contactBody: string;
+  contactCtaLabel: string;
+  seo: { title: string; description: string };
+};

@@ -52,12 +52,15 @@ export function SiteChrome({
         ? "secret"
         : pathname.startsWith("/work")
           ? "work"
-          : "other";
+          : pathname.startsWith("/about")
+            ? "about"
+            : "other";
   const availableSections = navigation.filter((section) => section.available);
   const showMenu = availableSections.length > 1;
 
   useEffect(() => {
     router.prefetch("/work");
+    router.prefetch("/about");
   }, [router]);
 
   const navigate = (href: string) => {
@@ -89,7 +92,7 @@ export function SiteChrome({
       <header className={styles.header}>
         <div className={styles.slot}>
           <AnimatePresence initial={false}>
-            {mode === "work" ? (
+            {mode === "work" || mode === "about" ? (
               <motion.div
                 key="back"
                 className={styles.slotItem}

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1216"/>
+      <stop offset="1" stop-color="#04070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#field)"/>
+  <circle cx="33" cy="488" r="1.6"
+          fill="#9db3ab" fill-opacity="0.27"/><circle cx="155" cy="379" r="1.4"
+          fill="#9db3ab" fill-opacity="0.43"/><circle cx="47" cy="115" r="1.2"
+          fill="#9db3ab" fill-opacity="0.52"/><circle cx="211" cy="440" r="1.0"
+          fill="#9db3ab" fill-opacity="0.27"/><circle cx="394" cy="434" r="2.2"
+          fill="#9db3ab" fill-opacity="0.61"/><circle cx="13" cy="262" r="2.1"
+          fill="#9db3ab" fill-opacity="0.47"/><circle cx="13" cy="88" r="2.1"
+          fill="#9db3ab" fill-opacity="0.34"/><circle cx="2" cy="481" r="1.9"
+          fill="#9db3ab" fill-opacity="0.54"/><circle cx="196" cy="511" r="2.0"
+          fill="#9db3ab" fill-opacity="0.40"/><circle cx="12" cy="452" r="1.9"
+          fill="#9db3ab" fill-opacity="0.56"/><circle cx="1" cy="5" r="1.1"
+          fill="#9db3ab" fill-opacity="0.40"/><circle cx="240" cy="296" r="0.9"
+          fill="#9db3ab" fill-opacity="0.34"/><circle cx="27" cy="210" r="2.1"
+          fill="#9db3ab" fill-opacity="0.45"/><circle cx="248" cy="411" r="1.3"
+          fill="#9db3ab" fill-opacity="0.42"/><circle cx="14" cy="486" r="2.2"
+          fill="#9db3ab" fill-opacity="0.48"/><circle cx="199" cy="234" r="1.0"
+          fill="#9db3ab" fill-opacity="0.52"/><circle cx="367" cy="372" r="2.3"
+          fill="#9db3ab" fill-opacity="0.65"/><circle cx="324" cy="205" r="1.9"
+          fill="#9db3ab" fill-opacity="0.38"/><circle cx="162" cy="541" r="2.1"
+          fill="#9db3ab" fill-opacity="0.32"/><circle cx="90" cy="188" r="2.1"
+          fill="#9db3ab" fill-opacity="0.31"/><circle cx="3" cy="109" r="1.7"
+          fill="#9db3ab" fill-opacity="0.47"/><circle cx="367" cy="218" r="1.3"
+          fill="#9db3ab" fill-opacity="0.28"/><circle cx="178" cy="80" r="2.2"
+          fill="#9db3ab" fill-opacity="0.54"/><circle cx="78" cy="448" r="1.3"
+          fill="#9db3ab" fill-opacity="0.50"/><circle cx="170" cy="277" r="1.4"
+          fill="#9db3ab" fill-opacity="0.36"/><circle cx="263" cy="367" r="1.8"
+          fill="#9db3ab" fill-opacity="0.44"/>
+  <text x="200" y="250" text-anchor="middle"
+            font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" font-weight="600" letter-spacing="3"
+            fill="#f2f3f0">KEITH</text><text x="200" y="300" text-anchor="middle"
+            font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" font-weight="600" letter-spacing="3"
+            fill="#f2f3f0">HARING</text><text x="200" y="350" text-anchor="middle"
+            font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" font-weight="600" letter-spacing="3"
+            fill="#f2f3f0">JOURNALS</text>
+  <text x="200" y="566" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="14" letter-spacing="2" fill="#9db3ab" fill-opacity="0.85">KEITH HARING</text>
+  <rect x="10.5" y="10.5" width="379" height="579" fill="none"
+    stroke="#f2f3f0" stroke-opacity="0.14"/>
+</svg>

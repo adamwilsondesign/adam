@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d1114"/>
+      <stop offset="1" stop-color="#04070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#field)"/>
+  <circle cx="430" cy="127" r="51.81592841260135"
+          fill="none" stroke="#a8987f" stroke-opacity="0.255" stroke-width="1.5"/><circle cx="430" cy="127" r="93.11004729568958"
+          fill="none" stroke="#a8987f" stroke-opacity="0.210" stroke-width="1.5"/><circle cx="430" cy="127" r="136.55402741208673"
+          fill="none" stroke="#a8987f" stroke-opacity="0.165" stroke-width="1.5"/><circle cx="430" cy="127" r="178.18062976002693"
+          fill="none" stroke="#a8987f" stroke-opacity="0.120" stroke-width="1.5"/><circle cx="430" cy="127" r="257.2938168887049"
+          fill="none" stroke="#a8987f" stroke-opacity="0.075" stroke-width="1.5"/>
+  <text x="200" y="300" text-anchor="middle"
+            font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" font-weight="600" letter-spacing="3"
+            fill="#f2f3f0">ROBOCOP</text>
+  <text x="200" y="566" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="14" letter-spacing="2" fill="#a8987f" fill-opacity="0.85">1987</text>
+  <rect x="10.5" y="10.5" width="379" height="579" fill="none"
+    stroke="#f2f3f0" stroke-opacity="0.14"/>
+</svg>

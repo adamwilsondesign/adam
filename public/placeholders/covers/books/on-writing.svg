@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1218"/>
+      <stop offset="1" stop-color="#04070a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#field)"/>
+  
+        <path d="M -40 408.32443919964135 Q 200 240.19905267748982 440 408.32443919964135"
+          fill="none" stroke="#7fa3a8" stroke-opacity="0.34" stroke-width="2"/>
+        <circle cx="94" cy="216" r="20"
+          fill="#7fa3a8" fill-opacity="0.5"/>
+  <text x="200" y="150" text-anchor="middle"
+            font-family="Georgia, 'Times New Roman', serif" font-size="63" fill="#f2f3f0">On Writing</text>
+  <text x="200" y="566" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="14" letter-spacing="2" fill="#7fa3a8" fill-opacity="0.85">STEPHEN KING</text>
+  <rect x="10.5" y="10.5" width="379" height="579" fill="none"
+    stroke="#f2f3f0" stroke-opacity="0.14"/>
+</svg>

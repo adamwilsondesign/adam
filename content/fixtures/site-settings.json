@@ -13,7 +13,7 @@
     {
       "label": "About",
       "href": "/about",
-      "available": false
+      "available": true
     },
     {
       "label": "Side Quests",
