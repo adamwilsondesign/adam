@@ -146,3 +146,11 @@
 .secretBack:focus-visible {
   opacity: 1;
 }
+
+/* The homepage index already lists every section on desktop — the burger
+   menu earns its place only on small screens. */
+@media (min-width: 768px) {
+  .menuSlot {
+    display: none;
+  }
+}

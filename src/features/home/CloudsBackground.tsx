@@ -4,7 +4,7 @@ import { useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { registerCloudSurgeHandler } from "@/features/sky/sky-director";
+import { registerCloudShiftHandler, registerCloudSurgeHandler } from "@/features/sky/sky-director";
 
 import styles from "./CloudsBackground.module.css";
 
@@ -44,11 +44,34 @@ const SKY_DISABLED = process.env.NEXT_PUBLIC_DISABLE_SKY === "1";
  */
 export function CloudsBackground() {
   const ref = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
   const pathname = usePathname();
   const [fallback, setFallback] = useState(false);
 
   const dimmed = pathname !== "/";
+
+  /* The About descent flies through this very layer: the scene drives the
+     whole cloud background — growing and rising past the camera, fading as
+     the camera passes below the deck. Works for the WebGL scene and the
+     static fallback alike; null restores the resting layer. */
+  useEffect(() => {
+    if (SKY_DISABLED) return;
+    registerCloudShiftHandler((shift) => {
+      const el = rootRef.current;
+      if (!el) return;
+      if (!shift) {
+        el.style.transform = "";
+        el.style.opacity = "";
+        el.style.willChange = "";
+        return;
+      }
+      el.style.willChange = "transform, opacity";
+      el.style.transform = `translate3d(0, ${shift.y.toFixed(1)}px, 0) scale(${shift.scale.toFixed(3)})`;
+      el.style.opacity = shift.opacity.toFixed(3);
+    });
+    return () => registerCloudShiftHandler(null);
+  }, []);
 
   useEffect(() => {
     if (SKY_DISABLED) return;
@@ -135,7 +158,7 @@ export function CloudsBackground() {
   if (SKY_DISABLED) return <div className={styles.clouds} aria-hidden />;
 
   return (
-    <div className={styles.clouds} data-dimmed={dimmed || undefined} aria-hidden>
+    <div ref={rootRef} className={styles.clouds} data-dimmed={dimmed || undefined} aria-hidden>
       {fallback ? <div className={styles.fallback} /> : <div ref={ref} className={styles.scene} />}
       <div className={styles.veil} data-active={dimmed || undefined} />
     </div>

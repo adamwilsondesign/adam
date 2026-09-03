@@ -58,6 +58,27 @@ export function surgeClouds(durationMs: number, intensity: number): void {
   cloudSurgeHandler?.(durationMs, intensity);
 }
 
+/**
+ * The About descent flies through the live cloud layer itself: the scene
+ * drives the cloud background's transform each frame (growing and rising
+ * past the camera, fading as the camera passes below the deck). Null
+ * restores the resting layer. A missing handler is a quiet no-op.
+ */
+export type CloudShift = { y: number; scale: number; opacity: number };
+
+type CloudShiftHandler = (shift: CloudShift | null) => void;
+
+let cloudShiftHandler: CloudShiftHandler | null = null;
+
+export function registerCloudShiftHandler(next: CloudShiftHandler | null): void {
+  cloudShiftHandler = next;
+}
+
+export function shiftClouds(shift: CloudShift | null): void {
+  if (SKY_DISABLED) return;
+  cloudShiftHandler?.(shift);
+}
+
 /** The homepage Work link was activated: the next Work mount flies stars. */
 export function beginWorkFlight(): void {
   if (SKY_DISABLED) return;

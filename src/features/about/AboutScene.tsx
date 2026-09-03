@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { SKY_DISABLED } from "@/features/sky/sky-director";
+import { SKY_DISABLED, shiftClouds } from "@/features/sky/sky-director";
 import { seededRandom } from "@/features/sky/star-field";
 
 import { MOUNTAIN_LAYERS, MOUNTAIN_LAYERS_MOBILE, type MountainLayer } from "./mountains";
@@ -147,6 +147,7 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
     let phaseStart: number | null = null;
     let leaveFrom = 1;
     let pose = lastPhase === "arriving" ? 0 : 1;
+    let cloudsShifted = false;
 
     const resize = () => {
       width = window.innerWidth;
@@ -204,10 +205,35 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
       ctx.clearRect(0, 0, width, height);
 
+      /* The live cloud layer is the deck being flown through: while the
+         camera moves it grows and rises past the viewport, fading out as the
+         camera passes below it — then returns, dimmed and untransformed,
+         behind the settled scene. Purely pose-driven, so the reverse plays
+         it backwards for free. */
+      if (currentPhase === "arriving" || currentPhase === "leaving") {
+        if (pose < 0.55) {
+          const t = pose / 0.55;
+          const rise = t * t * (3 - 2 * t);
+          shiftClouds({
+            y: -height * 0.6 * rise,
+            scale: 1 + 1.05 * rise,
+            opacity: 1 - smoothstep(0.34, 0.55, pose),
+          });
+        } else {
+          shiftClouds({ y: 0, scale: 1, opacity: smoothstep(0.8, 0.98, pose) });
+        }
+        cloudsShifted = true;
+      } else if (cloudsShifted) {
+        shiftClouds(null);
+        cloudsShifted = false;
+      }
+
       /* During the drop the scene owns the whole sky (an opaque backdrop),
-         so every element shares one vertical camera. It dissolves as the
-         camera settles, handing the middle band back to the live site sky. */
-      const backdrop = 1 - smoothstep(0.8, 0.995, pose);
+         so every element shares one vertical camera. It layers in as the
+         camera starts moving — the live clouds carry the first beat — and
+         dissolves as the camera settles, handing the middle band back to
+         the live site sky. */
+      const backdrop = smoothstep(0.06, 0.38, pose) * (1 - smoothstep(0.8, 0.995, pose));
       const camY = pose * CAM_TRAVEL * height;
 
       if (backdrop > 0.003) {
@@ -252,10 +278,10 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
       }
 
       /* Faint stars of the valley air: hidden below the frame at the start,
-         they ride up into the band between ceiling and range. */
-      const editorial = smoothstep(0.5, 0.96, scroll);
-      const bandStarAlpha = Math.max(backdrop * smoothstep(0.55, 0.92, pose), editorial);
-      if (bandStarAlpha > 0.003 && editorial < 0.01) {
+         they ride up into the band between ceiling and range, handing off to
+         the site's own stars once the backdrop dissolves. */
+      const bandStarAlpha = backdrop * smoothstep(0.55, 0.92, pose);
+      if (bandStarAlpha > 0.003) {
         ctx.fillStyle = "#dfe6ee";
         for (const star of bandStars) {
           const sy = star.y * height + (CAM_TRAVEL * height - camY);
@@ -326,15 +352,15 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
       }
 
       /* The range: moonlit relief revealed from below as the camera drops,
-         then pushed toward on the Z axis by scroll — near layers enlarge
-         and separate fastest, opening the valley. */
+         then flown over on the Z axis by scroll — the range grows toward the
+         camera and stays underfoot for the whole page; only the nearest
+         layer eventually slides beneath the viewport. */
+      const approach = 1 - (1 - scroll) * (1 - scroll);
       for (const item of baked) {
         const { layer } = item;
         const rise = (1 - pose) * (0.22 + 0.38 * layer.depth) * height;
-        const zoom = 1 + scroll * (0.3 + 1.9 * Math.pow(layer.depth, 1.5));
-        /* Quadratic: early scroll is pure approach (the range grows); only
-           late in the travel do the near layers slide out beneath us. */
-        const drop = scroll * scroll * Math.pow(layer.depth, 1.4) * 0.55 * height;
+        const zoom = 1 + approach * (0.22 + 0.85 * Math.pow(layer.depth, 1.4));
+        const drop = scroll * scroll * Math.pow(layer.depth, 4) * 0.4 * height;
         const parallaxX = pointer.x * (1.5 + 5.5 * layer.depth);
         const parallaxY = pointer.y * (1 + 2.5 * layer.depth);
         const offY = rise + drop + parallaxY;
@@ -367,22 +393,12 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
         ctx.fillRect(0, 0, width, height);
       }
 
-      /* Deep scroll: the environment resolves into the editorial dark ground
-         with its own faint stars (the site sky is covered by the veil). */
-      if (editorial > 0.003) {
-        ctx.fillStyle = `rgba(2, 3, 5, ${editorial})`;
+      /* Deep scroll: a gentle scrim keeps long copy readable while the
+         range stays underfoot — the flight over the mountains never ends. */
+      const scrim = smoothstep(0.35, 0.9, scroll) * 0.42;
+      if (scrim > 0.003) {
+        ctx.fillStyle = `rgba(2, 3, 5, ${scrim})`;
         ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = "#dfe6ee";
-        for (const star of bandStars) {
-          const twinkle = reducedMotion
-            ? 1
-            : 0.82 + 0.18 * Math.sin((now / 1000) * star.tw + star.ph);
-          ctx.globalAlpha = star.a * editorial * twinkle;
-          ctx.beginPath();
-          ctx.arc(star.x * width, star.y * height, star.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
       }
     };
 
@@ -418,6 +434,7 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("resize", resize);
+      if (cloudsShifted) shiftClouds(null);
     };
   }, [arrivalMs, reducedMotion, scrollProgress]);
 

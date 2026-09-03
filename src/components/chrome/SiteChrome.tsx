@@ -109,7 +109,7 @@ export function SiteChrome({
             ) : showMenu ? (
               <motion.div
                 key="menu"
-                className={styles.slotItem}
+                className={`${styles.slotItem} ${styles.menuSlot}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

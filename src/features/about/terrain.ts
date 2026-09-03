@@ -25,10 +25,11 @@ const MOON = (() => {
   return { x: v[0]! / len, y: v[1]! / len, z: v[2]! / len };
 })();
 
-/** Night palette shared by every layer; per-layer haze does the depth cue. */
-const LIT: [number, number, number] = [172, 192, 214];
+/** Night palette shared by every layer; per-layer haze does the depth cue.
+ *  Kept deliberately dim — moonlight suggests, it never floodlights. */
+const LIT: [number, number, number] = [124, 142, 163];
 const SHADOW: [number, number, number] = [5, 8, 12];
-const HORIZON: [number, number, number] = [30, 40, 52];
+const HORIZON: [number, number, number] = [24, 32, 42];
 
 /** Terrain grid: rows recede into depth, columns run across the frame. */
 const ROWS = 92;
@@ -75,7 +76,7 @@ function ridgedFbm(seed: number, x: number, y: number, octaves: number): number 
     const n = valueNoise2(seed + o * 101, x * freq, y * freq);
     sum += (1 - Math.abs(2 * n - 1)) * amp;
     norm += amp;
-    amp *= 0.55;
+    amp *= 0.48;
     freq *= 2.1;
   }
   return sum / norm;
@@ -91,8 +92,8 @@ function ridgedFbm(seed: number, x: number, y: number, octaves: number): number 
 export function terrainHeight(layer: MountainLayer, u: number, v: number): number {
   const zw = (1 - v) * Z_THICKNESS;
   const rough = 0.75 + 0.5 * layer.roughness;
-  const ridged = ridgedFbm(layer.seed, u * 2.1 * rough, zw * 1.6, 4);
-  const sharp = Math.pow(ridged, 1.35);
+  const ridged = ridgedFbm(layer.seed, u * 1.6 * rough, zw * 1.3, 4);
+  const sharp = Math.pow(ridged, 1.22);
   const sigma = 0.18 * (1 + 0.9 * v);
   const carve = 1 - layer.valley * 0.92 * Math.exp(-(u * u) / (2 * sigma * sigma));
   const amp = 1 - 0.45 * v;
@@ -121,8 +122,8 @@ export function projectRow(
   width: number,
   height: number,
 ): ProjectedRow {
-  const du = 0.02;
-  const dv = 0.02;
+  const du = 0.032;
+  const dv = 0.032;
   const distance = mix(D_FAR, D_NEAR, v);
   const persp = 1 / distance;
   const groundY = height * (0.286 + 0.734 * persp);
@@ -131,7 +132,7 @@ export function projectRow(
   const heightScale = height * persp * mix(1.42, 0.85, layer.depth);
   const xScale = (width / 2) * (0.55 + 0.5 * persp);
   const fog = layer.haze + (1 - layer.haze) * 0.6 * ((distance - D_NEAR) / (D_FAR - D_NEAR));
-  const contrast = (0.55 + 0.45 * layer.depth) * (1 - 0.25 * (1 - persp));
+  const contrast = (0.55 + 0.45 * layer.depth) * (1 - 0.25 * (1 - persp)) * 0.82;
 
   const xs = new Float32Array(COLS + 1);
   const ys = new Float32Array(COLS + 1);
@@ -149,7 +150,7 @@ export function projectRow(
       (terrainHeight(layer, u, Math.min(1, v + dv)) -
         terrainHeight(layer, u, Math.max(0, v - dv))) /
       (2 * dv);
-    const nx = -dhdu * 0.6;
+    const nx = -dhdu * 0.5;
     const ny = 1;
     const nz = (dhdv / Z_THICKNESS) * 0.9;
     const nl = Math.hypot(nx, ny, nz);
@@ -157,12 +158,12 @@ export function projectRow(
 
     let light = Math.pow(lambert, 1.8) * contrast;
     /* High crests catch a little extra silver. */
-    light += 0.14 * h * clamp01(lambert - 0.4);
+    light += 0.09 * h * clamp01(lambert - 0.4);
     /* The valley floor nearest the camera falls into night shadow and
        settles to one quiet tone (its extrusion forms the layer base). */
     light *= mix(1, 0.4, v * v);
     const settle = clamp01((v - 0.7) / 0.3);
-    lights[iu] = clamp01(mix(light, 0.045, settle * settle * 0.9));
+    lights[iu] = clamp01(mix(light, 0.035, settle * settle * 0.9));
   }
 
   return { xs, ys, lights, fog };
@@ -231,13 +232,13 @@ export function renderTerrainLayer(
 
   /* Soft rock grain: gentle multiplicative noise, alpha preserved — enough
      to keep large faces organic, quiet enough to never read as static. */
-  const fs = 4.2 / height;
+  const fs = 3.4 / height;
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const o = (y * width + x) * 4;
       if (data[o + 3] === 0) continue;
       const n = ridgedFbm(layer.seed ^ 0x9e37, x * fs, y * fs * 0.8, 2);
-      const gain = 0.91 + 0.18 * n;
+      const gain = 0.94 + 0.12 * n;
       data[o] = Math.min(255, data[o]! * gain);
       data[o + 1] = Math.min(255, data[o + 1]! * gain);
       data[o + 2] = Math.min(255, data[o + 2]! * gain);
