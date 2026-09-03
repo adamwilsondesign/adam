@@ -5,12 +5,8 @@ import { useEffect, useRef } from "react";
 import { SKY_DISABLED } from "@/features/sky/sky-director";
 import { seededRandom } from "@/features/sky/star-field";
 
-import {
-  MOUNTAIN_LAYERS,
-  MOUNTAIN_LAYERS_MOBILE,
-  ridgeHeights,
-  type MountainLayer,
-} from "./mountains";
+import { MOUNTAIN_LAYERS, MOUNTAIN_LAYERS_MOBILE, type MountainLayer } from "./mountains";
+import { renderTerrainLayer } from "./terrain";
 import styles from "./AboutScene.module.css";
 
 export type AboutScenePhase = "arriving" | "settled" | "leaving";
@@ -43,6 +39,22 @@ type AboutSceneProps = {
 type CloudPuff = { x: number; y: number; rx: number; squash: number; alpha: number; drift: number };
 type CloudLayer = { depth: number; tint: number; puffs: CloudPuff[] };
 type SceneStar = { x: number; y: number; r: number; a: number; tw: number; ph: number };
+type BakedLayer = {
+  layer: MountainLayer;
+  canvas: HTMLCanvasElement;
+  drawWidth: number;
+  drawHeight: number;
+  baseColor: string;
+};
+
+/** How far the camera descends, in viewport heights, over the arrival. */
+const CAM_TRAVEL = 1.5;
+/** Distant stars shift less than the cloud deck as the camera drops. */
+const STAR_PARALLAX = 0.35;
+/** Baked relief resolution relative to CSS pixels (upscaled when drawn). */
+const BAKE_SCALE = 0.65;
+/** Side margin baked into each layer so parallax and zoom never show edges. */
+const BAKE_MARGIN = 1.3;
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -61,18 +73,22 @@ function smoothstep(edge0: number, edge1: number, value: number): number {
  */
 function mistAlpha(pose: number): number {
   const d = pose - 0.52;
-  return 0.34 * Math.exp(-(d * d) / (2 * 0.085 * 0.085));
+  return 0.42 * Math.exp(-(d * d) / (2 * 0.1 * 0.1));
 }
 
 /**
- * The About page's fixed environment canvas: the descent through the cloud
- * deck, the settled valley (cloud ceiling above, nighttime range below), the
- * scroll-driven push into the valley, and the reverse ascent when leaving.
+ * The About page's fixed environment canvas.
  *
- * Everything moves from one shared pose — arrival progress, scroll progress
- * and the pointer offset project every layer by its depth; no layer animates
- * independently. The middle band stays transparent so the site-wide clouds
- * and stars read through between ceiling and mountains.
+ * Arrival is a strictly vertical camera drop: the homepage's world — stars
+ * above, the cloud deck low in the frame — rises past the viewport as the
+ * camera descends through the deck, and the moonlit range appears from below.
+ * The deck settles as the ceiling in the top quarter. Scroll then travels on
+ * the Z axis: the range enlarges toward the camera (near layers fastest)
+ * while the ceiling exits upward off the screen. Leaving reverses the drop.
+ *
+ * Mountains are real shaded relief (terrain.ts): heightfields lit by an
+ * off-canvas moon to the upper right, baked once per resize and composited
+ * with the shared camera. Nothing is stroked and no layer moves on its own.
  */
 export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: AboutSceneProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -89,23 +105,34 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
     let width = 0;
     let height = 0;
-    let ridges: { layer: MountainLayer; heights: number[] }[] = [];
+    let baked: BakedLayer[] = [];
 
-    /* Deterministic scene furniture: ceiling puffs and the editorial stars. */
+    /* Deterministic scene furniture. */
     const random = seededRandom(0x51ab);
     const cloudLayers: CloudLayer[] = [0.25, 0.55, 0.9].map((depth, index) => ({
       depth,
       tint: index / 2,
-      puffs: Array.from({ length: 9 }, () => ({
+      puffs: Array.from({ length: 10 }, () => ({
         x: random() * 1.3 - 0.15,
-        y: random() * 0.2 - 0.04,
+        y: random() * 0.26 - 0.06,
         rx: 0.1 + random() * 0.13,
         squash: 0.3 + random() * 0.15,
         alpha: 0.34 + random() * 0.3,
         drift: 0.6 + random() * 0.8,
       })),
     }));
-    const stars: SceneStar[] = Array.from({ length: 70 }, () => ({
+    /* The homepage sky: bright stars that sweep up and out during the drop. */
+    const skyStars: SceneStar[] = Array.from({ length: 110 }, () => ({
+      x: random(),
+      y: random() * 1.35 - 0.3,
+      r: 0.5 + random() * 1.1,
+      a: 0.3 + random() * 0.55,
+      tw: 0.6 + random() * 1.6,
+      ph: random() * Math.PI * 2,
+    }));
+    /* Faint below-deck stars: rise into the settled middle band, and return
+       over the editorial dark once the scroll veil covers the site sky. */
+    const bandStars: SceneStar[] = Array.from({ length: 70 }, () => ({
       x: random(),
       y: 0.04 + random() * 0.55,
       r: 0.5 + random() * 0.9,
@@ -129,15 +156,27 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      /* Bake the moonlit relief once per size; drawn scaled every frame. */
       const layers = mobile ? MOUNTAIN_LAYERS_MOBILE : MOUNTAIN_LAYERS;
-      ridges = layers.map((layer) => ({ layer, heights: ridgeHeights(layer, mobile ? 96 : 168) }));
+      const drawWidth = Math.ceil(width * BAKE_MARGIN);
+      baked = layers.map((layer) => {
+        const drawHeight = Math.ceil(layer.band * height) + 2;
+        const bw = Math.max(2, Math.round(drawWidth * BAKE_SCALE));
+        const bh = Math.max(2, Math.round(drawHeight * BAKE_SCALE));
+        const offscreen = document.createElement("canvas");
+        const baseColor = renderTerrainLayer(offscreen, layer, bw, bh);
+        return { layer, canvas: offscreen, drawWidth, drawHeight, baseColor };
+      });
       draw(performance.now());
     };
 
     const draw = (now: number) => {
       const scroll = clamp01(scrollProgress.current ?? 0);
 
-      /* One pose for everything: 0 = high above the deck, 1 = settled. */
+      /* One pose for everything: 0 = homepage sky, 1 = settled valley. */
       const currentPhase = phaseRef.current;
       if (currentPhase !== lastPhase) {
         if (currentPhase === "leaving") leaveFrom = pose;
@@ -165,23 +204,92 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
       ctx.clearRect(0, 0, width, height);
 
-      /* Cloud ceiling: settles into the top quarter, recedes upward on
-         scroll. During arrival the deck starts across the middle of the view
-         and sweeps up past the camera. */
+      /* During the drop the scene owns the whole sky (an opaque backdrop),
+         so every element shares one vertical camera. It dissolves as the
+         camera settles, handing the middle band back to the live site sky. */
+      const backdrop = 1 - smoothstep(0.8, 0.995, pose);
+      const camY = pose * CAM_TRAVEL * height;
+
+      if (backdrop > 0.003) {
+        const sky = ctx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, `rgba(4, 6, 10, ${backdrop})`);
+        sky.addColorStop(1, `rgba(10, 15, 20, ${backdrop})`);
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      /* The moon itself stays off-canvas upper right; its glow brightens the
+         sky there, drifting up with the world as the camera descends. */
+      const glowAlpha = 0.06 + 0.1 * backdrop;
+      const glowY = height * 0.14 - camY * STAR_PARALLAX;
+      const glow = ctx.createRadialGradient(
+        width * 0.92,
+        glowY,
+        0,
+        width * 0.92,
+        glowY,
+        width * 0.5,
+      );
+      glow.addColorStop(0, `rgba(186, 205, 228, ${glowAlpha})`);
+      glow.addColorStop(1, "rgba(186, 205, 228, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+
+      if (backdrop > 0.003) {
+        ctx.fillStyle = "#e6ecf4";
+        for (const star of skyStars) {
+          const sy = star.y * height - camY * STAR_PARALLAX;
+          if (sy < -4 || sy > height + 4) continue;
+          const twinkle = reducedMotion
+            ? 1
+            : 0.82 + 0.18 * Math.sin((now / 1000) * star.tw + star.ph);
+          ctx.globalAlpha = star.a * backdrop * twinkle;
+          ctx.beginPath();
+          ctx.arc(star.x * width, sy, star.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      /* Faint stars of the valley air: hidden below the frame at the start,
+         they ride up into the band between ceiling and range. */
+      const editorial = smoothstep(0.5, 0.96, scroll);
+      const bandStarAlpha = Math.max(backdrop * smoothstep(0.55, 0.92, pose), editorial);
+      if (bandStarAlpha > 0.003 && editorial < 0.01) {
+        ctx.fillStyle = "#dfe6ee";
+        for (const star of bandStars) {
+          const sy = star.y * height + (CAM_TRAVEL * height - camY);
+          if (sy < -4 || sy > height + 4) continue;
+          const twinkle = reducedMotion
+            ? 1
+            : 0.82 + 0.18 * Math.sin((now / 1000) * star.tw + star.ph);
+          ctx.globalAlpha = star.a * bandStarAlpha * twinkle;
+          ctx.beginPath();
+          ctx.arc(star.x * width, sy, star.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      /* The cloud deck. At rest it is the ceiling across the top quarter;
+         at pose 0 the same deck sits at the bottom of the frame (the
+         homepage horizon), and the camera drops straight through it. On
+         scroll it exits upward — the Z push leaves the clouds behind. */
       const recede = smoothstep(0.05, 0.75, scroll);
-      const ceilingAlpha = (0.55 + 0.45 * pose) * (1 - recede * 0.9);
-      const ceilingLift = -recede * 0.4 * height;
+      const ceilingAlpha = (0.55 + 0.45 * pose) * (1 - recede * 0.7);
+      const ceilingLift = -recede * 0.9 * height;
       if (ceilingAlpha > 0.01) {
         const bandBottom = ceilingLift + height * 0.34;
         if (bandBottom > 0) {
           const grad = ctx.createLinearGradient(0, ceilingLift, 0, bandBottom);
-          grad.addColorStop(0, `rgba(7, 10, 13, ${0.92 * ceilingAlpha})`);
+          grad.addColorStop(0, `rgba(7, 10, 13, ${0.92 * ceilingAlpha * (0.4 + 0.6 * pose)})`);
           grad.addColorStop(1, "rgba(7, 10, 13, 0)");
           ctx.fillStyle = grad;
           ctx.fillRect(0, 0, width, bandBottom);
         }
         for (const layer of cloudLayers) {
-          const sweep = (1 - pose) * (0.55 + layer.depth * 0.85) * height;
+          /* One coherent deck: minimal depth spread, purely vertical. */
+          const sweep = (1 - pose) * (0.95 + 0.25 * layer.depth) * height;
           const parallaxX = pointer.x * (2 + 4 * layer.depth);
           const parallaxY = pointer.y * (1 + 2 * layer.depth);
           const shade = 16 - Math.round(layer.tint * 10);
@@ -189,33 +297,44 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
             const drift = reducedMotion
               ? 0
               : (now / 1000) * 0.004 * puff.drift * (0.4 + layer.depth);
-            const cx = (((((puff.x + drift) % 1.4) + 1.4) % 1.4) - 0.2) * width + parallaxX;
+            const nx = ((((puff.x + drift) % 1.4) + 1.4) % 1.4) - 0.2;
+            const cx = nx * width + parallaxX;
             const cy = puff.y * height + sweep + ceilingLift + parallaxY;
+            if (cy < -height * 0.3 || cy > height * 1.4) continue;
             const rx = puff.rx * width;
+            /* During the drop the camera looks down on the deck's moonlit
+               top, so the bank reads bright and unmistakable; passing below,
+               it settles to its dark underside. The moon side stays hotter. */
+            const above = 1 - pose;
+            const boost = above * (26 + 30 * clamp01(nx));
+            const lit = 1 + 0.5 * clamp01(nx) * 0.6;
+            const r = Math.min(255, Math.round(shade * lit + boost) + 6);
+            const g = Math.min(255, Math.round((shade + 5) * lit + boost * 1.05) + 6);
+            const b = Math.min(255, Math.round((shade + 9) * lit + boost * 1.15) + 7);
             ctx.save();
             ctx.translate(cx, cy);
             ctx.scale(1, puff.squash);
-            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-            g.addColorStop(
-              0,
-              `rgba(${shade}, ${shade + 5}, ${shade + 9}, ${puff.alpha * ceilingAlpha})`,
-            );
-            g.addColorStop(1, `rgba(${shade}, ${shade + 5}, ${shade + 9}, 0)`);
-            ctx.fillStyle = g;
+            const alpha = Math.min(1, puff.alpha * ceilingAlpha * (1 + 0.5 * above));
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+            gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+            ctx.fillStyle = gradient;
             ctx.fillRect(-rx, -rx, rx * 2, rx * 2);
             ctx.restore();
           }
         }
       }
 
-      /* The range: rises from below during arrival (near layers travel
-         furthest), scales toward the camera with scroll (near layers enlarge
-         and separate faster, opening the valley). */
-      for (const { layer, heights } of ridges) {
-        const bandPx = layer.band * height;
-        const rise = (1 - pose) * (0.35 + 0.5 * layer.depth) * height;
-        const zoom = 1 + scroll * (0.22 + 1.5 * Math.pow(layer.depth, 1.5));
-        const drop = scroll * Math.pow(layer.depth, 1.4) * 0.6 * height;
+      /* The range: moonlit relief revealed from below as the camera drops,
+         then pushed toward on the Z axis by scroll — near layers enlarge
+         and separate fastest, opening the valley. */
+      for (const item of baked) {
+        const { layer } = item;
+        const rise = (1 - pose) * (0.22 + 0.38 * layer.depth) * height;
+        const zoom = 1 + scroll * (0.3 + 1.9 * Math.pow(layer.depth, 1.5));
+        /* Quadratic: early scroll is pure approach (the range grows); only
+           late in the travel do the near layers slide out beneath us. */
+        const drop = scroll * scroll * Math.pow(layer.depth, 1.4) * 0.55 * height;
         const parallaxX = pointer.x * (1.5 + 5.5 * layer.depth);
         const parallaxY = pointer.y * (1 + 2.5 * layer.depth);
         const offY = rise + drop + parallaxY;
@@ -223,47 +342,21 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
         ctx.save();
         ctx.translate(width / 2 + parallaxX, height);
         ctx.scale(zoom, zoom);
-        ctx.translate(-width / 2, -height);
-
-        const n = heights.length;
-        const ridgeY = (i: number) => height - bandPx * heights[i]! + offY;
-        ctx.beginPath();
-        ctx.moveTo(0, ridgeY(0));
-        for (let i = 1; i < n; i++) ctx.lineTo((i / (n - 1)) * width, ridgeY(i));
-        ctx.lineTo(width, height * 2);
-        ctx.lineTo(0, height * 2);
-        ctx.closePath();
-        const fill = ctx.createLinearGradient(0, height - bandPx + offY, 0, height + offY);
-        fill.addColorStop(0, layer.colorTop);
-        fill.addColorStop(1, layer.colorBottom);
-        ctx.fillStyle = fill;
-        ctx.fill();
-
-        /* Cold moonlit separation along the ridge, plus faint striations for
-           texture inside the silhouette. */
-        const rim = layer.rimAlpha * (0.35 + 0.65 * pose) * (1 - scroll * 0.6);
-        if (rim > 0.01) {
-          ctx.beginPath();
-          ctx.moveTo(0, ridgeY(0));
-          for (let i = 1; i < n; i++) ctx.lineTo((i / (n - 1)) * width, ridgeY(i));
-          ctx.strokeStyle = `rgba(184, 205, 224, ${rim})`;
-          ctx.lineWidth = 1 / zoom;
-          ctx.stroke();
-        }
-        ctx.strokeStyle = "rgba(210, 226, 240, 0.03)";
-        ctx.lineWidth = 0.8 / zoom;
-        for (let k = 1; k <= 3; k++) {
-          const shift = bandPx * 0.16 * k;
-          ctx.beginPath();
-          ctx.moveTo(0, ridgeY(0) + shift);
-          for (let i = 1; i < n; i++) ctx.lineTo((i / (n - 1)) * width, ridgeY(i) + shift);
-          ctx.stroke();
-        }
+        ctx.drawImage(
+          item.canvas,
+          -item.drawWidth / 2,
+          -item.drawHeight + offY,
+          item.drawWidth,
+          item.drawHeight,
+        );
+        /* Ground plane below the shaded band (visible mid-travel). */
+        ctx.fillStyle = item.baseColor;
+        ctx.fillRect(-item.drawWidth / 2, offY - 1, item.drawWidth, height + 2);
         ctx.restore();
       }
 
       if (mist > 0.005) {
-        /* Densest through the middle band the camera is crossing; the top
+        /* Densest through the band the camera is crossing; the frame's top
            and bottom stay readable so it reads as cloud, not a wash. */
         const veil = ctx.createLinearGradient(0, 0, 0, height);
         veil.addColorStop(0, `rgba(173, 186, 199, ${mist * 0.3})`);
@@ -276,12 +369,11 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
       /* Deep scroll: the environment resolves into the editorial dark ground
          with its own faint stars (the site sky is covered by the veil). */
-      const editorial = smoothstep(0.5, 0.96, scroll);
       if (editorial > 0.003) {
         ctx.fillStyle = `rgba(2, 3, 5, ${editorial})`;
         ctx.fillRect(0, 0, width, height);
         ctx.fillStyle = "#dfe6ee";
-        for (const star of stars) {
+        for (const star of bandStars) {
           const twinkle = reducedMotion
             ? 1
             : 0.82 + 0.18 * Math.sin((now / 1000) * star.tw + star.ph);

@@ -4,7 +4,6 @@ import { useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { surgeClouds } from "@/features/sky/sky-director";
 import type { AboutPageContent } from "@/lib/content/model";
 import { setShellNavigationInterceptor } from "@/lib/shell-navigation";
 
@@ -56,7 +55,6 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
     // A pending flag never outlives this mount, whichever way it resolved.
     claimAboutArrival();
     if (!arriving) return;
-    surgeClouds(timings.arrival * 0.85, 0.7);
     /* Once an exit begins, arrival timers stand down — a straggling settle
        or guard firing mid-reverse would flip the copy and pose back on. */
     const unlessLeaving = (apply: () => void) => () => {
@@ -106,7 +104,6 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
           if (scroller) scroller.scrollTop = 0;
           scrollProgressRef.current = 0;
           setPhase("leaving");
-          surgeClouds(ABOUT_TIMINGS.reverse, 0.5);
         }, ABOUT_TIMINGS.contentFade);
         window.setTimeout(
           () => router.push(href),
