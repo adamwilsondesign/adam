@@ -4,6 +4,7 @@ import { useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { setAboutScrollProgress } from "@/features/sky/sky-director";
 import type { AboutPageContent } from "@/lib/content/model";
 import { setShellNavigationInterceptor } from "@/lib/shell-navigation";
 
@@ -120,7 +121,12 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const progress = event.currentTarget.scrollTop / (window.innerHeight * 0.85);
     scrollProgressRef.current = Math.min(1, Math.max(0, progress));
+    // The surreal orb observes the valley travel through the sky director.
+    setAboutScrollProgress(scrollProgressRef.current);
   };
+
+  /* Leaving About returns the shared scroll observer to its resting value. */
+  useEffect(() => () => setAboutScrollProgress(0), []);
 
   return (
     <div

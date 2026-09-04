@@ -68,24 +68,25 @@ export function maxExpansion(z: number): number {
  */
 export const MIN_EXPANSION = 1.5;
 
-/** Entrance timing (ms, relative to camera start ≈ 250ms after the click). */
+/** Entrance timing (ms, relative to camera start ≈ 250ms after the click):
+ *  ~1.9s total from the click, one continuous cinematic run. */
 export const ENTRANCE_MS = {
-  camera: 1400,
-  crossfade: 280,
-  settle: 380,
+  camera: 1600,
+  crossfade: 320,
+  settle: 400,
 } as const;
 
 /** Mobile entrance: the same camera, slightly quicker. */
 export const ENTRANCE_MOBILE_MS = {
-  camera: 1150,
-  crossfade: 260,
-  settle: 340,
+  camera: 1300,
+  crossfade: 280,
+  settle: 360,
 } as const;
 
-/** The return home: one reversed camera move. */
+/** The return home: one reversed camera move (~1.1s). */
 export const RETURN_MS = {
-  camera: 800,
-  contract: 200,
+  camera: 1100,
+  contract: 260,
 } as const;
 
 /** FNV-1a — a stable 32-bit hash of the client id. */

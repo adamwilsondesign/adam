@@ -28,14 +28,15 @@
   display: block;
 }
 
-/* WebGL-unavailable / reduced-motion atmosphere: the same deep green-black
-   night, ember horizon, painted statically. Never an empty background. */
+/* WebGL-unavailable / reduced-motion atmosphere: the same oxidized-nocturne
+   night — green-black sky, warm graphite cloud banks, a faint umber glare
+   low on the moon side — painted statically. Never an empty background. */
 .fallback {
   background:
-    radial-gradient(120% 55% at 50% 108%, rgba(124, 74, 46, 0.28) 0%, rgba(124, 74, 46, 0) 60%),
-    radial-gradient(90% 60% at 24% 96%, rgba(31, 40, 51, 0.55) 0%, rgba(31, 40, 51, 0) 70%),
-    radial-gradient(110% 70% at 78% 90%, rgba(31, 40, 51, 0.4) 0%, rgba(31, 40, 51, 0) 72%),
-    linear-gradient(to bottom, #000000 0%, #060a0f 55%, #0a1118 100%);
+    radial-gradient(120% 55% at 82% 104%, rgba(111, 89, 71, 0.22) 0%, rgba(111, 89, 71, 0) 60%),
+    radial-gradient(90% 60% at 24% 96%, rgba(37, 35, 31, 0.6) 0%, rgba(37, 35, 31, 0) 70%),
+    radial-gradient(110% 70% at 78% 90%, rgba(37, 35, 31, 0.42) 0%, rgba(37, 35, 31, 0) 72%),
+    linear-gradient(to bottom, #020403 0%, #040806 55%, #07110f 100%);
 }
 
 /* The restrained contrast veil over the dimmed sky while Work is open. */

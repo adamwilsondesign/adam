@@ -17,10 +17,13 @@ import {
   type ProjectStar,
   type Vec,
 } from "./star-field";
+import { cinematicEase, invCinematicEase } from "@/lib/motion";
+
 import {
   isWorkEntrancePending,
   measureStarTargets,
   registerFlightHandler,
+  shiftClouds,
   SKY_DISABLED,
   surgeClouds,
   type TargetRect,
@@ -49,21 +52,15 @@ type StarRuntime = {
   el: HTMLElement | null;
 };
 
-const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-/** Numeric inverse of the camera easing (monotonic on [0, 1]). */
-function invEaseInOutCubic(value: number): number {
-  let lo = 0;
-  let hi = 1;
-  for (let i = 0; i < 24; i++) {
-    const mid = (lo + hi) / 2;
-    if (easeInOutCubic(mid) < value) lo = mid;
-    else hi = mid;
-  }
-  return (lo + hi) / 2;
-}
+/** The clouds' share of the flight: camera-driven scale and lift, so the
+ *  travel is felt as one environment moving, not a simulation boiling. */
+const FLIGHT_CLOUD_SCALE = 0.14;
+const FLIGHT_CLOUD_LIFT = 0.045;
+/** Motion blur cap (px) on the cloud layer, tied to camera velocity. */
+const FLIGHT_BLUR_MAX = 0.8;
 
 /**
  * The persistent night sky: a fixed 3D field of stars drawn on Canvas 2D,
@@ -182,14 +179,16 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       const timing = isMobile() ? ENTRANCE_MOBILE_MS : ENTRANCE_MS;
       const viewport = { x: width, y: height };
       const fromCam = cameraZ;
-      // One long forward run — the camera only ever advances. The clouds
-      // surge underneath for the duration, so the travel is felt in the
-      // whole environment, not just the star geometry.
+      // One long forward run on the cinematic curve — the camera only ever
+      // advances, drifting a breath past its mark and settling. The clouds
+      // ride the same camera (scale, lift, velocity blur below) with only a
+      // gentle evolution surge, so the travel reads as movement through the
+      // environment rather than the simulation boiling.
       const camAt = (elapsed: number) =>
-        fromCam + (CAMERA.travel - fromCam) * easeInOutCubic(clamp01(elapsed / timing.camera));
-      /** Flight time at which the forward run passes camera position z. */
+        fromCam + (CAMERA.travel - fromCam) * cinematicEase(clamp01(elapsed / timing.camera));
+      /** Flight time at which the forward run first passes camera z. */
       const timeForCamera = (z: number) =>
-        timing.camera * invEaseInOutCubic(clamp01((z - fromCam) / (CAMERA.travel - fromCam)));
+        timing.camera * invCinematicEase(clamp01((z - fromCam) / (CAMERA.travel - fromCam)));
       surgeClouds(timing.camera + timing.settle, 1);
 
       const next: Flight = {
@@ -252,7 +251,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         kind: "toHome",
         startedAt: performance.now(),
         camera: RETURN_MS.camera,
-        camAt: (elapsed) => fromCam * (1 - easeInOutCubic(clamp01(elapsed / RETURN_MS.camera))),
+        camAt: (elapsed) => fromCam * (1 - cinematicEase(clamp01(elapsed / RETURN_MS.camera))),
         crossfade: 150,
         settle: 0,
         done: null,
@@ -321,6 +320,9 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     let frame = 0;
     let running = true;
     let frameParity = 0;
+    let cloudsShifted = false;
+    let lastCameraZ = cameraZ;
+    let lastFrameAt = performance.now();
 
     const drawPoint = (x: number, y: number, radius: number, alpha: number) => {
       if (alpha <= 0.004) return;
@@ -356,6 +358,27 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         if (Math.abs(cameraZ - cameraTarget()) < 0.0005) cameraZ = cameraTarget();
       }
       const progress = cameraZ / CAMERA.travel;
+
+      // The clouds ride the same camera during a flight: a swell of scale
+      // and lift that returns to rest at both ends (never a snap), plus a
+      // whisper of blur tied to camera velocity that vanishes at rest.
+      if (flight) {
+        const dt = Math.max(1, now - lastFrameAt);
+        const velocity = Math.abs(cameraZ - lastCameraZ) / dt;
+        const swell = Math.sin(Math.PI * clamp01(elapsed / flight.camera));
+        shiftClouds({
+          y: -swell * FLIGHT_CLOUD_LIFT * height,
+          scale: 1 + swell * FLIGHT_CLOUD_SCALE,
+          opacity: 1,
+          blur: Math.min(FLIGHT_BLUR_MAX, velocity * 350),
+        });
+        cloudsShifted = true;
+      } else if (cloudsShifted) {
+        shiftClouds(null);
+        cloudsShifted = false;
+      }
+      lastCameraZ = cameraZ;
+      lastFrameAt = now;
 
       ctx.clearRect(0, 0, width, height);
       const seconds = now / 1000;
@@ -518,6 +541,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     return () => {
       running = false;
       cancelAnimationFrame(frame);
+      if (cloudsShifted) shiftClouds(null);
       registerFlightHandler(null);
       window.removeEventListener("popstate", onPopState);
       window.removeEventListener("pointermove", onPointerMove);

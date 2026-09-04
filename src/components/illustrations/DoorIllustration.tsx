@@ -1,11 +1,13 @@
 /**
- * The "nothing to see here" doorway: an arched opening onto a starry void,
- * its door swung open, with steps leading down and away.
+ * The zero-result portal: a tall monolithic aperture standing in an empty
+ * dark plane, the site's distant eclipse orb aligned perfectly through the
+ * opening. Solid atmospheric shapes in the oxidized-nocturne grade — matte
+ * charcoal mineral, a long moon-cast ground shadow, fog drifting through the
+ * threshold, and a slightly different exposure inside the opening so the
+ * space beyond reads as physically impossible. No door, no arch, no steps.
  *
- * A black & white redraw of the reference illustration, built from theme
- * tokens so it produces the two required variants by itself: ink-on-canvas
- * in light mode, canvas-on-carbon in dark mode. currentColor carries the
- * ink; `var(--color-bg)` carries the field.
+ * On hover/focus the light through the aperture deepens (see
+ * EmptyState.module.css targeting [data-aperture-glow]); nothing jumps.
  */
 
 type DoorIllustrationProps = {
@@ -13,13 +15,6 @@ type DoorIllustrationProps = {
 };
 
 export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
-  const sparkle = (x: number, y: number, r: number) =>
-    `M ${x} ${y - r} ` +
-    `Q ${x + r * 0.22} ${y - r * 0.22} ${x + r} ${y} ` +
-    `Q ${x + r * 0.22} ${y + r * 0.22} ${x} ${y + r} ` +
-    `Q ${x - r * 0.22} ${y + r * 0.22} ${x - r} ${y} ` +
-    `Q ${x - r * 0.22} ${y - r * 0.22} ${x} ${y - r} Z`;
-
   return (
     <svg
       width={size}
@@ -27,60 +22,110 @@ export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
       viewBox="0 0 200 200"
       fill="none"
       aria-hidden
-      style={{ color: "var(--color-fg)", display: "block" }}
+      style={{ display: "block" }}
     >
-      {/* Open door panel, swung out to the left of the frame. */}
-      <path
-        d="M 66 78 Q 66 44 84 40 L 84 128 L 66 132 Z"
-        fill="var(--color-bg)"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
-      {/* The doorway: an arch onto the void. */}
-      <path
-        d="M 84 132 L 84 70 Q 84 38 112 38 Q 140 38 140 70 L 140 132 Z"
-        fill="currentColor"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
-      {/* Stars inside the void. */}
-      <path d={sparkle(112, 62, 6)} fill="var(--color-bg)" />
-      <path d={sparkle(130, 58, 4)} fill="var(--color-bg)" />
-      <path d={sparkle(104, 88, 4.5)} fill="var(--color-bg)" />
-      <path d={sparkle(122, 96, 5.5)} fill="var(--color-bg)" />
-      <path d={sparkle(112, 118, 4)} fill="var(--color-bg)" />
-      {/* Threshold under the doorway. */}
-      <path
-        d="M 84 132 L 140 132 L 140 144 L 84 144 Z"
-        fill="var(--color-bg)"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
-      {/* Steps descending away to the left. */}
-      <path
-        d="M 70 144 L 132 144 L 132 158 L 70 158 Z"
-        fill="var(--color-bg)"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M 56 158 L 118 158 L 118 172 L 56 172 Z"
-        fill="var(--color-bg)"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M 42 172 L 104 172 L 104 186 L 42 186 Z"
-        fill="var(--color-bg)"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-      />
+      <defs>
+        {/* Matte mineral slab, lit faintly from the upper right. */}
+        <linearGradient id="portal-slab" x1="0" y1="0" x2="0.25" y2="1">
+          <stop offset="0" stopColor="#1d211f" />
+          <stop offset="0.55" stopColor="#121615" />
+          <stop offset="1" stopColor="#0a0d0c" />
+        </linearGradient>
+        {/* The impossible interior: a touch more exposure than the night. */}
+        <linearGradient id="portal-inside" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1a2622" />
+          <stop offset="0.45" stopColor="#0e1a17" />
+          <stop offset="1" stopColor="#050a08" />
+        </linearGradient>
+        {/* The recurring orb: matte body, asymmetric silver rim. */}
+        <radialGradient id="portal-orb-body" cx="0.42" cy="0.38" r="0.75">
+          <stop offset="0" stopColor="#111514" />
+          <stop offset="0.6" stopColor="#0a0d0c" />
+          <stop offset="1" stopColor="#060807" />
+        </radialGradient>
+        <radialGradient id="portal-orb-rim" cx="0.68" cy="0.26" r="0.85">
+          <stop offset="0.55" stopColor="#969e9a" stopOpacity="0" />
+          <stop offset="0.82" stopColor="#969e9a" stopOpacity="0.55" />
+          <stop offset="0.97" stopColor="#969e9a" stopOpacity="0.08" />
+          <stop offset="1" stopColor="#969e9a" stopOpacity="0" />
+        </radialGradient>
+        {/* Hover: light gathering deep in the opening. */}
+        <radialGradient id="portal-glow" cx="0.5" cy="0.42" r="0.8">
+          <stop offset="0" stopColor="#969e9a" stopOpacity="0.3" />
+          <stop offset="0.5" stopColor="#6f5947" stopOpacity="0.12" />
+          <stop offset="1" stopColor="#6f5947" stopOpacity="0" />
+        </radialGradient>
+        {/* The long ground shadow, cast away from the off-canvas moon. */}
+        <linearGradient id="portal-shadow" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0" stopColor="#020403" stopOpacity="0.6" />
+          <stop offset="1" stopColor="#020403" stopOpacity="0" />
+        </linearGradient>
+        {/* Ground plane falloff. */}
+        <linearGradient id="portal-ground" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#0c100f" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#020403" stopOpacity="0" />
+        </linearGradient>
+        <filter id="portal-fog" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" />
+        </filter>
+        {/* Static mineral grain, consistent with the global grade. */}
+        <filter id="portal-grain">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.8"
+            numOctaves="2"
+            seed="11"
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.05" intercept="0" />
+          </feComponentTransfer>
+          <feComposite operator="in" in2="SourceGraphic" />
+        </filter>
+        <clipPath id="portal-aperture-clip">
+          <rect x="85" y="40" width="30" height="118" />
+        </clipPath>
+      </defs>
+
+      {/* The empty dark plane. */}
+      <rect x="0" y="158" width="200" height="42" fill="url(#portal-ground)" />
+
+      {/* Long directional shadow toward the lower left. */}
+      <polygon points="78,158 122,158 66,178 -12,178" fill="url(#portal-shadow)" />
+
+      {/* The monolith. */}
+      <rect x="74" y="28" width="52" height="130" fill="url(#portal-slab)" />
+      {/* Moon-side edge: one restrained silver line. */}
+      <rect x="125" y="28" width="1.2" height="130" fill="#969e9a" opacity="0.28" />
+      {/* Mineral grain on the slab only. */}
+      <rect x="74" y="28" width="52" height="130" filter="url(#portal-grain)" opacity="0.9" />
+
+      {/* The aperture: a taller exposure of somewhere else. */}
+      <rect x="85" y="40" width="30" height="118" fill="url(#portal-inside)" />
+
+      <g clipPath="url(#portal-aperture-clip)">
+        {/* Deepening light on hover/focus — driven by EmptyState's CSS. */}
+        <rect
+          x="85"
+          y="40"
+          width="30"
+          height="118"
+          fill="url(#portal-glow)"
+          opacity="0"
+          data-aperture-glow
+        />
+        {/* The orb, perfectly aligned through the opening. */}
+        <circle cx="100" cy="74" r="11" fill="url(#portal-orb-body)" />
+        <circle cx="100" cy="74" r="11" fill="url(#portal-orb-rim)" />
+      </g>
+
+      {/* Fog drifting through the threshold — inside to out. */}
+      <g filter="url(#portal-fog)" opacity="0.6">
+        <ellipse cx="97" cy="132" rx="26" ry="6" fill="#999991" opacity="0.14" />
+        <ellipse cx="112" cy="147" rx="30" ry="5" fill="#999991" opacity="0.1" />
+        <ellipse cx="86" cy="155" rx="22" ry="4.5" fill="#999991" opacity="0.08" />
+      </g>
     </svg>
   );
 }

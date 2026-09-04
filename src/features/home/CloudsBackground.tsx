@@ -5,26 +5,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { registerCloudShiftHandler, registerCloudSurgeHandler } from "@/features/sky/sky-director";
+import { VANTA_NIGHT } from "@/lib/atmosphere";
 
 import styles from "./CloudsBackground.module.css";
 
-/**
- * The permanent night sky: deep green-black atmosphere, ember horizon.
- * This is the site's only palette — night is the art direction, not a theme.
- */
-const NIGHT = {
-  backgroundColor: 0x000000,
-  skyColor: 0x0a1118,
-  cloudColor: 0x1f2833,
-  cloudShadowColor: 0x000000,
-  sunColor: 0x8a4d2a,
-  sunGlareColor: 0x6e3a26,
-  sunlightColor: 0x7c4a2e,
-};
-
-/** The clouds' resting drift and how hard they rush during a star flight. */
+/** The clouds' resting drift and their evolution during a star flight —
+ *  kept calm: the travel sensation comes from the shared camera transform
+ *  on this layer, not from the simulation boiling. */
 const CLOUD_SPEED_REST = 0.7;
-const CLOUD_SPEED_SURGE = 30;
+const CLOUD_SPEED_SURGE = 2.6;
 
 /** Hermetic test builds exclude the WebGL sky — it is pure scenery, and its
  * software-rendered init skews animation timing under test. */
@@ -63,12 +52,15 @@ export function CloudsBackground() {
       if (!shift) {
         el.style.transform = "";
         el.style.opacity = "";
+        el.style.filter = "";
         el.style.willChange = "";
         return;
       }
       el.style.willChange = "transform, opacity";
       el.style.transform = `translate3d(0, ${shift.y.toFixed(1)}px, 0) scale(${shift.scale.toFixed(3)})`;
       el.style.opacity = shift.opacity.toFixed(3);
+      // Motion blur rides camera velocity only; it must be gone at rest.
+      el.style.filter = shift.blur && shift.blur > 0.05 ? `blur(${shift.blur.toFixed(2)}px)` : "";
     });
     return () => registerCloudShiftHandler(null);
   }, []);
@@ -104,7 +96,7 @@ export function CloudsBackground() {
           minHeight: 200,
           minWidth: 200,
           speed: CLOUD_SPEED_REST,
-          ...NIGHT,
+          ...VANTA_NIGHT,
         });
         if (!effect) throw new Error("no effect");
       } catch {

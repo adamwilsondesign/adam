@@ -11,21 +11,31 @@
 }
 
 .door {
-  opacity: 0.85;
-  transition: opacity 200ms var(--ease-precise);
+  opacity: 0.92;
+  transition: opacity 240ms var(--ease-precise);
   pointer-events: auto;
   padding: 10px;
   color: var(--color-fg);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .door {
-    transition: transform 300ms var(--ease-precise);
-  }
+.door:hover,
+.door:focus-visible {
+  opacity: 1;
+}
 
-  .door:hover,
-  .door:focus-visible {
-    opacity: 1;
+/* Hover deepens the light through the aperture — the monolith never moves. */
+.door [data-aperture-glow] {
+  transition: opacity 650ms var(--ease-precise);
+}
+
+.door:hover [data-aperture-glow],
+.door:focus-visible [data-aperture-glow] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door [data-aperture-glow] {
+    transition: none;
   }
 }
 

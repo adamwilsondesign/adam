@@ -23,3 +23,65 @@ export const DUR = {
   /** Grid recomposition glide (filter reflow settles within ~450ms). */
   grid: 0.42,
 } as const;
+
+/* ------------------------------------------------------------------ */
+/* Cinematic camera curves (canvas-side)                               */
+/* ------------------------------------------------------------------ */
+
+const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+
+/**
+ * Smootherstep (Perlin): zero first and second derivative at both ends, so
+ * camera moves start and stop with no mechanical snap.
+ */
+export function smootherstep(t: number): number {
+  const x = clamp01(t);
+  return x * x * x * (x * (x * 6 - 15) + 10);
+}
+
+/** How far past the target the cinematic move drifts before settling. */
+const SETTLE_AMPLITUDE = 0.09;
+
+/**
+ * The route-transition camera curve: smootherstep with a ~1.5% optical
+ * settle — the move drifts imperceptibly past its mark near the end and
+ * relaxes onto it, the way a dollied camera stops. cinematicEase(0) = 0 and
+ * cinematicEase(1) = 1 exactly; the overshoot peaks around t ≈ 0.85.
+ */
+export function cinematicEase(t: number): number {
+  const x = clamp01(t);
+  return smootherstep(x) + SETTLE_AMPLITUDE * Math.pow(x, 6) * Math.sin(Math.PI * x);
+}
+
+/** The time of the curve's single maximum — it rises monotonically to here. */
+export const CINEMATIC_PEAK_T = (() => {
+  let best = 1;
+  let bestValue = 1;
+  for (let i = 0; i <= 200; i++) {
+    const t = 0.5 + (i / 200) * 0.5;
+    const v = cinematicEase(t);
+    if (v > bestValue) {
+      bestValue = v;
+      best = t;
+    }
+  }
+  return best;
+})();
+
+/**
+ * First time at which cinematicEase reaches `value` (for value ≤ 1): the
+ * curve rises monotonically until its single peak, so bisection on that
+ * rising segment finds the first crossing.
+ */
+export function invCinematicEase(value: number): number {
+  if (value <= 0) return 0;
+  if (value >= cinematicEase(CINEMATIC_PEAK_T)) return CINEMATIC_PEAK_T;
+  let lo = 0;
+  let hi = CINEMATIC_PEAK_T;
+  for (let i = 0; i < 28; i++) {
+    const mid = (lo + hi) / 2;
+    if (cinematicEase(mid) < value) lo = mid;
+    else hi = mid;
+  }
+  return (lo + hi) / 2;
+}

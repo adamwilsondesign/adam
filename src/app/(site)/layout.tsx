@@ -3,7 +3,9 @@ import { draftMode } from "next/headers";
 
 import { SiteChrome } from "@/components/chrome/SiteChrome";
 import { CloudsBackground } from "@/features/home/CloudsBackground";
+import { AtmosphereGrade } from "@/features/sky/AtmosphereGrade";
 import { StarField } from "@/features/sky/StarField";
+import { SurrealAnchor } from "@/features/sky/SurrealAnchor";
 import { getSiteSettings, getWorkIndex } from "@/lib/content";
 import { siteUrl } from "@/lib/site-url";
 import { isSanityConfigured } from "@/sanity/env";
@@ -47,7 +49,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const [settings, clients] = await Promise.all([getSiteSettings(), getWorkIndex()]);
   return (
     <>
+      {/* Environmental stack, back to front: cloud field, the distant
+          eclipse orb, then the star canvas. Page scenes (About's terrain,
+          z 0) pass in front of all three; the grade sits over the whole
+          environment and under every UI surface. */}
       <CloudsBackground />
+      <SurrealAnchor />
       {/* Painted above the clouds: one project star per client, always. */}
       <StarField clientIds={clients.map((client) => client.id)} />
       <SiteChrome
@@ -58,6 +65,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         navigation={settings.navigation}
       />
       {children}
+      <AtmosphereGrade />
       {isSanityConfigured ? <LiveVisualEditing /> : null}
     </>
   );

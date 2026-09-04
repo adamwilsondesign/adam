@@ -19,7 +19,8 @@
 }
 
 /* The page's own scroller (the body is a fixed shell). The copy holds back
-   during the descent and fades ahead of the reverse. */
+   during the descent, then resolves through the atmosphere — a slight
+   vertical displacement and focus recovery, never a bare fade. */
 .scroller {
   position: absolute;
   inset: 0;
@@ -27,15 +28,30 @@
   overflow-y: auto;
   overflow-x: hidden;
   opacity: 0;
-  transition: opacity 620ms var(--ease-precise);
+  transform: translateY(16px);
+  filter: blur(7px);
+  transition:
+    opacity 700ms cubic-bezier(0.3, 0, 0.16, 1),
+    transform 780ms cubic-bezier(0.3, 0, 0.16, 1),
+    filter 700ms cubic-bezier(0.3, 0, 0.16, 1);
 }
 
 .root[data-revealed] .scroller {
   opacity: 1;
+  transform: translateY(0);
+  filter: none;
 }
 
 .root[data-leaving] .scroller {
-  transition-duration: 180ms;
+  transition-duration: 180ms, 200ms, 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroller {
+    transform: none;
+    filter: none;
+    transition: opacity 350ms ease;
+  }
 }
 
 .root[data-locked] .scroller {

@@ -203,7 +203,7 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
         // the entrance lock keeps it non-interactive until then.
         transition: {
           duration: entrance === "stars" ? 0.3 : DUR.slow,
-          delay: entrance === "stars" ? 1.55 : 0.18,
+          delay: entrance === "stars" ? 1.3 : 0.18,
           ease: EASE_OUT,
         },
       };

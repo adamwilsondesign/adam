@@ -14,22 +14,20 @@
  * be unit-tested in Node; `renderTerrainLayer` rasterizes into a canvas.
  */
 
+import { ATMOS, hexToRgb, MOON_DIRECTION } from "@/lib/atmosphere";
+
 import type { MountainLayer } from "./mountains";
 
-/** The moon's direction (x right, y up, z toward the viewer): low to the
- *  upper right, so faces catch strong side light while flat ground stays
- *  dark — the classic night-range read. */
-const MOON = (() => {
-  const v = [0.72, 0.3, -0.22];
-  const len = Math.hypot(v[0]!, v[1]!, v[2]!);
-  return { x: v[0]! / len, y: v[1]! / len, z: v[2]! / len };
-})();
+/** The one motivated light: the unseen moon low off-canvas upper right, so
+ *  faces catch diffused silver side light while flat ground stays dark. */
+const MOON = MOON_DIRECTION;
 
-/** Night palette shared by every layer; per-layer haze does the depth cue.
- *  Kept deliberately dim — moonlight suggests, it never floodlights. */
-const LIT: [number, number, number] = [124, 142, 163];
-const SHADOW: [number, number, number] = [5, 8, 12];
-const HORIZON: [number, number, number] = [24, 32, 42];
+/** Oxidized-nocturne grade: diffused lunar silver over cool slate, shadows
+ *  that fall to the deep background without dying, distance dissolving into
+ *  the shared horizon haze. Matte and mineral — never blue game lighting. */
+const LIT: [number, number, number] = hexToRgb(ATMOS.lunarSilver);
+const SHADOW: [number, number, number] = hexToRgb(ATMOS.deepBackground);
+const HORIZON: [number, number, number] = hexToRgb(ATMOS.horizonHaze);
 
 /** Terrain grid: rows recede into depth, columns run across the frame. */
 const ROWS = 92;

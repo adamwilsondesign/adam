@@ -64,7 +64,13 @@ export function surgeClouds(durationMs: number, intensity: number): void {
  * past the camera, fading as the camera passes below the deck). Null
  * restores the resting layer. A missing handler is a quiet no-op.
  */
-export type CloudShift = { y: number; scale: number; opacity: number };
+export type CloudShift = {
+  y: number;
+  scale: number;
+  opacity: number;
+  /** Optional motion blur in px — tied to camera velocity, 0 at rest. */
+  blur?: number;
+};
 
 type CloudShiftHandler = (shift: CloudShift | null) => void;
 
@@ -77,6 +83,22 @@ export function registerCloudShiftHandler(next: CloudShiftHandler | null): void 
 export function shiftClouds(shift: CloudShift | null): void {
   if (SKY_DISABLED) return;
   cloudShiftHandler?.(shift);
+}
+
+/**
+ * The About page's normalized scroll progress (0 hero → 1 deep), published
+ * for environmental observers outside the page — currently the surreal orb,
+ * which drifts marginally closer as the valley travel advances. Reset to 0
+ * whenever About unmounts.
+ */
+let aboutScrollProgress = 0;
+
+export function setAboutScrollProgress(value: number): void {
+  aboutScrollProgress = Math.min(1, Math.max(0, value));
+}
+
+export function getAboutScrollProgress(): number {
+  return aboutScrollProgress;
 }
 
 /** The homepage Work link was activated: the next Work mount flies stars. */
