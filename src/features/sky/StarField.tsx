@@ -20,6 +20,7 @@ import {
 import { cinematicEase, dampingFactor, invCinematicEase } from "@/lib/motion";
 
 import {
+  getAnchorSilhouette,
   isWorkEntrancePending,
   measureStarTargets,
   registerFlightHandler,
@@ -324,6 +325,13 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     let lastFrameAt = performance.now();
 
     const drawPoint = (x: number, y: number, radius: number, alpha: number) => {
+      const anchor = getAnchorSilhouette();
+      if (anchor && anchor.radius > 0) {
+        const distance = Math.hypot(x - anchor.x, y - anchor.y) / anchor.radius;
+        // Distant stars cannot shine through the solid body. Fade the mask
+        // with route presence and the soft atmospheric edge.
+        alpha *= 1 - clamp01((1 - distance) / 0.06) * clamp01(anchor.alpha / 0.5);
+      }
       if (alpha <= 0.004) return;
       if (x < -40 || x > width + 40 || y < -40 || y > height + 40) return;
       ctx.fillStyle = `rgba(244, 245, 242, ${alpha})`;

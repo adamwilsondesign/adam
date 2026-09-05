@@ -181,3 +181,13 @@ export function measureStarTargets(): WorkTargets {
   });
   return targets;
 }
+
+/** The baked landmark's current projected silhouette, shared with distant stars. */
+export type AnchorSilhouette = { x: number; y: number; radius: number; alpha: number };
+let anchorSilhouette: AnchorSilhouette | null = null;
+export function setAnchorSilhouette(value: AnchorSilhouette | null): void {
+  anchorSilhouette = value;
+}
+export function getAnchorSilhouette(): AnchorSilhouette | null {
+  return anchorSilhouette;
+}

@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { dampingFactor } from "@/lib/motion";
 import { ATMOS, hexToRgb, MOON_DIRECTION } from "@/lib/atmosphere";
 
-import { getAboutScrollProgress, SKY_DISABLED } from "./sky-director";
+import { getAboutScrollProgress, setAnchorSilhouette, SKY_DISABLED } from "./sky-director";
 import styles from "./SurrealAnchor.module.css";
 
 /**
@@ -147,6 +147,7 @@ export function SurrealAnchor() {
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const apply = (pose: OrbPose) => {
+      setAnchorSilhouette({ x: pose.x, y: pose.y, radius: pose.diameter / 2, alpha: pose.alpha });
       const box = pose.diameter * BOX_RATIO;
       canvas.style.transform = `translate3d(${(pose.x - box / 2).toFixed(2)}px, ${(pose.y - box / 2).toFixed(2)}px, 0) scale(${box / Math.max(1, canvas.width)})`;
       canvas.style.opacity = pose.alpha.toFixed(3);
@@ -185,6 +186,7 @@ export function SurrealAnchor() {
       };
       const interval = window.setInterval(snap, 300);
       return () => {
+        setAnchorSilhouette(null);
         window.clearInterval(interval);
         window.removeEventListener("resize", onResize);
       };
@@ -228,6 +230,7 @@ export function SurrealAnchor() {
 
     return () => {
       running = false;
+      setAnchorSilhouette(null);
       cancelAnimationFrame(frame);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
