@@ -31,23 +31,14 @@ describe("oxidized nocturne palette", () => {
   });
 });
 
-describe("route transition clocks", () => {
-  it("keeps the Work entrance inside its cinematic window (~1.7–1.9s total)", () => {
-    // Camera starts ≈ 260–300ms after the click.
-    expect(ENTRANCE_MS.camera).toBeGreaterThanOrEqual(1400);
-    expect(ENTRANCE_MS.camera).toBeLessThanOrEqual(1650);
-    expect(RETURN_MS.camera).toBeGreaterThanOrEqual(1000);
-    expect(RETURN_MS.camera).toBeLessThanOrEqual(1200);
+describe("recorded transition timing", () => {
+  it("preserves the approved Work flight and faster return", () => {
+    expect(ENTRANCE_MS).toEqual({ camera: 1400, crossfade: 280, settle: 380 });
+    expect(RETURN_MS).toEqual({ camera: 800, contract: 200 });
   });
-
-  it("keeps the About descent deliberate and its reverse a true inverse", () => {
-    expect(ABOUT_TIMINGS.desktop.arrival).toBeGreaterThanOrEqual(2100);
-    expect(ABOUT_TIMINGS.desktop.arrival).toBeLessThanOrEqual(2300);
-    expect(ABOUT_TIMINGS.mobile.arrival).toBeGreaterThanOrEqual(1500);
-    expect(ABOUT_TIMINGS.mobile.arrival).toBeLessThanOrEqual(1700);
-    expect(ABOUT_TIMINGS.reverse).toBeGreaterThanOrEqual(1400);
-    expect(ABOUT_TIMINGS.reverse).toBeLessThanOrEqual(1600);
-    expect(ABOUT_TIMINGS.desktop.reveal).toBeLessThan(ABOUT_TIMINGS.desktop.arrival);
-    expect(ABOUT_TIMINGS.desktop.unlock).toBeLessThan(ABOUT_TIMINGS.desktop.arrival);
+  it("keeps About copy overlapping the original descent", () => {
+    expect(ABOUT_TIMINGS.desktop).toEqual({ arrival: 1700, reveal: 1050, unlock: 1300 });
+    expect(ABOUT_TIMINGS.mobile).toEqual({ arrival: 1200, reveal: 760, unlock: 950 });
+    expect(ABOUT_TIMINGS.reverse).toBe(780);
   });
 });

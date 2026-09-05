@@ -30,6 +30,7 @@ import {
 } from "./sky-director";
 import {
   cameraSegment,
+  logoScale,
   addStar,
   beginStars,
   subscribeWorldFrame,
@@ -57,7 +58,6 @@ type StarRuntime = {
   el: HTMLElement | null;
 };
 
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
 /** Project-star flight controller. Emits one point batch to the shared GPU renderer.
@@ -317,6 +317,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     };
 
     const render = (now: number) => {
+      const previousFrameAt = lastFrameAt;
       const deltaMs = Math.min(50, Math.max(0, now - lastFrameAt));
       const cameraSettled = Math.abs(cameraZ - cameraTarget()) < 0.0005;
       if (!reducedMotion) {
@@ -337,7 +338,8 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         cameraZ += (cameraTarget() - cameraZ) * dampingFactor(deltaMs, 5);
         if (Math.abs(cameraZ - cameraTarget()) < 0.0005) cameraZ = cameraTarget();
       }
-      cameraVelocity = deltaMs > 0 ? (cameraZ - previousCamera) / deltaMs : 0;
+      cameraVelocity =
+        deltaMs > 0 ? (cameraZ - previousCamera) / Math.max(1, now - previousFrameAt) : 0;
       const progress = cameraZ / CAMERA.travel;
 
       lastFrameAt = now;
@@ -417,8 +419,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           if (runtime.el?.isConnected) {
             // Crossfade + scale-up happens at the cell itself — the logo is
             // never dragged; the star's straight line simply meets it.
-            const settle = clamp01((elapsed - runtime.arrivalTime) / flight.settle);
-            const scale = 0.3 + 0.42 * fade + 0.28 * easeOutCubic(settle);
+            const scale = logoScale(elapsed - fadeStart, flight.crossfade, flight.settle);
             runtime.el.style.opacity = fade.toFixed(3);
             runtime.el.style.transform = `scale(${scale.toFixed(4)})`;
           }

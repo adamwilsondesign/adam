@@ -35,10 +35,10 @@ export function EmptyState({ onEnterDoor }: EmptyStateProps) {
         worldState.portalRevision++;
       }}
       className={styles.root}
-      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.55, ease: EASE_OUT, delay: 0.1 }}
+      transition={{ duration: reducedMotion ? 0.2 : 0.55, ease: EASE_OUT, delay: 0.1 }}
     >
       <button
         ref={door}

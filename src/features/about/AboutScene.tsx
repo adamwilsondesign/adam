@@ -3,11 +3,11 @@ import { useEffect } from "react";
 import { worldState } from "@/features/world/world-state";
 export type AboutScenePhase = "arriving" | "settled" | "leaving";
 export const ABOUT_TIMINGS = {
-  desktop: { arrival: 2200, reveal: 1400, unlock: 1750 },
-  mobile: { arrival: 1600, reveal: 1000, unlock: 1280 },
+  desktop: { arrival: 1700, reveal: 1050, unlock: 1300 },
+  mobile: { arrival: 1200, reveal: 760, unlock: 950 },
   /** The reverse ascent (a true inverse of the descent); navigation
    *  completes just after it. */
-  reverse: 1500,
+  reverse: 780,
   /** Content fades out before the environment starts moving. */
   contentFade: 200,
   /** Reduced motion swaps the descent for a plain crossfade. */

@@ -4,7 +4,7 @@ import { useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { subscribeWorldFrame, worldState } from "@/features/world/world-state";
+import { subscribeWorldFrame } from "@/features/world/world-state";
 import { setAboutScrollProgress } from "@/features/sky/sky-director";
 import type { AboutPageContent } from "@/lib/content/model";
 import { setShellNavigationInterceptor } from "@/lib/shell-navigation";
@@ -69,16 +69,16 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
     const unsubscribe = subscribeWorldFrame((now) => {
       if (navigatingRef.current) return;
       const elapsed = now - start;
-      const progress = worldState.aboutProgress;
-      if (!didReveal && (worldState.ready ? progress > 0.9 : elapsed > timings.reveal)) {
+
+      if (!didReveal && elapsed >= timings.reveal) {
         didReveal = true;
         setRevealed(true);
       }
-      if (!didUnlock && (worldState.ready ? progress > 0.96 : elapsed > timings.unlock)) {
+      if (!didUnlock && elapsed >= timings.unlock) {
         didUnlock = true;
         setLocked(false);
       }
-      if (!didSettle && (worldState.ready ? progress > 0.992 : elapsed > timings.arrival)) {
+      if (!didSettle && elapsed >= timings.arrival) {
         didSettle = true;
         setPhase("settled");
       }

@@ -5,8 +5,8 @@
   pointer-events: none;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 78% 68%, #64676a55, transparent 55%),
-    linear-gradient(#101316, #363c40 72%, #161a1d);
+    radial-gradient(ellipse at 78% 68%, #66666655, transparent 55%),
+    linear-gradient(#111, #333 72%, #191919);
 }
 .world canvas {
   width: 100%;
@@ -16,7 +16,7 @@
 .fallback {
   position: absolute;
   inset: 55% -10% -10%;
-  background: #1c2227;
+  background: #222;
   clip-path: polygon(
     0 70%,
     12% 42%,

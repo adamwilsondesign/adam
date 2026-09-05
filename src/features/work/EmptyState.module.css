@@ -80,3 +80,18 @@
 :global(html[data-world-ready]) .door svg {
   visibility: hidden;
 }
+
+:global(html[data-world-ready]) .title,
+:global(html[data-world-ready]) .hint {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  text-align: center;
+}
+:global(html[data-world-ready]) .title {
+  top: var(--portal-caption-y, 65vh);
+  font-size: clamp(32px, 4.4vw, 56px);
+}
+:global(html[data-world-ready]) .hint {
+  top: calc(var(--portal-caption-y, 65vh) + clamp(40px, 5vw, 64px));
+}

@@ -20,12 +20,8 @@ type HomeViewProps = {
   workRange: YearRange;
 };
 
-/** Homepage copy leaves over the first ~300ms — with slight forward depth,
- *  not opacity alone — while the camera's run-up is already beginning. */
-const EXIT_DURATION = 0.3;
-/** The route swaps just before the copy finishes leaving, so the camera
- *  flight overlaps the tail of the departure — no empty beat. */
-const EXIT_PUSH_MS = 260;
+/** Homepage copy fades and interactions release within the first 200ms. */
+const EXIT_DURATION = 0.2;
 
 /**
  * The homepage shell: a fixed viewport with the introductory statement and
@@ -57,7 +53,7 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
       if (href === "/about") beginAboutArrival();
     }
     setLeaving(true);
-    window.setTimeout(() => router.push(href), reducedMotion ? 0 : EXIT_PUSH_MS);
+    window.setTimeout(() => router.push(href), reducedMotion ? 0 : EXIT_DURATION * 1000);
   };
 
   const enter = (delay: number) =>
@@ -76,9 +72,7 @@ export function HomeView({ intro, sections, workRange }: HomeViewProps) {
   return (
     <motion.div
       className={styles.root}
-      animate={
-        leaving ? { opacity: 0, scale: reducedMotion ? 1 : 1.045 } : { opacity: 1, scale: 1 }
-      }
+      animate={leaving ? { opacity: 0 } : { opacity: 1 }}
       initial={false}
       transition={{
         duration: leaving ? EXIT_DURATION : DUR.fast,
