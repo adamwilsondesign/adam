@@ -234,7 +234,7 @@ export async function createWorld(
       magFilter: THREE.LinearFilter,
     }),
   );
-  const portalCamera = new THREE.PerspectiveCamera(60, 0.5, 1, 1300);
+  const portalCamera = new THREE.PerspectiveCamera(60, 5.2 / 14.7, 1, 1300);
   const interiorMaterial = keep(
     new THREE.MeshBasicMaterial({
       map: portalTarget.texture,
@@ -289,6 +289,8 @@ export async function createWorld(
       );
   };
   const floor = new THREE.Mesh(keep(new THREE.PlaneGeometry(600, 600)), floorMaterial);
+  floor.renderOrder = 1;
+  shadow.renderOrder = 2;
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -1.1;
   portal.add(floor);
