@@ -347,16 +347,15 @@ export async function createStudyRenderer(
     portal.scale.setScalar(1.4);
     portal.rotation.y = -0.09;
     scene.add(portal);
-    const doorwayFill = new THREE.PointLight(0xffffff, 2.2, 1100);
-    doorwayFill.position.set(380, 810, -1150);
+    const doorwayFill = new THREE.PointLight(0xffffff, 2.2, 600);
+    doorwayFill.position.set(80, 660, -1530);
     scene.add(doorwayFill);
     const stone = keep(
       new THREE.MeshStandardMaterial({
         color: 0x848484,
         roughness: 1,
-        map: mineral,
         bumpMap: mineral,
-        bumpScale: 0.22,
+        bumpScale: 0.05,
         transparent: true,
         opacity: 0,
       }),
@@ -376,6 +375,7 @@ export async function createStudyRenderer(
     const apertureMap = keep(lowRidge!.clone());
     apertureMap.repeat.set(0.373, 1);
     apertureMap.offset.set(0.31, 0);
+    apertureMap.needsUpdate = true;
     const apertureMaterial = keep(
       new THREE.MeshBasicMaterial({
         map: apertureMap,
