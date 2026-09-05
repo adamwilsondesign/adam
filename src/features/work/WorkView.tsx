@@ -42,6 +42,10 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   const pathname = usePathname();
   const isMobile = useMediaQuery(MOBILE_WORK_QUERY);
   const reducedMotion = useReducedMotion();
+  const motionPreference = useRef(reducedMotion);
+  useEffect(() => {
+    motionPreference.current = reducedMotion;
+  }, [reducedMotion]);
   const state = useWorkState(clients, bounds);
 
   const [leaving, setLeaving] = useState(false);
@@ -60,8 +64,24 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   // Never leave the interface hidden if the flight cannot complete.
   useEffect(() => {
     if (entrance !== "stars") return;
-    const guard = window.setTimeout(() => setEntrance("normal"), 4200);
-    return () => window.clearTimeout(guard);
+    let frame = 0;
+    let elapsed = 0;
+    let previous = performance.now();
+    const visibility = () => {
+      previous = performance.now();
+    };
+    const tick = (now: number) => {
+      if (!document.hidden) elapsed += now - previous;
+      previous = now;
+      if (elapsed >= 4200) setEntrance("normal");
+      else frame = requestAnimationFrame(tick);
+    };
+    document.addEventListener("visibilitychange", visibility);
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", visibility);
+    };
   }, [entrance]);
   const [info, setInfo] = useState<InfoOverlayState | null>(null);
   /** Direction of the latest card step (drives the slide animation). */
@@ -85,16 +105,39 @@ export function WorkView({ clients, bounds }: WorkViewProps) {
   // to their sky positions; the star layer carries the retreat across the
   // route change.
   useEffect(() => {
+    let frame = 0;
+    let exiting = false;
+    let previous = performance.now();
+    const visibility = () => {
+      previous = performance.now();
+    };
+    document.addEventListener("visibilitychange", visibility);
     setShellNavigationInterceptor((href) => {
-      if (href === "/" && !reducedMotion) {
+      if (exiting) return true;
+      exiting = true;
+      const reduced = motionPreference.current;
+      if (href === "/" && !reduced) {
         beginHomeFlight(measureStarTargets(), { domIsLive: true });
       }
       setLeaving(true);
-      window.setTimeout(() => router.push(href), reducedMotion ? 0 : EXIT_DURATION * 1000);
+      let elapsed = 0;
+      previous = performance.now();
+      const duration = reduced ? 0 : EXIT_DURATION * 1000;
+      const tick = (now: number) => {
+        if (!document.hidden) elapsed += now - previous;
+        previous = now;
+        if (elapsed >= duration) router.push(href);
+        else frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
       return true;
     });
-    return () => setShellNavigationInterceptor(null);
-  }, [router, reducedMotion]);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", visibility);
+      setShellNavigationInterceptor(null);
+    };
+  }, [router]);
 
   // The mobile info overlay participates in history: opening pushes an
   // entry (same URL), so the device back gesture dismisses the card and

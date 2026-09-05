@@ -95,3 +95,13 @@
 :global(html[data-world-ready]) .hint {
   top: calc(var(--portal-caption-y, 65vh) + clamp(40px, 5vw, 64px));
 }
+
+@media (max-height: 480px) {
+  :global(html[data-world-ready]) .title {
+    font-size: 22px;
+  }
+  :global(html[data-world-ready]) .hint {
+    top: calc(var(--portal-caption-y, 65vh) + 25px);
+    font-size: 10px;
+  }
+}

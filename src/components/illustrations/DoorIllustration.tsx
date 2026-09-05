@@ -30,43 +30,43 @@ export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
       <defs>
         {/* Matte mineral slab, lit faintly from the upper right. */}
         <linearGradient id={`${id}-portal-slab`} x1="0" y1="0" x2="0.25" y2="1">
-          <stop offset="0" stopColor="#85857c" />
-          <stop offset="0.55" stopColor="#484d50" />
-          <stop offset="1" stopColor="#171d23" />
+          <stop offset="0" stopColor="#828282" />
+          <stop offset="0.55" stopColor="#4c4c4c" />
+          <stop offset="1" stopColor="#1d1d1d" />
         </linearGradient>
         {/* The impossible interior: a touch more exposure than the night. */}
         <linearGradient id={`${id}-portal-inside`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#7d898f" />
-          <stop offset="0.45" stopColor="#525f68" />
-          <stop offset="1" stopColor="#bac0ba" />
+          <stop offset="0" stopColor="#878787" />
+          <stop offset="0.45" stopColor="#5e5e5e" />
+          <stop offset="1" stopColor="#bcbcbc" />
         </linearGradient>
         {/* The recurring orb: matte body, asymmetric silver rim. */}
         <radialGradient id={`${id}-portal-orb-body`} cx="0.42" cy="0.38" r="0.75">
-          <stop offset="0" stopColor="#aaaba0" />
-          <stop offset="0.6" stopColor="#171d23" />
-          <stop offset="1" stopColor="#202932" />
+          <stop offset="0" stopColor="#a7a7a7" />
+          <stop offset="0.6" stopColor="#1d1d1d" />
+          <stop offset="1" stopColor="#292929" />
         </radialGradient>
         <radialGradient id={`${id}-portal-orb-rim`} cx="0.68" cy="0.26" r="0.85">
-          <stop offset="0.55" stopColor="#d2ccbd" stopOpacity="0" />
-          <stop offset="0.82" stopColor="#d2ccbd" stopOpacity="0.55" />
-          <stop offset="0.97" stopColor="#d2ccbd" stopOpacity="0.08" />
-          <stop offset="1" stopColor="#d2ccbd" stopOpacity="0" />
+          <stop offset="0.55" stopColor="#c9c9c9" stopOpacity="0" />
+          <stop offset="0.82" stopColor="#c9c9c9" stopOpacity="0.55" />
+          <stop offset="0.97" stopColor="#c9c9c9" stopOpacity="0.08" />
+          <stop offset="1" stopColor="#c9c9c9" stopOpacity="0" />
         </radialGradient>
         {/* Hover: light gathering deep in the opening. */}
         <radialGradient id={`${id}-portal-glow`} cx="0.5" cy="0.42" r="0.8">
-          <stop offset="0" stopColor="#d2ccbd" stopOpacity="0.3" />
-          <stop offset="0.5" stopColor="#c0b7a4" stopOpacity="0.12" />
-          <stop offset="1" stopColor="#c0b7a4" stopOpacity="0" />
+          <stop offset="0" stopColor="#c9c9c9" stopOpacity="0.3" />
+          <stop offset="0.5" stopColor="#b4b4b4" stopOpacity="0.12" />
+          <stop offset="1" stopColor="#b4b4b4" stopOpacity="0" />
         </radialGradient>
         {/* The long ground shadow, cast away from the off-canvas moon. */}
         <linearGradient id={`${id}-portal-shadow`} x1="1" y1="0" x2="0" y2="0">
-          <stop offset="0" stopColor="#020403" stopOpacity="0.6" />
-          <stop offset="1" stopColor="#020403" stopOpacity="0" />
+          <stop offset="0" stopColor="#030303" stopOpacity="0.6" />
+          <stop offset="1" stopColor="#030303" stopOpacity="0" />
         </linearGradient>
         {/* Ground plane falloff. */}
         <linearGradient id={`${id}-portal-ground`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#3a434b" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#020403" stopOpacity="0" />
+          <stop offset="0" stopColor="#434343" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#030303" stopOpacity="0" />
         </linearGradient>
         <filter id={`${id}-portal-fog`} x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="4" />
@@ -100,7 +100,7 @@ export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
       {/* The monolith. */}
       <rect x="74" y="28" width="52" height="130" fill={`url(#${id}-portal-slab)`} />
       {/* Moon-side edge: one restrained silver line. */}
-      <rect x="125" y="28" width="1.2" height="130" fill="#d2ccbd" opacity="0.28" />
+      <rect x="125" y="28" width="1.2" height="130" fill="#c9c9c9" opacity="0.28" />
       {/* Mineral grain on the slab only. */}
       <rect
         x="74"
@@ -114,8 +114,8 @@ export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
       {/* The aperture: a taller exposure of somewhere else. */}
       <rect x="85" y="40" width="30" height="118" fill={`url(#${id}-portal-inside)`} />
 
-      <path d="M74 28 L82 24 H134 L126 28 Z" fill="#b1afa1" opacity="0.65" />
-      <path d="M126 28 L134 24 V152 L126 158 Z" fill="#555b5c" />
+      <path d="M74 28 L82 24 H134 L126 28 Z" fill="#ababab" opacity="0.65" />
+      <path d="M126 28 L134 24 V152 L126 158 Z" fill="#595959" />
       <g clipPath={`url(#${id}-portal-aperture-clip)`}>
         {/* Deepening light on hover/focus — driven by EmptyState's CSS. */}
         <rect
@@ -127,8 +127,8 @@ export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
           opacity="0"
           data-aperture-glow
         />
-        <path d="M85 123 L93 103 L104 119 L115 98 V158 H85 Z" fill="#657279" />
-        <path d="M85 145 L96 122 L110 137 L115 130 V158 H85 Z" fill="#303d46" />
+        <path d="M85 123 L93 103 L104 119 L115 98 V158 H85 Z" fill="#707070" />
+        <path d="M85 145 L96 122 L110 137 L115 130 V158 H85 Z" fill="#3c3c3c" />
         {/* The orb, perfectly aligned through the opening. */}
         <circle cx="100" cy="74" r="11" fill={`url(#${id}-portal-orb-body)`} />
         <circle cx="100" cy="74" r="11" fill={`url(#${id}-portal-orb-rim)`} />
@@ -136,9 +136,9 @@ export function DoorIllustration({ size = 220 }: DoorIllustrationProps) {
 
       {/* Fog drifting through the threshold — inside to out. */}
       <g filter={`url(#${id}-portal-fog)`} opacity="0.6">
-        <ellipse cx="97" cy="132" rx="26" ry="6" fill="#999991" opacity="0.38" />
-        <ellipse cx="112" cy="147" rx="30" ry="5" fill="#999991" opacity="0.24" />
-        <ellipse cx="86" cy="155" rx="22" ry="4.5" fill="#999991" opacity="0.18" />
+        <ellipse cx="97" cy="132" rx="26" ry="6" fill="#969696" opacity="0.38" />
+        <ellipse cx="112" cy="147" rx="30" ry="5" fill="#969696" opacity="0.24" />
+        <ellipse cx="86" cy="155" rx="22" ry="4.5" fill="#969696" opacity="0.18" />
       </g>
     </svg>
   );

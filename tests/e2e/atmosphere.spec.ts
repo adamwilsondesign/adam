@@ -1,68 +1,89 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("surreal anchor", () => {
-  test("one orb persists across home, work and about — the same node, never remounted", async ({
-    page,
-  }) => {
+test.describe("persistent atmosphere", () => {
+  test("the live-cloud root survives home, work and about navigation", async ({ page }) => {
     await page.goto("/");
-    const orb = page.locator("[data-surreal-orb]");
-    await expect(orb).toHaveCount(1);
-    const probe = await orb.evaluate((el) => {
-      (el as HTMLElement).dataset.probe = "persistent";
-      return (el as HTMLElement).dataset.probe;
+    // Hermetic builds disable WebGL, but retain the persistent environment
+    // root and its fallback. GPU rendering is evaluated in the real preview.
+    const clouds = page.locator("[data-live-clouds]");
+    await expect(clouds).toHaveCount(1);
+    await expect(clouds).toHaveAttribute("aria-hidden", "true");
+    await clouds.evaluate((el) => {
+      (el as HTMLElement).dataset.persistenceProbe = "original-root";
     });
-    expect(probe).toBe("persistent");
+    expect(await clouds.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
 
     await page.getByRole("link", { name: /^Work/ }).click();
     await expect(page).toHaveURL(/\/work$/);
-    await expect(orb).toHaveCount(1);
-    expect(await orb.evaluate((el) => (el as HTMLElement).dataset.probe)).toBe("persistent");
+    await expect(page.locator("a[data-case-cell], button[data-client-cell]")).toHaveCount(40);
+    await expect(clouds).toHaveCount(1);
+    await expect(clouds).toHaveAttribute("data-persistence-probe", "original-root");
 
-    await page.getByRole("button", { name: "Back" }).click();
+    await page.getByRole("button", { name: "Back", exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await page.getByRole("link", { name: /^About/ }).click();
     await expect(page).toHaveURL(/\/about$/);
-    await expect(orb).toHaveCount(1);
-    expect(await orb.evaluate((el) => (el as HTMLElement).dataset.probe)).toBe("persistent");
-
-    const box = await orb.boundingBox();
-    expect(box).not.toBeNull();
-    expect(box!.width).toBeGreaterThan(10);
+    await expect(page.getByText("Toronto, Canada")).toBeVisible();
+    await expect(clouds).toHaveCount(1);
+    await expect(clouds).toHaveAttribute("data-persistence-probe", "original-root");
   });
 
-  test("the atmosphere grade overlays the environment beneath the UI", async ({ page }) => {
-    await page.goto("/");
-    const grade = page.locator("[data-atmosphere-grade]");
-    await expect(grade).toHaveCount(1);
-    // It must never intercept interaction.
-    expect(await grade.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none");
-    expect(await grade.evaluate((el) => getComputedStyle(el).zIndex)).toBe("0");
+  test("site navigation has no burger at mobile, tablet or desktop widths", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    for (const width of [390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const path of ["/", "/work", "/about"]) {
+        await page.goto(path);
+        const header = page.getByRole("banner");
+        await expect(header).toBeVisible();
+        await expect(
+          header.getByRole("button", { name: /menu/i, includeHidden: true }),
+        ).toHaveCount(0);
+        await expect(
+          page.getByRole("dialog", { name: "Site menu", includeHidden: true }),
+        ).toHaveCount(0);
+        await expect(header.getByRole("button", { name: "Contact", exact: true })).toBeVisible();
+        await expect(header.getByRole("link", { name: /LinkedIn/ })).toBeVisible();
+      }
+    }
   });
 });
 
-test.describe("empty-state portal", () => {
-  test("the monolith replaces the door: aperture, orb, glow — same semantics", async ({ page }) => {
+test.describe("accessible fallback doorway", () => {
+  test("clearing projects reveals a stationary, keyboard-operable doorway", async ({ page }) => {
     await page.goto("/work");
+    await expect(page.locator("a[data-case-cell], button[data-client-cell]")).toHaveCount(40);
     await page.getByRole("button", { name: "All", exact: true }).click();
+    await expect(page.locator("a[data-case-cell], button[data-client-cell]")).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "nothing to see here" })).toBeVisible();
+    await expect(page.getByText("select all or a tag to bring the work back")).toBeVisible();
 
-    const door = page.getByRole("button", { name: "A door. Enter it." });
+    const door = page.getByRole("button", { name: "A door. Enter it.", exact: true });
     await expect(door).toBeVisible();
-    // The recurring orb aligned through the aperture, and the hover glow.
-    await expect(door.locator("[data-aperture-glow]")).toHaveCount(1);
-    expect(await door.locator("circle").count()).toBeGreaterThanOrEqual(2);
+    await expect(door).toBeEnabled();
+    await expect(door.locator("svg")).toBeVisible();
+    await expect(door.locator("svg")).toHaveAttribute("aria-hidden", "true");
 
-    // Hover deepens the aperture light; the object itself must not move.
-    await page.waitForTimeout(800); // let the empty state's entrance settle
     const before = await door.boundingBox();
+    expect(before).not.toBeNull();
     await door.hover();
-    await page.waitForTimeout(250);
+    await expect
+      .poll(async () =>
+        Number(
+          await door.locator("[data-aperture-glow]").evaluate((el) => getComputedStyle(el).opacity),
+        ),
+      )
+      .toBeGreaterThan(0.8);
     const after = await door.boundingBox();
+    expect(after).not.toBeNull();
     expect(Math.abs(after!.x - before!.x)).toBeLessThan(1);
     expect(Math.abs(after!.y - before!.y)).toBeLessThan(1);
-    const glowOpacity = await door
-      .locator("[data-aperture-glow]")
-      .evaluate((el) => getComputedStyle(el).opacity);
-    expect(Number(glowOpacity)).toBeGreaterThan(0.2);
+    expect(Math.abs(after!.width - before!.width)).toBeLessThan(1);
+
+    await door.focus();
+    await expect(door).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/secret$/, { timeout: 8000 });
+    await expect(page.getByText("you found the door.")).toBeVisible();
   });
 });

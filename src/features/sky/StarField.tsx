@@ -18,24 +18,22 @@ import {
   type Vec,
 } from "./star-field";
 import { dampingFactor } from "@/lib/motion";
+import { sphereCoverageAt } from "./sphere-occlusion";
 
 import {
+  beginHomeFlight,
+  finishHomeFlight,
   getAnchorSilhouette,
   isWorkEntrancePending,
   measureStarTargets,
   registerFlightHandler,
   SKY_DISABLED,
+  surgeClouds,
   type TargetRect,
   type WorkTargets,
 } from "./sky-director";
-import {
-  cameraSegment,
-  logoScale,
-  addStar,
-  beginStars,
-  subscribeWorldFrame,
-  worldState,
-} from "@/features/world/world-state";
+import { cameraSegment, logoScale, worldState } from "@/features/world/world-state";
+import styles from "./StarField.module.css";
 
 /** Sky presence per route: home is full, everything else recedes. */
 const WORK_PRESENCE = 0.32;
@@ -60,9 +58,10 @@ type StarRuntime = {
 
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-/** Project-star flight controller. Emits one point batch to the shared GPU renderer.
- * Content remains DOM-backed; the measured logo handoff is unchanged. */
+/** Persistent perspective star field. Its camera drives the recorded Work flight;
+ * live clouds surge for the same journey and measured stars resolve into DOM logos. */
 export function StarField({ clientIds }: { clientIds: string[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
   useEffect(() => {
@@ -71,6 +70,9 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
 
   useEffect(() => {
     if (SKY_DISABLED) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
 
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = reducedMotionQuery.matches;
@@ -82,11 +84,18 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     // ---- Geometry ---------------------------------------------------------
     let width = window.innerWidth;
     let height = window.innerHeight;
+    let dpr = Math.min(2, window.devicePixelRatio || 1);
     const isMobile = () => width < 768;
 
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ambient = ambientStarsFor(isMobile() ? 55 : 110);
     };
 
@@ -175,6 +184,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         return (lo + hi) / 2;
       };
 
+      surgeClouds(timing.camera + timing.settle, 1);
       const next: Flight = {
         kind: "toWork",
         startedAt: performance.now(),
@@ -231,6 +241,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       }
       const fromCam = cameraZ;
       const fromVelocity = cameraVelocity;
+      surgeClouds(RETURN_MS.camera, 0.45);
       flight = {
         kind: "toHome",
         startedAt: performance.now(),
@@ -280,6 +291,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
             runtime.unassigned = false;
           }
           cameraZ = 0;
+          finishHomeFlight();
           return;
         }
         prepareHomeFlight(targets, options.domIsLive);
@@ -295,28 +307,35 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       const nowHome = window.location.pathname === "/";
       if (wasWork && nowHome && (!flight || flight.kind !== "toHome")) {
         const targets = measureStarTargets();
-        if (targets.size > 0) prepareHomeFlight(targets, false);
+        beginHomeFlight(targets, { domIsLive: false });
       }
     };
     window.addEventListener("popstate", onPopState);
 
     // ---- Render loop ------------------------------------------------------
     let lastFrameAt = performance.now();
+    let frame = 0;
+    let running = !document.hidden;
 
     const drawPoint = (x: number, y: number, radius: number, alpha: number) => {
       const anchor = getAnchorSilhouette();
       if (anchor && anchor.radius > 0) {
-        const distance = Math.hypot(x - anchor.x, y - anchor.y) / anchor.radius;
-        // Distant stars cannot shine through the solid body. Fade the mask
-        // with route presence and the soft atmospheric edge.
-        alpha *= 1 - clamp01((1 - distance) / 0.06) * clamp01(anchor.alpha / 0.5);
+        const coverage = anchor.projection
+          ? sphereCoverageAt(x, y, anchor.projection)
+          : clamp01((1 - Math.hypot(x - anchor.x, y - anchor.y) / anchor.radius) / 0.06);
+        alpha *= 1 - coverage * clamp01(anchor.alpha);
       }
       if (alpha <= 0.004) return;
       if (x < -40 || x > width + 40 || y < -40 || y > height + 40) return;
-      addStar(x, y, radius, alpha);
+      ctx.fillStyle = `rgba(244, 244, 244, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
     };
 
     const render = (now: number) => {
+      if (!running) return;
+      frame = requestAnimationFrame(render);
       const previousFrameAt = lastFrameAt;
       const deltaMs = Math.min(50, Math.max(0, now - lastFrameAt));
       const cameraSettled = Math.abs(cameraZ - cameraTarget()) < 0.0005;
@@ -345,7 +364,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       lastFrameAt = now;
 
       worldState.workTravel = cameraZ / CAMERA.travel;
-      beginStars();
+      ctx.clearRect(0, 0, width, height);
       const seconds = now / 1000;
       const amp = (presence > 0.7 ? POINTER_AMP_HOME : POINTER_AMP_WORK) * (reducedMotion ? 0 : 1);
       const parallax = { x: pointer.x * amp, y: pointer.y * amp };
@@ -484,16 +503,32 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           }
           flight = null;
           cameraZ = 0;
+          finishHomeFlight();
         }
       }
     };
-    const unsubscribe = subscribeWorldFrame(render);
+    frame = requestAnimationFrame(render);
+    let hiddenAt: number | null = null;
+    const onVisibility = () => {
+      const now = performance.now();
+      if (document.hidden) hiddenAt = now;
+      else if (hiddenAt !== null) {
+        if (flight) flight.startedAt += now - hiddenAt;
+        hiddenAt = null;
+      }
+      running = !document.hidden;
+      cancelAnimationFrame(frame);
+      lastFrameAt = performance.now();
+      if (running) frame = requestAnimationFrame(render);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("resize", resize);
     resize();
 
     return () => {
-      unsubscribe();
-      beginStars();
+      running = false;
+      cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", onVisibility);
       registerFlightHandler(null);
       window.removeEventListener("popstate", onPopState);
       window.removeEventListener("pointermove", onPointerMove);
@@ -504,5 +539,5 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
   }, [clientIds]);
 
   if (SKY_DISABLED) return null;
-  return null;
+  return <canvas ref={canvasRef} className={styles.sky} aria-hidden />;
 }

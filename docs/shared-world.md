@@ -1,33 +1,48 @@
-# Continuous monochrome world
+# Living monochrome environment
 
-Motion baseline: c9d8e176e34a40278b0a2da2d58f73d6e1e83363 and the supplied September 4 recording.
+The motion reference is [c9d8e176e34a40278b0a2da2d58f73d6e1e83363](https://github.com/adamwilsondesign/adam/commit/c9d8e176e34a40278b0a2da2d58f73d6e1e83363) and the supplied September 4 recording. The priority is the original sense of distance: forward passage to Work, descent through the cloud deck to About, and reverse ascent to Home. Clouds must remain alive between interactions.
 
 ## Preserved choreography
 
-Work: 1400 ms forward flight (1150 mobile), 280 ms point/logo crossfade, 380 ms settle. Return: 800 ms. About: 1700 ms descent (1200 mobile), text at 1050 ms (760 mobile), 780 ms ascent after the 200 ms content fade. Home's original 200 ms fade and About's original unblurred text treatment are restored.
+| Movement                               | Desktop                                 | Mobile       |
+| -------------------------------------- | --------------------------------------- | ------------ |
+| Work camera flight                     | 1400 ms                                 | 1150 ms      |
+| Star/logo crossfade, then settle       | 280 + 380 ms                            | 260 + 340 ms |
+| Return camera, with logo contraction   | 800 ms; contraction 200 ms              | Same         |
+| About descent                          | 1700 ms                                 | 1200 ms      |
+| About copy reveal / interaction unlock | 1050 / 1300 ms                          | 760 / 950 ms |
+| About return                           | 200 ms content fade, then 780 ms ascent | Same         |
 
-The camera retains the cubic baseline outside progress .42–.58. Inside that window a quintic Hermite segment matches position, velocity and acceleration at both boundaries. Logo scale uses one continuous curve across crossfade and settle. The About return carries the current scroll position back through the ascent instead of resetting it visibly.
+About retains 1.5 viewport heights of vertical travel. The live cloud layer rises and expands past the camera; scrolling advances over the range. Departure carries the visible scroll position into the ascent rather than exposing a reset. Home retains its 200 ms fade; About copy has no added blur or scale.
 
-## Rendering
+Camera easing matches the original cubic outside progress 0.42–0.58. The middle segment matches position, velocity and acceleration at both boundaries. Logo growth uses one continuous curve across the star/logo handoff.
 
-One persistent Three.js renderer. An original photographic basin plate is projected onto a static depth surface; it is an approximation of distant geography, not a fully modeled landscape. The sphere, stone doorway and Work ground plane are geometry. An original hand texture sits behind the sphere, with its lower edge fading into atmosphere. The source images are original generated assets; none of the user's reference images are used on the site.
+## Rendering architecture
 
-A bounded ray-marched cloud shelf runs at 55% of the scene's internal width and height. It is composited against scene depth with depth-aware upsampling. Cloud density is world-space, with continuous wind and a restrained pointer influence. The camera crosses the shelf during About travel. The final pass produces neutral grayscale with restrained static grain and an editorial contrast treatment behind the text.
+`CloudsBackground` keeps the original Vanta/Three.js volumetric cloud renderer mounted across routes. The cloud field evolves continuously and responds to a damped pointer. Travel accelerates an integrated clock from the original resting speed of 0.7 toward the original surge speed of 30. The shader's speed multiplier stays fixed: changing it would jump the entire accumulated noise coordinate. Surge retargeting carries current motion forward; hidden-tab time is excluded.
 
-The doorway occupies a fixed point on the Work ground plane. Its accessible DOM button is positioned from the projected geometry. It receives the scene's directional lighting and casts a shadow onto that ground. Its interior uses the basin texture and an orb, rather than a second per-frame scene render. The existing click-through transition to /secret is unchanged.
+The sphere, Work ground and doorway are analytic intersections inside the cloud shader. They use fixed world coordinates, perspective projection and monochrome lighting. They are shaded before the live volume, allowing moving clouds to obscure them. The doorway has thickness, a directional ground shadow and a procedural interior. Its projected DOM button preserves hover, keyboard access and the existing transition to `/secret`.
+
+The only imported scenic image in this renderer is `public/world/hand-stone.webp`, an original generated hand asset. It appears as a softened distant shadow with changing concealment. The user's reference images are not used verbatim. The photographic basin and its frozen clouds are no longer part of the rendering path.
+
+About uses the original layered terrain choreography. Five procedural heightfield bands, or three on mobile, now have finer fractured ridges, local surface normals, restrained matte highlights and stronger atmospheric depth. A worker bakes their relief into transferable bitmaps; Home prewarms the cache. Resizes retain the previous terrain until replacement artwork is ready. Where workers or OffscreenCanvas are unavailable, preparation yields between bands.
+
+Live valley mist is drawn between terrain layers. One small procedural mask supplies two independently drifting and continuously sheared passes, changing the outline and internal overlap. Terrain elevation is not recalculated during animation. This remains a hybrid of volumetric clouds, analytic landmarks and composited relief, rather than an unrestricted 3D landscape.
+
+## Three review cycles
+
+1. **Restore travel and aliveness.** Replaced the failed photographic depth-surface approach with the original cloud field and route choreography. Evaluation focused on idle evolution, forward passage, descent and ascent.
+2. **Integrate the artwork.** Added cloud-occluded landmarks and the grounded Work doorway. Review exposed smooth, clay-like terrain and stationary valleys; finer relief and deforming mist addressed those findings.
+3. **Resolve continuity and delivery risks.** Corrected integrated cloud timing, resize/DPR resolution handling and renderer cleanup. Moved terrain preparation off the animation thread, retained fallbacks, removed the unused replacement renderer, and updated tests to check the active architecture.
+
+The environment is strictly black and white. Content, content structure and CMS loaders remain unchanged. The burger menu is removed across breakpoints.
 
 ## Verification and limits
 
-140 unit checks, including baseline durations, monotonic travel, acceleration continuity at the blend boundaries, and continuous logo growth. TypeScript, ESLint and a production build with explicit local fixtures were checked. The live renderer is inspected separately in desktop and mobile-sized browser views. Fixture mode is only for local verification; CMS loaders and production configuration are unchanged.
+149 unit tests pass, including recorded timings, easing continuity, cloud-clock behavior, exact sphere occlusion and terrain contracts. TypeScript, targeted ESLint and a production build with explicit local fixtures pass. The fixture setting is local validation only; deployed CMS configuration is unchanged.
 
-This is a hybrid depth-surface scene. The hand is an atmospheric image asset, not a rigged 3D hand. It supports the bounded existing journeys, not unrestricted camera exploration. Browser screenshots do not establish physical-device performance or subjective smoothness; the Chrome preview is the visual and motion review target. No claim of a guaranteed frame rate is made.
+Live Chromium review covered idle evolution, forward travel, descent, scrolled ascent, empty Work and doorway entry, plus portrait and short landscape layouts. Development contact sheets sample the actual rendered canvases and expose timing stalls; they are not performance benchmarks. A 392 ms arrival stall prompted the worker preparation change. Later captures still contained isolated long intervals, so they do not support a claim of perfect frame delivery.
 
-## Generated asset provenance
+The updated hermetic browser tests disable WebGL and cover mounting, content, menu removal and keyboard doorway behavior. They were parsed but not executed in this environment because the standalone browser could not launch; live in-app Chromium checks were used separately. Neither unit tests nor these structural checks establish aesthetic quality.
 
-Built-in image generation was used. Runtime assets:
-- public/world/hand-stone.webp (original source retained in Codex generated_images)
-- public/world/basin-distance.webp
-
-Hand prompt: "Use case: stylized-concept. Create a production texture asset for an art-directed surreal monochrome 3D landscape: one monumental anatomically correct human LEFT hand seen palm toward camera at a slight three-quarter angle, fingers reaching upward with natural slight separation and curvature, thumb on image right. Entire hand and long wrist visible, isolated with genuinely transparent background. Aged pale basalt / weathered stone surface, exceptionally fine photographic material, broad soft directional illumination from upper right, deep charcoal shadows on left. Strict neutral black and white only. Uncanny, solemn, sculptural, realistic anatomy, no cartoon, no extra fingers. No sphere, no landscape, no cloud, no text, no frame, no ground shadow. Vertical image, hand fills height with margins. This will be placed far behind clouds in a continuous landscape; silhouette and broad tonal volume are paramount."
-
-Basin prompt: "Use case: stylized-concept. Production environment matte painting for a mysterious monochrome interactive world. Wide 3:2 image, exceptionally detailed cinematic black and white photograph of an immense range of dark eroded volcanic mountains rising through a sea of soft stratocumulus clouds and valley mist. Viewpoint high above a mountain basin. Foreground sharp craggy black ridges occupy bottom 25%, staggered distant peaks diminish into luminous gray mist toward the low horizon at 55% image height. Upper 45% quiet dark charcoal storm sky with a soft light source from upper right, no visible sun. Asymmetric composition with strongest mountain silhouettes on right, quiet soft cloud space on left for future typography. Fine photographic rock detail, deep blacks, selectively glowing cloud edges, broad shadow masses, realistic geological forms, elegant restrained contrast. Strict neutral grayscale. No objects in sky, no sphere, no hand, no people, no text, no buildings. No painterly brushstrokes, no plastic CGI, no repeated peaks. This is an original distant landscape plate, not a screenshot or UI mockup."
+The real Chrome preview remains the motion and aesthetic review target. Screenshots alone cannot prove smoothness, and no frame rate is guaranteed across devices. The hand and terrain remain bounded-view representations designed for the existing route choreography. Physical-device performance and subjective art direction require continued evaluation of the deployed experience.

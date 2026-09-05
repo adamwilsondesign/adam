@@ -14,6 +14,8 @@
  * the completed state of whatever route it loads, never mid-transition.
  */
 
+import type { SphereProjection } from "./sphere-occlusion";
+
 export type TargetRect = { x: number; y: number; width: number; height: number };
 
 export type WorkTargets = Map<string, TargetRect>;
@@ -37,6 +39,56 @@ let flightActive: "toWork" | "toHome" | null = null;
 
 export function registerFlightHandler(next: FlightHandler | null): void {
   handler = next;
+  if (!next) flightActive = null;
+}
+
+/**
+ * The cloud layer's contribution to the flight: while the camera runs
+ * forward, the clouds surge — rapidly scrolling past so the viewer feels
+ * the travel. Registered by the clouds component when its WebGL scene is
+ * live; a missing handler (fallback sky, reduced motion) is a quiet no-op.
+ */
+type CloudSurgeHandler = (durationMs: number, intensity: number) => void;
+
+let cloudSurgeHandler: CloudSurgeHandler | null = null;
+
+export function registerCloudSurgeHandler(next: CloudSurgeHandler | null): void {
+  cloudSurgeHandler = next;
+}
+
+export function surgeClouds(durationMs: number, intensity: number): void {
+  if (SKY_DISABLED) return;
+  cloudSurgeHandler?.(durationMs, intensity);
+}
+
+/**
+ * The About descent flies through the live cloud layer itself: the scene
+ * drives the cloud background's transform each frame (growing and rising
+ * past the camera, fading as the camera passes below the deck). Null
+ * restores the resting layer. A missing handler is a quiet no-op.
+ */
+export type CloudShift = { y: number; scale: number; opacity: number };
+
+type CloudShiftHandler = (shift: CloudShift | null) => void;
+
+let cloudShiftHandler: CloudShiftHandler | null = null;
+
+export function registerCloudShiftHandler(next: CloudShiftHandler | null): void {
+  cloudShiftHandler = next;
+}
+
+export function shiftClouds(shift: CloudShift | null): void {
+  if (SKY_DISABLED) return;
+  cloudShiftHandler?.(shift);
+}
+
+/** Normalized vertical camera pose: 0 above the deck, 1 in the valley. */
+let aboutPose = 0;
+export function setAboutPose(value: number): void {
+  aboutPose = Math.min(1, Math.max(0, value));
+}
+export function getAboutPose(): number {
+  return aboutPose;
 }
 
 /**
@@ -108,13 +160,14 @@ export function provideWorkTargets(targets: WorkTargets, done: () => void): void
  */
 export function beginHomeFlight(targets: WorkTargets, options: { domIsLive: boolean }): void {
   pendingWorkFlightAt = null;
-  if (SKY_DISABLED || !handler || targets.size === 0) return;
+  if (SKY_DISABLED || !handler) return;
   flightActive = "toHome";
   handler.flyToHome(targets, options);
-  // The canvas owns completion; the return flight never blocks navigation.
-  window.setTimeout(() => {
-    if (flightActive === "toHome") flightActive = null;
-  }, 1400);
+}
+
+/** Follow the renderer's visible clock, including time paused in a hidden tab. */
+export function finishHomeFlight(): void {
+  if (flightActive === "toHome") flightActive = null;
 }
 
 /** True while a return flight is settling — HomeView softens its entrance. */
@@ -137,7 +190,13 @@ export function measureStarTargets(): WorkTargets {
 }
 
 /** The world landmark's current projected silhouette, shared with distant stars. */
-export type AnchorSilhouette = { x: number; y: number; radius: number; alpha: number };
+export type AnchorSilhouette = {
+  x: number;
+  y: number;
+  radius: number;
+  alpha: number;
+  projection?: SphereProjection;
+};
 let anchorSilhouette: AnchorSilhouette | null = null;
 export function setAnchorSilhouette(value: AnchorSilhouette | null): void {
   anchorSilhouette = value;

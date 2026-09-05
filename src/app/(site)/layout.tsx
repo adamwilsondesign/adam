@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { draftMode } from "next/headers";
 
 import { SiteChrome } from "@/components/chrome/SiteChrome";
-import { WorldEnvironment } from "@/features/world/WorldEnvironment";
+import { CloudsBackground } from "@/features/home/CloudsBackground";
 import { StarField } from "@/features/sky/StarField";
 import { getSiteSettings, getWorkIndex } from "@/lib/content";
 import { siteUrl } from "@/lib/site-url";
 import { isSanityConfigured } from "@/sanity/env";
 
 import { LiveVisualEditing } from "./live";
+
+const MotionReview =
+  process.env.NODE_ENV === "development"
+    ? dynamic(() => import("@/features/dev/MotionReview").then((module) => module.MotionReview))
+    : () => null;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
@@ -47,8 +53,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const [settings, clients] = await Promise.all([getSiteSettings(), getWorkIndex()]);
   return (
     <>
+      <CloudsBackground />
+      <MotionReview />
       <StarField clientIds={clients.map((client) => client.id)} />
-      <WorldEnvironment />
       <SiteChrome
         title={settings.title}
         logoUrl={settings.logoUrl}
