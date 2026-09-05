@@ -101,9 +101,6 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
       setRevealed(false);
       if (href === "/" && !reducedMotion) {
         window.setTimeout(() => {
-          const scroller = scrollerRef.current;
-          if (scroller) scroller.scrollTop = 0;
-          scrollProgressRef.current = 0;
           setPhase("leaving");
         }, ABOUT_TIMINGS.contentFade);
         window.setTimeout(

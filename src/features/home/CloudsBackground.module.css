@@ -14,6 +14,7 @@
 .fallback {
   position: absolute;
   inset: 0;
+  filter: saturate(0.18) brightness(0.88);
   transition: filter 700ms var(--ease-precise);
 }
 
@@ -21,7 +22,7 @@
    slightly darker and less saturated, so white logos stay legible. */
 .clouds[data-dimmed] .scene,
 .clouds[data-dimmed] .fallback {
-  filter: brightness(0.84) saturate(0.86);
+  filter: brightness(0.78) saturate(0.18);
 }
 
 .scene canvas {
@@ -33,10 +34,10 @@
    low on the moon side — painted statically. Never an empty background. */
 .fallback {
   background:
-    radial-gradient(120% 55% at 82% 104%, rgba(111, 89, 71, 0.22) 0%, rgba(111, 89, 71, 0) 60%),
-    radial-gradient(90% 60% at 24% 96%, rgba(37, 35, 31, 0.6) 0%, rgba(37, 35, 31, 0) 70%),
-    radial-gradient(110% 70% at 78% 90%, rgba(37, 35, 31, 0.42) 0%, rgba(37, 35, 31, 0) 72%),
-    linear-gradient(to bottom, #020403 0%, #040806 55%, #07110f 100%);
+    radial-gradient(85% 55% at 82% 70%, rgba(199, 195, 183, 0.14), transparent 68%),
+    radial-gradient(100% 38% at 25% 82%, rgba(97, 96, 92, 0.5), transparent 72%),
+    radial-gradient(80% 48% at 75% 100%, rgba(82, 91, 100, 0.4), transparent 74%),
+    linear-gradient(to bottom, #080a0c, #171c22);
 }
 
 /* The restrained contrast veil over the dimmed sky while Work is open. */
@@ -50,4 +51,12 @@
 
 .veil[data-active] {
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene,
+  .fallback,
+  .veil {
+    transition: none;
+  }
 }

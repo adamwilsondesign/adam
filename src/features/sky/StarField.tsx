@@ -17,7 +17,7 @@ import {
   type ProjectStar,
   type Vec,
 } from "./star-field";
-import { cinematicEase, invCinematicEase } from "@/lib/motion";
+import { cinematicEase, dampingFactor, invCinematicEase } from "@/lib/motion";
 
 import {
   isWorkEntrancePending,
@@ -319,7 +319,6 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     // ---- Render loop ------------------------------------------------------
     let frame = 0;
     let running = true;
-    let frameParity = 0;
     let cloudsShifted = false;
     let lastCameraZ = cameraZ;
     let lastFrameAt = performance.now();
@@ -336,16 +335,14 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     const render = (now: number) => {
       if (!running) return;
       frame = requestAnimationFrame(render);
-      frameParity ^= 1;
+      const deltaMs = Math.min(50, Math.max(0, now - lastFrameAt));
       const cameraSettled = Math.abs(cameraZ - cameraTarget()) < 0.0005;
-      // The idle sky renders at half rate; camera movement gets every frame.
-      if (!flight && cameraSettled && frameParity === 0 && !reducedMotion) return;
-
       if (!reducedMotion) {
-        pointer.x += (pointer.tx - pointer.x) * 0.06;
-        pointer.y += (pointer.ty - pointer.y) * 0.06;
+        const follow = dampingFactor(deltaMs, 3.7);
+        pointer.x += (pointer.tx - pointer.x) * follow;
+        pointer.y += (pointer.ty - pointer.y) * follow;
       }
-      presence += (presenceTarget() - presence) * 0.05;
+      presence += (presenceTarget() - presence) * dampingFactor(deltaMs, 3);
 
       // ---- One global cameraProgress drives everything. ----
       const elapsed = flight ? now - flight.startedAt : 0;
@@ -354,7 +351,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       } else if (!cameraSettled && !isWorkEntrancePending()) {
         // No flight owns the camera: relax toward the route's resting
         // position — but never while an entrance is about to claim it.
-        cameraZ += (cameraTarget() - cameraZ) * 0.08;
+        cameraZ += (cameraTarget() - cameraZ) * dampingFactor(deltaMs, 5);
         if (Math.abs(cameraZ - cameraTarget()) < 0.0005) cameraZ = cameraTarget();
       }
       const progress = cameraZ / CAMERA.travel;
@@ -365,7 +362,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       if (flight) {
         const dt = Math.max(1, now - lastFrameAt);
         const velocity = Math.abs(cameraZ - lastCameraZ) / dt;
-        const swell = Math.sin(Math.PI * clamp01(elapsed / flight.camera));
+        const swell = Math.pow(Math.sin(Math.PI * clamp01(elapsed / flight.camera)), 2);
         shiftClouds({
           y: -swell * FLIGHT_CLOUD_LIFT * height,
           scale: 1 + swell * FLIGHT_CLOUD_SCALE,
@@ -410,7 +407,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
           pos.x,
           pos.y,
           perspectiveRadius(star.size, star.z),
-          star.alpha * twinkle * (0.35 + 0.65 * presence) * depthDim(star.z),
+          star.alpha * twinkle * 0.48 * (0.35 + 0.65 * presence) * depthDim(star.z),
         );
       }
 

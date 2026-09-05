@@ -8,3 +8,7 @@
   z-index: -1;
   pointer-events: none;
 }
+
+.orb {
+  transform-origin: 0 0;
+}

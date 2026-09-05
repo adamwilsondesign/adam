@@ -54,19 +54,19 @@ describe("route transition clocks", () => {
 });
 
 describe("surreal orb projections", () => {
-  it("stays small, distant and route-appropriate on desktop", () => {
+  it("keeps a monumental silhouette and recedes behind Work on desktop", () => {
     const home = orbPoseFor("home", 1440, 900, 0);
-    expect(home.diameter / 14.4).toBeGreaterThanOrEqual(3.5); // vw
-    expect(home.diameter / 14.4).toBeLessThanOrEqual(5);
+    expect(home.diameter / 14.4).toBeGreaterThanOrEqual(12); // vw
+    expect(home.diameter / 14.4).toBeLessThanOrEqual(16);
     const work = orbPoseFor("work", 1440, 900, 0);
     expect(work.alpha).toBeLessThan(home.alpha); // subdued behind logos
-    expect(work.diameter).toBeLessThan(home.diameter);
+    expect(work.diameter).toBeGreaterThan(home.diameter);
   });
 
   it("aligns near the valley centre on About and grows with the travel", () => {
     const settled = orbPoseFor("about", 1440, 900, 0);
     const deep = orbPoseFor("about", 1440, 900, 1);
-    expect(settled.x).toBe(720);
+    expect(settled.x).toBeGreaterThan(1440 * 0.65);
     expect(deep.diameter).toBeGreaterThan(settled.diameter);
   });
 

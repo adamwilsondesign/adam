@@ -12,8 +12,8 @@ import styles from "./CloudsBackground.module.css";
 /** The clouds' resting drift and their evolution during a star flight —
  *  kept calm: the travel sensation comes from the shared camera transform
  *  on this layer, not from the simulation boiling. */
-const CLOUD_SPEED_REST = 0.7;
-const CLOUD_SPEED_SURGE = 2.6;
+const CLOUD_SPEED_REST = 0.38;
+const CLOUD_SPEED_SURGE = 1.1;
 
 /** Hermetic test builds exclude the WebGL sky — it is pure scenery, and its
  * software-rendered init skews animation timing under test. */
@@ -67,11 +67,9 @@ export function CloudsBackground() {
 
   useEffect(() => {
     if (SKY_DISABLED) return;
-    if (reducedMotion || !ref.current) {
-      setFallback(true);
-      return;
-    }
+    if (reducedMotion || fallback) return;
     const el = ref.current;
+    if (!el) return;
 
     let disposed = false;
     let effect: import("vanta/dist/vanta.clouds.min").VantaCloudsEffect | null = null;
@@ -145,13 +143,14 @@ export function CloudsBackground() {
       effect?.destroy();
       effect = null;
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, fallback]);
 
   if (SKY_DISABLED) return <div className={styles.clouds} aria-hidden />;
 
   return (
     <div ref={rootRef} className={styles.clouds} data-dimmed={dimmed || undefined} aria-hidden>
-      {fallback ? <div className={styles.fallback} /> : <div ref={ref} className={styles.scene} />}
+      <div className={styles.fallback} />
+      <div ref={ref} className={styles.scene} hidden={fallback || !!reducedMotion} />
       <div className={styles.veil} data-active={dimmed || undefined} />
     </div>
   );

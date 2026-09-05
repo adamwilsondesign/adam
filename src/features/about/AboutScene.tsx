@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { SKY_DISABLED, shiftClouds } from "@/features/sky/sky-director";
 import { seededRandom } from "@/features/sky/star-field";
 import { ATMOS, hexToRgb } from "@/lib/atmosphere";
-import { cinematicEase } from "@/lib/motion";
+import { cinematicEase, dampingFactor } from "@/lib/motion";
 
 import { MOUNTAIN_LAYERS, MOUNTAIN_LAYERS_MOBILE, type MountainLayer } from "./mountains";
 import { renderTerrainLayer } from "./terrain";
@@ -156,6 +156,9 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
     let leaveFrom = 1;
     let pose = lastPhase === "arriving" ? 0 : 1;
     let cloudsShifted = false;
+    let lastDrawAt = performance.now();
+    let scroll = clamp01(scrollProgress.current ?? 0);
+    let leaveScroll = scroll;
 
     const resize = () => {
       width = window.innerWidth;
@@ -183,12 +186,16 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
     };
 
     const draw = (now: number) => {
-      const scroll = clamp01(scrollProgress.current ?? 0);
+      const deltaMs = Math.min(50, Math.max(0, now - lastDrawAt));
+      lastDrawAt = now;
 
       /* One pose for everything: 0 = homepage sky, 1 = settled valley. */
       const currentPhase = phaseRef.current;
       if (currentPhase !== lastPhase) {
-        if (currentPhase === "leaving") leaveFrom = pose;
+        if (currentPhase === "leaving") {
+          leaveFrom = pose;
+          leaveScroll = scroll;
+        }
         phaseStart = null;
         lastPhase = currentPhase;
       }
@@ -207,8 +214,17 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
         pose = 1;
       }
 
-      pointer.x += (pointer.tx - pointer.x) * 0.06;
-      pointer.y += (pointer.ty - pointer.y) * 0.06;
+      const scrollTarget =
+        currentPhase === "leaving"
+          ? leaveScroll *
+            (1 - cinematicEase(clamp01((now - (phaseStart ?? now)) / ABOUT_TIMINGS.reverse)))
+          : clamp01(scrollProgress.current ?? 0);
+      scroll = reducedMotion
+        ? scrollTarget
+        : scroll + (scrollTarget - scroll) * dampingFactor(deltaMs, 7);
+      const follow = dampingFactor(deltaMs, 3.7);
+      pointer.x += ((reducedMotion ? 0 : pointer.tx) - pointer.x) * follow;
+      pointer.y += ((reducedMotion ? 0 : pointer.ty) - pointer.y) * follow;
 
       ctx.clearRect(0, 0, width, height);
 

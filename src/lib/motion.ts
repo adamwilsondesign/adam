@@ -39,18 +39,15 @@ export function smootherstep(t: number): number {
   return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
-/** How far past the target the cinematic move drifts before settling. */
-const SETTLE_AMPLITUDE = 0.09;
-
-/**
- * The route-transition camera curve: smootherstep with a ~1.5% optical
- * settle — the move drifts imperceptibly past its mark near the end and
- * relaxes onto it, the way a dollied camera stops. cinematicEase(0) = 0 and
- * cinematicEase(1) = 1 exactly; the overshoot peaks around t ≈ 0.85.
- */
+/** A monotonic camera glide with zero velocity and acceleration at both ends.
+ * No optical overshoot: depth projection must never briefly reverse at arrival. */
 export function cinematicEase(t: number): number {
-  const x = clamp01(t);
-  return smootherstep(x) + SETTLE_AMPLITUDE * Math.pow(x, 6) * Math.sin(Math.PI * x);
+  return smootherstep(t);
+}
+
+/** Frame-rate independent exponential response; rate is in inverse seconds. */
+export function dampingFactor(deltaMs: number, rate = 4.5): number {
+  return 1 - Math.exp((-rate * Math.max(0, deltaMs)) / 1000);
 }
 
 /** The time of the curve's single maximum — it rises monotonically to here. */

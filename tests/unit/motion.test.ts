@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { CINEMATIC_PEAK_T, cinematicEase, invCinematicEase, smootherstep } from "@/lib/motion";
+import {
+  CINEMATIC_PEAK_T,
+  cinematicEase,
+  dampingFactor,
+  invCinematicEase,
+  smootherstep,
+} from "@/lib/motion";
 
 describe("smootherstep", () => {
   it("hits its endpoints exactly and clamps outside them", () => {
@@ -31,12 +37,13 @@ describe("cinematicEase", () => {
     expect(cinematicEase(1)).toBeCloseTo(1, 10);
   });
 
-  it("carries a subtle optical settle (1–2% past the mark, late)", () => {
-    const peak = cinematicEase(CINEMATIC_PEAK_T);
-    expect(peak).toBeGreaterThan(1.005);
-    expect(peak).toBeLessThan(1.02);
-    expect(CINEMATIC_PEAK_T).toBeGreaterThan(0.7);
-    expect(CINEMATIC_PEAK_T).toBeLessThan(0.98);
+  it("never reverses or overshoots the camera destination", () => {
+    for (let i = 0; i <= 1000; i++) {
+      expect(cinematicEase(i / 1000)).toBeLessThanOrEqual(1);
+      expect(cinematicEase(i / 1000)).toBeGreaterThanOrEqual(0);
+    }
+    const h = 0.0001;
+    expect((1 - cinematicEase(1 - h)) / h).toBeLessThan(0.0001);
   });
 
   it("rises monotonically up to its peak", () => {
@@ -57,5 +64,18 @@ describe("cinematicEase", () => {
     // Ordering is preserved — later arrivals get later times.
     expect(invCinematicEase(0.2)).toBeLessThan(invCinematicEase(0.6));
     expect(invCinematicEase(0.6)).toBeLessThan(invCinematicEase(0.99));
+  });
+});
+
+describe("refresh-rate independent damping", () => {
+  it("travels the same distance after one second at 30, 60 and 120 Hz", () => {
+    const advance = (hz: number) => {
+      let value = 0;
+      for (let i = 0; i < hz; i++) value += (1 - value) * dampingFactor(1000 / hz);
+      return value;
+    };
+    expect(advance(30)).toBeCloseTo(advance(60), 10);
+    expect(advance(120)).toBeCloseTo(advance(60), 10);
+    expect(dampingFactor(0)).toBe(0);
   });
 });

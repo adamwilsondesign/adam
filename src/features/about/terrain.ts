@@ -90,7 +90,7 @@ function ridgedFbm(seed: number, x: number, y: number, octaves: number): number 
 export function terrainHeight(layer: MountainLayer, u: number, v: number): number {
   const zw = (1 - v) * Z_THICKNESS;
   const rough = 0.75 + 0.5 * layer.roughness;
-  const ridged = ridgedFbm(layer.seed, u * 1.6 * rough, zw * 1.3, 4);
+  const ridged = ridgedFbm(layer.seed, u * 1.25 * rough, zw * 1.15, 3);
   const sharp = Math.pow(ridged, 1.22);
   const sigma = 0.18 * (1 + 0.9 * v);
   const carve = 1 - layer.valley * 0.92 * Math.exp(-(u * u) / (2 * sigma * sigma));
@@ -120,8 +120,8 @@ export function projectRow(
   width: number,
   height: number,
 ): ProjectedRow {
-  const du = 0.032;
-  const dv = 0.032;
+  const du = 0.055;
+  const dv = 0.055;
   const distance = mix(D_FAR, D_NEAR, v);
   const persp = 1 / distance;
   const groundY = height * (0.286 + 0.734 * persp);
@@ -154,7 +154,7 @@ export function projectRow(
     const nl = Math.hypot(nx, ny, nz);
     const lambert = clamp01((nx * MOON.x + ny * MOON.y + nz * MOON.z) / nl);
 
-    let light = Math.pow(lambert, 1.8) * contrast;
+    let light = 0.025 + Math.pow(lambert, 1.45) * contrast;
     /* High crests catch a little extra silver. */
     light += 0.09 * h * clamp01(lambert - 0.4);
     /* The valley floor nearest the camera falls into night shadow and
@@ -228,6 +228,8 @@ export function renderTerrainLayer(
     }
   }
 
+  const base = [0, 1, 2].map((i) => Math.round(mix(SHADOW[i]!, HORIZON[i]!, layer.haze) * 0.75));
+
   /* Soft rock grain: gentle multiplicative noise, alpha preserved — enough
      to keep large faces organic, quiet enough to never read as static. */
   const fs = 3.4 / height;
@@ -240,10 +242,14 @@ export function renderTerrainLayer(
       data[o] = Math.min(255, data[o]! * gain);
       data[o + 1] = Math.min(255, data[o + 1]! * gain);
       data[o + 2] = Math.min(255, data[o + 2]! * gain);
+      // Match the solid ground extension exactly; brighter fog must not
+      // expose the baked layer's lower edge as a horizontal seam.
+      const lower = clamp01((y / Math.max(1, height - 1) - 0.65) / 0.35);
+      const blend = lower * lower * (3 - 2 * lower);
+      for (let c = 0; c < 3; c++) data[o + c] = mix(data[o + c]!, base[c]!, blend);
     }
   }
   ctx.putImageData(image, 0, 0);
 
-  const base = [0, 1, 2].map((i) => Math.round(mix(SHADOW[i]!, HORIZON[i]!, layer.haze) * 0.75));
   return `rgb(${base[0]}, ${base[1]}, ${base[2]})`;
 }

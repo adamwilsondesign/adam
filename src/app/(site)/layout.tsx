@@ -54,9 +54,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           z 0) pass in front of all three; the grade sits over the whole
           environment and under every UI surface. */}
       <CloudsBackground />
-      <SurrealAnchor />
       {/* Painted above the clouds: one project star per client, always. */}
       <StarField clientIds={clients.map((client) => client.id)} />
+      <SurrealAnchor />
       <SiteChrome
         title={settings.title}
         logoUrl={settings.logoUrl}

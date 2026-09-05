@@ -57,3 +57,21 @@
   text-transform: lowercase;
   color: var(--color-fg-muted);
 }
+
+.door svg {
+  width: clamp(200px, 24vw, 300px);
+  height: auto;
+}
+.door:focus-visible {
+  outline: 1px solid var(--color-fg-muted);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+@media (max-height: 650px) {
+  .door svg {
+    width: 160px;
+  }
+  .title {
+    font-size: 34px;
+  }
+}
