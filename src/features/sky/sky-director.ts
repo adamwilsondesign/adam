@@ -1,7 +1,7 @@
 /**
  * Coordination between the persistent star canvas and the route components.
  *
- * The canvas (StarField) lives in the site layout and never unmounts; the
+ * The flight controller (StarField) lives in the site layout and never unmounts; the
  * homepage and Work views come and go around it. This module is the message
  * bus between them:
  *
@@ -37,52 +37,6 @@ let flightActive: "toWork" | "toHome" | null = null;
 
 export function registerFlightHandler(next: FlightHandler | null): void {
   handler = next;
-}
-
-/**
- * The cloud layer's contribution to the flight: while the camera runs
- * forward, the clouds surge — rapidly scrolling past so the viewer feels
- * the travel. Registered by the clouds component when its WebGL scene is
- * live; a missing handler (fallback sky, reduced motion) is a quiet no-op.
- */
-type CloudSurgeHandler = (durationMs: number, intensity: number) => void;
-
-let cloudSurgeHandler: CloudSurgeHandler | null = null;
-
-export function registerCloudSurgeHandler(next: CloudSurgeHandler | null): void {
-  cloudSurgeHandler = next;
-}
-
-export function surgeClouds(durationMs: number, intensity: number): void {
-  if (SKY_DISABLED) return;
-  cloudSurgeHandler?.(durationMs, intensity);
-}
-
-/**
- * The About descent flies through the live cloud layer itself: the scene
- * drives the cloud background's transform each frame (growing and rising
- * past the camera, fading as the camera passes below the deck). Null
- * restores the resting layer. A missing handler is a quiet no-op.
- */
-export type CloudShift = {
-  y: number;
-  scale: number;
-  opacity: number;
-  /** Optional motion blur in px — tied to camera velocity, 0 at rest. */
-  blur?: number;
-};
-
-type CloudShiftHandler = (shift: CloudShift | null) => void;
-
-let cloudShiftHandler: CloudShiftHandler | null = null;
-
-export function registerCloudShiftHandler(next: CloudShiftHandler | null): void {
-  cloudShiftHandler = next;
-}
-
-export function shiftClouds(shift: CloudShift | null): void {
-  if (SKY_DISABLED) return;
-  cloudShiftHandler?.(shift);
 }
 
 /**
@@ -182,7 +136,7 @@ export function measureStarTargets(): WorkTargets {
   return targets;
 }
 
-/** The baked landmark's current projected silhouette, shared with distant stars. */
+/** The world landmark's current projected silhouette, shared with distant stars. */
 export type AnchorSilhouette = { x: number; y: number; radius: number; alpha: number };
 let anchorSilhouette: AnchorSilhouette | null = null;
 export function setAnchorSilhouette(value: AnchorSilhouette | null): void {

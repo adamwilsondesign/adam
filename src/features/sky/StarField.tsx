@@ -17,20 +17,24 @@ import {
   type ProjectStar,
   type Vec,
 } from "./star-field";
-import { cinematicEase, dampingFactor, invCinematicEase } from "@/lib/motion";
+import { dampingFactor } from "@/lib/motion";
 
 import {
   getAnchorSilhouette,
   isWorkEntrancePending,
   measureStarTargets,
   registerFlightHandler,
-  shiftClouds,
   SKY_DISABLED,
-  surgeClouds,
   type TargetRect,
   type WorkTargets,
 } from "./sky-director";
-import styles from "./StarField.module.css";
+import {
+  cameraSegment,
+  addStar,
+  beginStars,
+  subscribeWorldFrame,
+  worldState,
+} from "@/features/world/world-state";
 
 /** Sky presence per route: home is full, everything else recedes. */
 const WORK_PRESENCE = 0.32;
@@ -56,26 +60,9 @@ type StarRuntime = {
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-/** The clouds' share of the flight: camera-driven scale and lift, so the
- *  travel is felt as one environment moving, not a simulation boiling. */
-const FLIGHT_CLOUD_SCALE = 0.14;
-const FLIGHT_CLOUD_LIFT = 0.045;
-/** Motion blur cap (px) on the cloud layer, tied to camera velocity. */
-const FLIGHT_BLUR_MAX = 0.8;
-
-/**
- * The persistent night sky: a fixed 3D field of stars drawn on Canvas 2D,
- * mounted once in the site layout. Forty seeded "project stars" correspond
- * 1:1 with the client list. All movement — the Work entrance, the return
- * home, pointer parallax — is one camera transform: a forward translation
- * (global cameraProgress) plus a depth-divided lateral offset, projected in
- * perspective. Stars never animate individually; each travels its straight
- * radial line from the shared vanishing point, and depth alone decides
- * apparent speed and arrival order. Canvas 2D keeps the sky alive when
- * WebGL is unavailable — it is its own fallback.
- */
+/** Project-star flight controller. Emits one point batch to the shared GPU renderer.
+ * Content remains DOM-backed; the measured logo handoff is unchanged. */
 export function StarField({ clientIds }: { clientIds: string[] }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
   useEffect(() => {
@@ -84,9 +71,6 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
 
   useEffect(() => {
     if (SKY_DISABLED) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
 
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = reducedMotionQuery.matches;
@@ -98,18 +82,11 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     // ---- Geometry ---------------------------------------------------------
     let width = window.innerWidth;
     let height = window.innerHeight;
-    let dpr = Math.min(2, window.devicePixelRatio || 1);
     const isMobile = () => width < 768;
 
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ambient = ambientStarsFor(isMobile() ? 55 : 110);
     };
 
@@ -136,8 +113,9 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     // CAMERA.travel (work); outside flights it relaxes toward the route's
     // resting position. The pointer contributes a lateral offset divided by
     // depth — whole layers shift together, never individual stars.
-    let cameraZ = pathnameRef.current === "/" ? 0 : CAMERA.travel;
-    const cameraTarget = () => (pathnameRef.current === "/" ? 0 : CAMERA.travel);
+    let cameraZ = pathnameRef.current.startsWith("/work") ? CAMERA.travel : 0;
+    let cameraVelocity = 0;
+    const cameraTarget = () => (pathnameRef.current.startsWith("/work") ? CAMERA.travel : 0);
     let presence = pathnameRef.current === "/" ? 1 : WORK_PRESENCE;
     const presenceTarget = () => (pathnameRef.current === "/" ? 1 : WORK_PRESENCE);
 
@@ -180,17 +158,22 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       const timing = isMobile() ? ENTRANCE_MOBILE_MS : ENTRANCE_MS;
       const viewport = { x: width, y: height };
       const fromCam = cameraZ;
-      // One long forward run on the cinematic curve — the camera only ever
-      // advances, drifting a breath past its mark and settling. The clouds
-      // ride the same camera (scale, lift, velocity blur below) with only a
-      // gentle evolution surge, so the travel reads as movement through the
-      // environment rather than the simulation boiling.
+      const fromVelocity = cameraVelocity;
+      // Preserve live velocity when a route flight is interrupted. The
+      // environmental camera consumes this same progress each frame.
       const camAt = (elapsed: number) =>
-        fromCam + (CAMERA.travel - fromCam) * cinematicEase(clamp01(elapsed / timing.camera));
+        cameraSegment(fromCam, CAMERA.travel, fromVelocity, timing.camera, elapsed);
       /** Flight time at which the forward run first passes camera z. */
-      const timeForCamera = (z: number) =>
-        timing.camera * invCinematicEase(clamp01((z - fromCam) / (CAMERA.travel - fromCam)));
-      surgeClouds(timing.camera + timing.settle, 1);
+      const timeForCamera = (z: number) => {
+        let lo = 0;
+        let hi: number = timing.camera;
+        for (let i = 0; i < 24; i++) {
+          const mid = (lo + hi) / 2;
+          if (camAt(mid) < z) lo = mid;
+          else hi = mid;
+        }
+        return (lo + hi) / 2;
+      };
 
       const next: Flight = {
         kind: "toWork",
@@ -247,12 +230,12 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         }
       }
       const fromCam = cameraZ;
-      surgeClouds(RETURN_MS.camera, 0.45);
+      const fromVelocity = cameraVelocity;
       flight = {
         kind: "toHome",
         startedAt: performance.now(),
         camera: RETURN_MS.camera,
-        camAt: (elapsed) => fromCam * (1 - cinematicEase(clamp01(elapsed / RETURN_MS.camera))),
+        camAt: (elapsed) => cameraSegment(fromCam, 0, fromVelocity, RETURN_MS.camera, elapsed),
         crossfade: 150,
         settle: 0,
         done: null,
@@ -318,10 +301,6 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
     window.addEventListener("popstate", onPopState);
 
     // ---- Render loop ------------------------------------------------------
-    let frame = 0;
-    let running = true;
-    let cloudsShifted = false;
-    let lastCameraZ = cameraZ;
     let lastFrameAt = performance.now();
 
     const drawPoint = (x: number, y: number, radius: number, alpha: number) => {
@@ -334,15 +313,10 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       }
       if (alpha <= 0.004) return;
       if (x < -40 || x > width + 40 || y < -40 || y > height + 40) return;
-      ctx.fillStyle = `rgba(244, 245, 242, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
+      addStar(x, y, radius, alpha);
     };
 
     const render = (now: number) => {
-      if (!running) return;
-      frame = requestAnimationFrame(render);
       const deltaMs = Math.min(50, Math.max(0, now - lastFrameAt));
       const cameraSettled = Math.abs(cameraZ - cameraTarget()) < 0.0005;
       if (!reducedMotion) {
@@ -353,6 +327,7 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
       presence += (presenceTarget() - presence) * dampingFactor(deltaMs, 3);
 
       // ---- One global cameraProgress drives everything. ----
+      const previousCamera = cameraZ;
       const elapsed = flight ? now - flight.startedAt : 0;
       if (flight) {
         cameraZ = flight.camAt(elapsed);
@@ -362,30 +337,13 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         cameraZ += (cameraTarget() - cameraZ) * dampingFactor(deltaMs, 5);
         if (Math.abs(cameraZ - cameraTarget()) < 0.0005) cameraZ = cameraTarget();
       }
+      cameraVelocity = deltaMs > 0 ? (cameraZ - previousCamera) / deltaMs : 0;
       const progress = cameraZ / CAMERA.travel;
 
-      // The clouds ride the same camera during a flight: a swell of scale
-      // and lift that returns to rest at both ends (never a snap), plus a
-      // whisper of blur tied to camera velocity that vanishes at rest.
-      if (flight) {
-        const dt = Math.max(1, now - lastFrameAt);
-        const velocity = Math.abs(cameraZ - lastCameraZ) / dt;
-        const swell = Math.pow(Math.sin(Math.PI * clamp01(elapsed / flight.camera)), 2);
-        shiftClouds({
-          y: -swell * FLIGHT_CLOUD_LIFT * height,
-          scale: 1 + swell * FLIGHT_CLOUD_SCALE,
-          opacity: 1,
-          blur: Math.min(FLIGHT_BLUR_MAX, velocity * 350),
-        });
-        cloudsShifted = true;
-      } else if (cloudsShifted) {
-        shiftClouds(null);
-        cloudsShifted = false;
-      }
-      lastCameraZ = cameraZ;
       lastFrameAt = now;
 
-      ctx.clearRect(0, 0, width, height);
+      worldState.workTravel = cameraZ / CAMERA.travel;
+      beginStars();
       const seconds = now / 1000;
       const amp = (presence > 0.7 ? POINTER_AMP_HOME : POINTER_AMP_WORK) * (reducedMotion ? 0 : 1);
       const parallax = { x: pointer.x * amp, y: pointer.y * amp };
@@ -528,35 +486,22 @@ export function StarField({ clientIds }: { clientIds: string[] }) {
         }
       }
     };
-    frame = requestAnimationFrame(render);
-
-    const onVisibility = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(frame);
-      } else if (!running) {
-        running = true;
-        frame = requestAnimationFrame(render);
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibility);
+    const unsubscribe = subscribeWorldFrame(render);
     window.addEventListener("resize", resize);
     resize();
 
     return () => {
-      running = false;
-      cancelAnimationFrame(frame);
-      if (cloudsShifted) shiftClouds(null);
+      unsubscribe();
+      beginStars();
       registerFlightHandler(null);
       window.removeEventListener("popstate", onPopState);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("resize", resize);
-      document.removeEventListener("visibilitychange", onVisibility);
       reducedMotionQuery.removeEventListener("change", onMotionChange);
     };
   }, [clientIds]);
 
   if (SKY_DISABLED) return null;
-  return <canvas ref={canvasRef} className={styles.sky} aria-hidden />;
+  return null;
 }

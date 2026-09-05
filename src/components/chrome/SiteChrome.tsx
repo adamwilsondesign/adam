@@ -81,7 +81,12 @@ export function SiteChrome({ title, logoUrl, contactUrl, linkedinUrl }: SiteChro
                 exit={{ opacity: 0 }}
                 transition={slotTransition}
               >
-                <button type="button" className={styles.control} onClick={() => navigate("/")}>
+                <button
+                  type="button"
+                  aria-label="Back"
+                  className={styles.control}
+                  onClick={() => navigate("/")}
+                >
                   <ArrowLeftIcon />
                   <span className={styles.controlLabel}>Back</span>
                 </button>

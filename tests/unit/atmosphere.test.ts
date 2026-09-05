@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { ATMOS, hexToRgb, MOON_DIRECTION, rgba, VANTA_NIGHT } from "@/lib/atmosphere";
 import { ABOUT_TIMINGS } from "@/features/about/AboutScene";
-import { orbPoseFor } from "@/features/sky/SurrealAnchor";
 import { ENTRANCE_MS, RETURN_MS } from "@/features/sky/star-field";
 
 describe("oxidized nocturne palette", () => {
@@ -50,31 +49,5 @@ describe("route transition clocks", () => {
     expect(ABOUT_TIMINGS.reverse).toBeLessThanOrEqual(1600);
     expect(ABOUT_TIMINGS.desktop.reveal).toBeLessThan(ABOUT_TIMINGS.desktop.arrival);
     expect(ABOUT_TIMINGS.desktop.unlock).toBeLessThan(ABOUT_TIMINGS.desktop.arrival);
-  });
-});
-
-describe("surreal orb projections", () => {
-  it("keeps a monumental silhouette and recedes behind Work on desktop", () => {
-    const home = orbPoseFor("home", 1440, 900, 0);
-    expect(home.diameter / 14.4).toBeGreaterThanOrEqual(12); // vw
-    expect(home.diameter / 14.4).toBeLessThanOrEqual(16);
-    const work = orbPoseFor("work", 1440, 900, 0);
-    expect(work.alpha).toBeLessThan(home.alpha); // subdued behind logos
-    expect(work.diameter).toBeGreaterThan(home.diameter);
-  });
-
-  it("aligns near the valley centre on About and grows with the travel", () => {
-    const settled = orbPoseFor("about", 1440, 900, 0);
-    const deep = orbPoseFor("about", 1440, 900, 1);
-    expect(settled.x).toBeGreaterThan(1440 * 0.65);
-    expect(deep.diameter).toBeGreaterThan(settled.diameter);
-  });
-
-  it("reduces prominence on mobile and hides on unrelated routes", () => {
-    const desktop = orbPoseFor("home", 1440, 900, 0);
-    const mobile = orbPoseFor("home", 390, 844, 0);
-    expect(mobile.diameter / 3.9).toBeLessThan(desktop.diameter / 14.4);
-    expect(mobile.alpha).toBeLessThan(desktop.alpha);
-    expect(orbPoseFor("other", 1440, 900, 0).alpha).toBe(0);
   });
 });

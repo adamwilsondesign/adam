@@ -1,8 +1,0 @@
-.sky {
-  /* Painted after the clouds in the layout, so it sits above them while
-     staying beneath every piece of content. Scenery, never a hit target. */
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}

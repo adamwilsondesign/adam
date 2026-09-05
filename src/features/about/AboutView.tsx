@@ -4,6 +4,7 @@ import { useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { subscribeWorldFrame, worldState } from "@/features/world/world-state";
 import { setAboutScrollProgress } from "@/features/sky/sky-director";
 import type { AboutPageContent } from "@/lib/content/model";
 import { setShellNavigationInterceptor } from "@/lib/shell-navigation";
@@ -61,18 +62,27 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
     const unlessLeaving = (apply: () => void) => () => {
       if (!navigatingRef.current) apply();
     };
-    const reveal = window.setTimeout(
-      unlessLeaving(() => setRevealed(true)),
-      timings.reveal,
-    );
-    const unlock = window.setTimeout(
-      unlessLeaving(() => setLocked(false)),
-      timings.unlock,
-    );
-    const settle = window.setTimeout(
-      unlessLeaving(() => setPhase("settled")),
-      timings.arrival,
-    );
+    const start = performance.now();
+    let didReveal = false,
+      didUnlock = false,
+      didSettle = false;
+    const unsubscribe = subscribeWorldFrame((now) => {
+      if (navigatingRef.current) return;
+      const elapsed = now - start;
+      const progress = worldState.aboutProgress;
+      if (!didReveal && (worldState.ready ? progress > 0.9 : elapsed > timings.reveal)) {
+        didReveal = true;
+        setRevealed(true);
+      }
+      if (!didUnlock && (worldState.ready ? progress > 0.96 : elapsed > timings.unlock)) {
+        didUnlock = true;
+        setLocked(false);
+      }
+      if (!didSettle && (worldState.ready ? progress > 0.992 : elapsed > timings.arrival)) {
+        didSettle = true;
+        setPhase("settled");
+      }
+    });
     /* Never leave the page locked if a timer is lost to a background tab. */
     const guard = window.setTimeout(
       unlessLeaving(() => {
@@ -83,9 +93,7 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
       timings.arrival + 1500,
     );
     return () => {
-      window.clearTimeout(reveal);
-      window.clearTimeout(unlock);
-      window.clearTimeout(settle);
+      unsubscribe();
       window.clearTimeout(guard);
     };
   }, [arriving, reducedMotion, timings]);

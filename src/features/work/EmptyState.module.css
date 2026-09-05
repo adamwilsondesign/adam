@@ -75,3 +75,8 @@
     font-size: 34px;
   }
 }
+
+/* The accessible hit target stays in the content layer; WebGL draws its landmark. */
+:global(html[data-world-ready]) .door svg {
+  visibility: hidden;
+}
