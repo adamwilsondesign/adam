@@ -197,7 +197,7 @@ export async function createStudyRenderer(
       for (let i = 0; i < positions.count; i++) {
         const px = positions.getX(i) / w;
         const py = positions.getY(i) / h + 0.5;
-        positions.setZ(i, Math.sin(px * Math.PI * 1.3) * w * 0.09 + (1 - py) * (1 - py) * w * 0.12);
+        positions.setZ(i, Math.sin(px * Math.PI * 1.3) * w * 0.02 + (1 - py) * (1 - py) * w * 0.02);
       }
       geometry.computeVertexNormals();
       const material = keep(
