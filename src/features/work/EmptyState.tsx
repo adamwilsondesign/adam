@@ -1,6 +1,8 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef } from "react";
+import { worldState } from "@/features/world/world-state";
 
 import { DoorIllustration } from "@/components/illustrations/DoorIllustration";
 import { EASE_OUT } from "@/lib/motion";
@@ -18,16 +20,40 @@ type EmptyStateProps = {
  */
 export function EmptyState({ onEnterDoor }: EmptyStateProps) {
   const reducedMotion = useReducedMotion();
+  const door = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    worldState.portal = door.current;
+    return () => {
+      worldState.portal = null;
+      worldState.portalHover = false;
+    };
+  }, []);
 
   return (
     <motion.div
+      onAnimationComplete={() => {
+        worldState.portalRevision++;
+      }}
       className={styles.root}
-      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.55, ease: EASE_OUT, delay: 0.1 }}
+      transition={{ duration: reducedMotion ? 0.2 : 0.55, ease: EASE_OUT, delay: 0.1 }}
     >
       <button
+        ref={door}
+        onPointerEnter={() => {
+          worldState.portalHover = true;
+        }}
+        onPointerLeave={() => {
+          worldState.portalHover = false;
+        }}
+        onFocus={() => {
+          worldState.portalHover = true;
+        }}
+        onBlur={() => {
+          worldState.portalHover = false;
+        }}
         type="button"
         className={styles.door}
         aria-label="A door. Enter it."

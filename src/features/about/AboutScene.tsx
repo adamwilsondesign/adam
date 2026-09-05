@@ -2,13 +2,13 @@
 
 import { useEffect, useRef } from "react";
 
-import { SKY_DISABLED, shiftClouds } from "@/features/sky/sky-director";
+import { SKY_DISABLED, setAboutPose, shiftClouds } from "@/features/sky/sky-director";
+import { travelEase } from "@/features/world/world-state";
+import { dampingFactor } from "@/lib/motion";
 import { seededRandom } from "@/features/sky/star-field";
-import { ATMOS, hexToRgb } from "@/lib/atmosphere";
-import { cinematicEase } from "@/lib/motion";
 
-import { MOUNTAIN_LAYERS, MOUNTAIN_LAYERS_MOBILE, type MountainLayer } from "./mountains";
-import { renderTerrainLayer } from "./terrain";
+import { prepareTerrain, type PreparedTerrain } from "./terrain-cache";
+import { createValleyMist } from "./valley-mist";
 import styles from "./AboutScene.module.css";
 
 export type AboutScenePhase = "arriving" | "settled" | "leaving";
@@ -19,11 +19,10 @@ export type AboutScenePhase = "arriving" | "settled" | "leaving";
  * the same timeline, so copy and environment always agree.
  */
 export const ABOUT_TIMINGS = {
-  desktop: { arrival: 2200, reveal: 1400, unlock: 1750 },
-  mobile: { arrival: 1600, reveal: 1000, unlock: 1280 },
-  /** The reverse ascent (a true inverse of the descent); navigation
-   *  completes just after it. */
-  reverse: 1500,
+  desktop: { arrival: 1700, reveal: 1050, unlock: 1300 },
+  mobile: { arrival: 1200, reveal: 760, unlock: 950 },
+  /** The reverse ascent; navigation completes just after it. */
+  reverse: 780,
   /** Content fades out before the environment starts moving. */
   contentFade: 200,
   /** Reduced motion swaps the descent for a plain crossfade. */
@@ -42,29 +41,11 @@ type AboutSceneProps = {
 type CloudPuff = { x: number; y: number; rx: number; squash: number; alpha: number; drift: number };
 type CloudLayer = { depth: number; tint: number; puffs: CloudPuff[] };
 type SceneStar = { x: number; y: number; r: number; a: number; tw: number; ph: number };
-type BakedLayer = {
-  layer: MountainLayer;
-  canvas: HTMLCanvasElement;
-  drawWidth: number;
-  drawHeight: number;
-  baseColor: string;
-};
 
 /** How far the camera descends, in viewport heights, over the arrival. */
 const CAM_TRAVEL = 1.5;
-
-/* Oxidized-nocturne scene colors (see src/lib/atmosphere.ts). */
-const SKY_DEEP = hexToRgb(ATMOS.deepBackground).join(", ");
-const SKY_HORIZON = hexToRgb(ATMOS.sky).join(", ");
-const SILVER = hexToRgb(ATMOS.lunarSilver).join(", ");
-const MIST = hexToRgb(ATMOS.mutedSilver).join(", ");
-const SCRIM = hexToRgb(ATMOS.deepBackground).join(", ");
 /** Distant stars shift less than the cloud deck as the camera drops. */
 const STAR_PARALLAX = 0.35;
-/** Baked relief resolution relative to CSS pixels (upscaled when drawn). */
-const BAKE_SCALE = 0.65;
-/** Side margin baked into each layer so parallax and zoom never show edges. */
-const BAKE_MARGIN = 1.3;
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -113,7 +94,10 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
     let width = 0;
     let height = 0;
-    let baked: BakedLayer[] = [];
+    let terrain: PreparedTerrain | null = null;
+    let terrainRequest: AbortController | null = null;
+    let terrainReadyAt = 0;
+    let disposed = false;
 
     /* Deterministic scene furniture. */
     const random = seededRandom(0x51ab);
@@ -156,11 +140,15 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
     let leaveFrom = 1;
     let pose = lastPhase === "arriving" ? 0 : 1;
     let cloudsShifted = false;
+    let lastDrawAt = performance.now();
+    let mistSeconds = 0;
+    const valleyMist = createValleyMist();
+    let visibleScroll = clamp01(scrollProgress.current ?? 0);
+    let leaveScroll = visibleScroll;
 
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      const mobile = width < 768;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
@@ -168,27 +156,42 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
 
-      /* Bake the moonlit relief once per size; drawn scaled every frame. */
-      const layers = mobile ? MOUNTAIN_LAYERS_MOBILE : MOUNTAIN_LAYERS;
-      const drawWidth = Math.ceil(width * BAKE_MARGIN);
-      baked = layers.map((layer) => {
-        const drawHeight = Math.ceil(layer.band * height) + 2;
-        const bw = Math.max(2, Math.round(drawWidth * BAKE_SCALE));
-        const bh = Math.max(2, Math.round(drawHeight * BAKE_SCALE));
-        const offscreen = document.createElement("canvas");
-        const baseColor = renderTerrainLayer(offscreen, layer, bw, bh);
-        return { layer, canvas: offscreen, drawWidth, drawHeight, baseColor };
-      });
+      // Keep drawing the previous relief while a worker prepares this size.
+      // Home prewarming normally makes the initial request an immediate cache hit.
+      terrainRequest?.abort();
+      const request = new AbortController();
+      terrainRequest = request;
+      void prepareTerrain(width, height, request.signal).then(
+        (prepared) => {
+          if (disposed || request.signal.aborted) {
+            prepared.release();
+            return;
+          }
+          const previous = terrain;
+          terrain = prepared;
+          if (!previous) terrainReadyAt = performance.now();
+          previous?.release();
+          // Hermetic and reduced-motion scenes must also receive the ready art.
+          draw(performance.now());
+        },
+        () => undefined,
+      );
       draw(performance.now());
     };
 
     const draw = (now: number) => {
-      const scroll = clamp01(scrollProgress.current ?? 0);
+      if (disposed || (!SKY_DISABLED && document.hidden)) return;
+      const deltaMs = Math.min(50, Math.max(0, now - lastDrawAt));
+      lastDrawAt = now;
+      if (!reducedMotion) mistSeconds += deltaMs / 1000;
 
       /* One pose for everything: 0 = homepage sky, 1 = settled valley. */
       const currentPhase = phaseRef.current;
       if (currentPhase !== lastPhase) {
-        if (currentPhase === "leaving") leaveFrom = pose;
+        if (currentPhase === "leaving") {
+          leaveFrom = pose;
+          leaveScroll = visibleScroll;
+        }
         phaseStart = null;
         lastPhase = currentPhase;
       }
@@ -197,18 +200,31 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
         pose = currentPhase === "leaving" ? leaveFrom : 1;
       } else if (currentPhase === "arriving") {
         phaseStart ??= now;
-        pose = cinematicEase(clamp01((now - phaseStart) / arrivalMs));
+        pose = travelEase(clamp01((now - phaseStart) / arrivalMs));
         mist = mistAlpha(pose);
       } else if (currentPhase === "leaving") {
         phaseStart ??= now;
-        pose = leaveFrom * (1 - cinematicEase(clamp01((now - phaseStart) / ABOUT_TIMINGS.reverse)));
+        pose = leaveFrom * (1 - travelEase(clamp01((now - phaseStart) / ABOUT_TIMINGS.reverse)));
         mist = mistAlpha(pose) * 0.8;
       } else {
         pose = 1;
       }
 
-      pointer.x += (pointer.tx - pointer.x) * 0.06;
-      pointer.y += (pointer.ty - pointer.y) * 0.06;
+      setAboutPose(pose);
+      // Keep the terrain at its visible scroll pose when departure begins;
+      // return that forward travel continuously as the camera ascends.
+      if (currentPhase === "leaving") {
+        visibleScroll = leaveScroll * (leaveFrom > 0 ? pose / leaveFrom : 0);
+      } else {
+        const target = clamp01(scrollProgress.current ?? 0);
+        visibleScroll = reducedMotion
+          ? target
+          : visibleScroll + (target - visibleScroll) * dampingFactor(deltaMs, 18);
+      }
+      const scroll = visibleScroll;
+      const follow = dampingFactor(deltaMs, 3.7);
+      pointer.x += (pointer.tx - pointer.x) * follow;
+      pointer.y += (pointer.ty - pointer.y) * follow;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -245,8 +261,8 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
       if (backdrop > 0.003) {
         const sky = ctx.createLinearGradient(0, 0, 0, height);
-        sky.addColorStop(0, `rgba(${SKY_DEEP}, ${backdrop})`);
-        sky.addColorStop(1, `rgba(${SKY_HORIZON}, ${backdrop})`);
+        sky.addColorStop(0, `rgba(4, 6, 10, ${backdrop})`);
+        sky.addColorStop(1, `rgba(10, 15, 20, ${backdrop})`);
         ctx.fillStyle = sky;
         ctx.fillRect(0, 0, width, height);
       }
@@ -263,13 +279,13 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
         glowY,
         width * 0.5,
       );
-      glow.addColorStop(0, `rgba(${SILVER}, ${glowAlpha})`);
-      glow.addColorStop(1, `rgba(${SILVER}, 0)`);
+      glow.addColorStop(0, `rgba(186, 205, 228, ${glowAlpha})`);
+      glow.addColorStop(1, "rgba(186, 205, 228, 0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
 
       if (backdrop > 0.003) {
-        ctx.fillStyle = ATMOS.warmWhite;
+        ctx.fillStyle = "#e6ecf4";
         for (const star of skyStars) {
           const sy = star.y * height - camY * STAR_PARALLAX;
           if (sy < -4 || sy > height + 4) continue;
@@ -289,7 +305,7 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
          the site's own stars once the backdrop dissolves. */
       const bandStarAlpha = backdrop * smoothstep(0.55, 0.92, pose);
       if (bandStarAlpha > 0.003) {
-        ctx.fillStyle = ATMOS.warmWhite;
+        ctx.fillStyle = "#dfe6ee";
         for (const star of bandStars) {
           const sy = star.y * height + (CAM_TRAVEL * height - camY);
           if (sy < -4 || sy > height + 4) continue;
@@ -321,13 +337,11 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
           ctx.fillRect(0, 0, width, bandBottom);
         }
         for (const layer of cloudLayers) {
-          /* Depth staggers the pass: near puffs sweep fastest, the middle
-             slower, distant vapour barely moves — one camera, real parallax. */
-          const sweep = (1 - pose) * (0.45 + 1.0 * layer.depth) * height;
+          /* One coherent deck: minimal depth spread, purely vertical. */
+          const sweep = (1 - pose) * (0.95 + 0.25 * layer.depth) * height;
           const parallaxX = pointer.x * (2 + 4 * layer.depth);
           const parallaxY = pointer.y * (1 + 2 * layer.depth);
-          /* Warm graphite bodies, darker with distance. */
-          const shade = 20 - Math.round(layer.tint * 8);
+          const shade = 16 - Math.round(layer.tint * 10);
           for (const puff of layer.puffs) {
             const drift = reducedMotion
               ? 0
@@ -340,13 +354,12 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
             /* During the drop the camera looks down on the deck's moonlit
                top, so the bank reads bright and unmistakable; passing below,
                it settles to its dark underside. The moon side stays hotter. */
-            const above = clamp01(1 - pose);
-            const boost = above * (24 + 28 * clamp01(nx));
+            const above = 1 - pose;
+            const boost = above * (26 + 30 * clamp01(nx));
             const lit = 1 + 0.5 * clamp01(nx) * 0.6;
-            /* Warm graphite in shadow; the moonlit top boost is silver. */
-            const r = Math.min(255, Math.round(shade * lit + boost * 0.95) + 5);
-            const g = Math.min(255, Math.round((shade - 1) * lit + boost) + 5);
-            const b = Math.min(255, Math.round((shade - 3) * lit + boost * 0.97) + 4);
+            const r = Math.min(255, Math.round(shade * lit + boost) + 6);
+            const g = Math.min(255, Math.round((shade + 5) * lit + boost * 1.05) + 6);
+            const b = Math.min(255, Math.round((shade + 9) * lit + boost * 1.15) + 7);
             ctx.save();
             ctx.translate(cx, cy);
             ctx.scale(1, puff.squash);
@@ -366,12 +379,13 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
          camera and stays underfoot for the whole page; only the nearest
          layer eventually slides beneath the viewport. */
       const approach = 1 - (1 - scroll) * (1 - scroll);
-      for (const item of baked) {
+      const terrainAlpha =
+        reducedMotion || SKY_DISABLED ? 1 : smoothstep(0, 320, now - terrainReadyAt);
+      for (const item of terrain?.layers ?? []) {
         const { layer } = item;
-        /* The range emerges while the last cloud layer is still leaving:
-           distant tips break the horizon just past mid-descent, the near
-           wall seats last — no empty beat between clouds and mountains. */
-        const rise = (1 - pose) * (0.25 + 0.35 * layer.depth) * height;
+        const drawWidth = item.drawWidth * (width / terrain!.width);
+        const drawHeight = item.drawHeight * (height / terrain!.height);
+        const rise = (1 - pose) * (0.22 + 0.38 * layer.depth) * height;
         const zoom = 1 + approach * (0.22 + 0.85 * Math.pow(layer.depth, 1.4));
         const drop = scroll * scroll * Math.pow(layer.depth, 4) * 0.4 * height;
         const parallaxX = pointer.x * (1.5 + 5.5 * layer.depth);
@@ -379,29 +393,36 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
         const offY = rise + drop + parallaxY;
 
         ctx.save();
+        ctx.globalAlpha = terrainAlpha;
         ctx.translate(width / 2 + parallaxX, height);
         ctx.scale(zoom, zoom);
-        ctx.drawImage(
-          item.canvas,
-          -item.drawWidth / 2,
-          -item.drawHeight + offY,
-          item.drawWidth,
-          item.drawHeight,
-        );
+        ctx.drawImage(item.image, -drawWidth / 2, -drawHeight + offY, drawWidth, drawHeight);
         /* Ground plane below the shaded band (visible mid-travel). */
         ctx.fillStyle = item.baseColor;
-        ctx.fillRect(-item.drawWidth / 2, offY - 1, item.drawWidth, height + 2);
+        ctx.fillRect(-drawWidth / 2, offY - 1, drawWidth, height + 2);
         ctx.restore();
+        // Fog evolves between the rock bands; nearer silhouettes occlude the
+        // distant wisps, and the nearest veil softly crosses the valley floor.
+        const fogY = height - layer.band * height * 0.65 * zoom + offY * zoom;
+        valleyMist.draw(
+          ctx,
+          width,
+          height,
+          fogY,
+          layer.depth,
+          mistSeconds,
+          (0.2 - 0.09 * layer.depth) * smoothstep(0.52, 0.92, pose) * terrainAlpha,
+        );
       }
 
       if (mist > 0.005) {
         /* Densest through the band the camera is crossing; the frame's top
            and bottom stay readable so it reads as cloud, not a wash. */
         const veil = ctx.createLinearGradient(0, 0, 0, height);
-        veil.addColorStop(0, `rgba(${MIST}, ${mist * 0.3})`);
-        veil.addColorStop(0.34, `rgba(${MIST}, ${mist})`);
-        veil.addColorStop(0.62, `rgba(${MIST}, ${mist * 0.85})`);
-        veil.addColorStop(1, `rgba(${MIST}, ${mist * 0.22})`);
+        veil.addColorStop(0, `rgba(173, 186, 199, ${mist * 0.3})`);
+        veil.addColorStop(0.34, `rgba(173, 186, 199, ${mist})`);
+        veil.addColorStop(0.62, `rgba(173, 186, 199, ${mist * 0.85})`);
+        veil.addColorStop(1, `rgba(173, 186, 199, ${mist * 0.22})`);
         ctx.fillStyle = veil;
         ctx.fillRect(0, 0, width, height);
       }
@@ -410,7 +431,7 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
          range stays underfoot — the flight over the mountains never ends. */
       const scrim = smoothstep(0.35, 0.9, scroll) * 0.42;
       if (scrim > 0.003) {
-        ctx.fillStyle = `rgba(${SCRIM}, ${scrim})`;
+        ctx.fillStyle = `rgba(2, 3, 5, ${scrim})`;
         ctx.fillRect(0, 0, width, height);
       }
     };
@@ -426,7 +447,14 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
 
     /* Hermetic builds render the settled environment once and stand down. */
     if (SKY_DISABLED) {
-      return () => window.removeEventListener("resize", resize);
+      return () => {
+        disposed = true;
+        terrainRequest?.abort();
+        terrain?.release();
+        valleyMist.dispose();
+        window.removeEventListener("resize", resize);
+        setAboutPose(0);
+      };
     }
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
@@ -436,18 +464,31 @@ export function AboutScene({ phase, arrivalMs, scrollProgress, reducedMotion }: 
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
+    let hiddenAt: number | null = null;
     const onVisibility = () => {
+      const now = performance.now();
+      if (document.hidden) hiddenAt = now;
+      else if (hiddenAt !== null) {
+        if (phaseStart !== null) phaseStart += now - hiddenAt;
+        hiddenAt = null;
+      }
+      lastDrawAt = now;
       cancelAnimationFrame(raf);
       if (!document.hidden) raf = requestAnimationFrame(loop);
     };
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
+      disposed = true;
+      terrainRequest?.abort();
+      terrain?.release();
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("resize", resize);
+      valleyMist.dispose();
       if (cloudsShifted) shiftClouds(null);
+      setAboutPose(0);
     };
   }, [arrivalMs, reducedMotion, scrollProgress]);
 

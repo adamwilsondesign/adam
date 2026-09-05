@@ -1,35 +1,26 @@
-/**
- * "Oxidized Nocturne" — the site's single atmospheric grade.
- *
- * Every environmental surface (Vanta clouds, the star canvas, the About
- * terrain and scene, the surreal orb, the portal, CSS washes) reads its
- * colors from here, so the night grades as one photograph: near-monochrome
- * with faint green and umber undertones, deep blacks that keep shadow
- * detail, diffused silver moonlight rather than blue game lighting, warm
- * graphite clouds against cooler slate mountains.
- */
+/** One achromatic grade: silver light, graphite rock, luminous distant mist. */
 
 export const ATMOS = {
   /** The absolute floor — page background, deepest shadow. */
-  deepBackground: "#020403",
-  /** Green-black open sky. */
-  sky: "#07110f",
+  deepBackground: "#080808",
+  /** Desaturated slate open sky. */
+  sky: "#171717",
   /** Warm graphite cloud body. */
-  cloud: "#25231f",
+  cloud: "#616161",
   /** Cloud shadow / underside. */
-  cloudShadow: "#030405",
+  cloudShadow: "#171717",
   /** Mountain slate (cool against the warm clouds). */
-  mountainSlate: "#11191b",
+  mountainSlate: "#383838",
   /** Horizon haze — where distance dissolves. */
-  horizonHaze: "#181d1c",
+  horizonHaze: "#707070",
   /** Diffused lunar silver: the one motivated light. */
-  lunarSilver: "#969e9a",
+  lunarSilver: "#c7c7c7",
   /** Warm atmospheric accent (umber) — glare, embers, the portal's warmth. */
-  warmAccent: "#6f5947",
+  warmAccent: "#aaaaaa",
   /** Primary warm white — stars, type-adjacent light. */
-  warmWhite: "#e8e3d9",
+  warmWhite: "#e8e8e8",
   /** Muted silver — mist, secondary light. */
-  mutedSilver: "#999991",
+  mutedSilver: "#aaaaaa",
 } as const;
 
 /**
@@ -55,11 +46,11 @@ export function rgba(hex: string, alpha: number): string {
 
 /** The same palette as WebGL-friendly numbers for the Vanta cloud config. */
 export const VANTA_NIGHT = {
-  backgroundColor: 0x020403,
-  skyColor: 0x07110f,
-  cloudColor: 0x25231f,
-  cloudShadowColor: 0x030405,
-  sunColor: 0x6f5947,
-  sunGlareColor: 0x51402f,
-  sunlightColor: 0x5d4a38,
+  backgroundColor: 0x080808,
+  skyColor: 0x171717,
+  cloudColor: 0x616161,
+  cloudShadowColor: 0x171717,
+  sunColor: 0xaaaaaa,
+  sunGlareColor: 0x777777,
+  sunlightColor: 0xaaaaaa,
 } as const;

@@ -30,6 +30,10 @@ type AboutViewProps = {
 export function AboutView({ content, contactUrl }: AboutViewProps) {
   const router = useRouter();
   const reducedMotion = useReducedMotion() ?? false;
+  const motionPreference = useRef(reducedMotion);
+  useEffect(() => {
+    motionPreference.current = reducedMotion;
+  }, [reducedMotion]);
 
   /* Resolved in the initializer so the first client render can't mismatch
      the descent decision (arrivals only happen on soft navigation, so the
@@ -56,67 +60,86 @@ export function AboutView({ content, contactUrl }: AboutViewProps) {
     // A pending flag never outlives this mount, whichever way it resolved.
     claimAboutArrival();
     if (!arriving) return;
-    /* Once an exit begins, arrival timers stand down — a straggling settle
-       or guard firing mid-reverse would flip the copy and pose back on. */
-    const unlessLeaving = (apply: () => void) => () => {
-      if (!navigatingRef.current) apply();
+    let elapsed = 0;
+    let previous = performance.now();
+    const visibility = () => {
+      previous = performance.now();
     };
-    const reveal = window.setTimeout(
-      unlessLeaving(() => setRevealed(true)),
-      timings.reveal,
-    );
-    const unlock = window.setTimeout(
-      unlessLeaving(() => setLocked(false)),
-      timings.unlock,
-    );
-    const settle = window.setTimeout(
-      unlessLeaving(() => setPhase("settled")),
-      timings.arrival,
-    );
-    /* Never leave the page locked if a timer is lost to a background tab. */
-    const guard = window.setTimeout(
-      unlessLeaving(() => {
-        setPhase("settled");
-        setRevealed(true);
-        setLocked(false);
-      }),
-      timings.arrival + 1500,
-    );
-    return () => {
-      window.clearTimeout(reveal);
-      window.clearTimeout(unlock);
-      window.clearTimeout(settle);
-      window.clearTimeout(guard);
-    };
-  }, [arriving, reducedMotion, timings]);
+    document.addEventListener("visibilitychange", visibility);
+    let didReveal = false,
+      didUnlock = false,
+      didSettle = false;
+    let frame = 0;
+    const tick = (now: number) => {
+      if (navigatingRef.current) return;
+      if (!document.hidden) elapsed += now - previous;
+      previous = now;
+      const progress = motionPreference.current ? timings.arrival : elapsed;
 
-  /* Shell navigation (back control, logo, menu) reverses the arrival: copy
-     fades first, a deep-scrolled page resets invisibly, then the camera
-     rises back through the clouds and the route changes underneath it. */
+      if (!didReveal && progress >= timings.reveal) {
+        didReveal = true;
+        setRevealed(true);
+      }
+      if (!didUnlock && progress >= timings.unlock) {
+        didUnlock = true;
+        setLocked(false);
+      }
+      if (!didSettle && progress >= timings.arrival) {
+        didSettle = true;
+        setPhase("settled");
+      }
+      if (!didSettle) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [arriving, timings]);
+
+  /* Shell navigation reverses the arrival. Copy fades first; the environment
+     retains its visible scroll pose and unwinds it continuously during ascent. */
   useEffect(() => {
+    let frame = 0;
+    let previous = performance.now();
+    const visibility = () => {
+      previous = performance.now();
+    };
+    document.addEventListener("visibilitychange", visibility);
     setShellNavigationInterceptor((href) => {
       if (navigatingRef.current) return true;
       navigatingRef.current = true;
       setLeaving(true);
       setRevealed(false);
-      if (href === "/" && !reducedMotion) {
-        window.setTimeout(() => {
-          const scroller = scrollerRef.current;
-          if (scroller) scroller.scrollTop = 0;
-          scrollProgressRef.current = 0;
+      let elapsed = 0;
+      let reversed = false;
+      previous = performance.now();
+      const reduced = motionPreference.current;
+      const ascent = href === "/" && !reduced;
+      const duration = ascent
+        ? ABOUT_TIMINGS.contentFade + ABOUT_TIMINGS.reverse + 60
+        : reduced
+          ? ABOUT_TIMINGS.reducedFade
+          : 220;
+      const tick = (now: number) => {
+        if (!document.hidden) elapsed += now - previous;
+        previous = now;
+        if (ascent && !reversed && elapsed >= ABOUT_TIMINGS.contentFade) {
+          reversed = true;
           setPhase("leaving");
-        }, ABOUT_TIMINGS.contentFade);
-        window.setTimeout(
-          () => router.push(href),
-          ABOUT_TIMINGS.contentFade + ABOUT_TIMINGS.reverse + 60,
-        );
-      } else {
-        window.setTimeout(() => router.push(href), reducedMotion ? ABOUT_TIMINGS.reducedFade : 220);
-      }
+        }
+        if (elapsed >= duration) router.push(href);
+        else frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
       return true;
     });
-    return () => setShellNavigationInterceptor(null);
-  }, [router, reducedMotion]);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", visibility);
+      setShellNavigationInterceptor(null);
+    };
+  }, [router]);
 
   const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const progress = event.currentTarget.scrollTop / (window.innerHeight * 0.85);

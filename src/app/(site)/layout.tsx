@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { draftMode } from "next/headers";
 
 import { SiteChrome } from "@/components/chrome/SiteChrome";
 import { CloudsBackground } from "@/features/home/CloudsBackground";
-import { AtmosphereGrade } from "@/features/sky/AtmosphereGrade";
 import { StarField } from "@/features/sky/StarField";
-import { SurrealAnchor } from "@/features/sky/SurrealAnchor";
 import { getSiteSettings, getWorkIndex } from "@/lib/content";
 import { siteUrl } from "@/lib/site-url";
 import { isSanityConfigured } from "@/sanity/env";
 
 import { LiveVisualEditing } from "./live";
+
+const MotionReview =
+  process.env.NODE_ENV === "development"
+    ? dynamic(() => import("@/features/dev/MotionReview").then((module) => module.MotionReview))
+    : () => null;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
@@ -49,13 +53,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const [settings, clients] = await Promise.all([getSiteSettings(), getWorkIndex()]);
   return (
     <>
-      {/* Environmental stack, back to front: cloud field, the distant
-          eclipse orb, then the star canvas. Page scenes (About's terrain,
-          z 0) pass in front of all three; the grade sits over the whole
-          environment and under every UI surface. */}
       <CloudsBackground />
-      <SurrealAnchor />
-      {/* Painted above the clouds: one project star per client, always. */}
+      <MotionReview />
       <StarField clientIds={clients.map((client) => client.id)} />
       <SiteChrome
         title={settings.title}
@@ -65,7 +64,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         navigation={settings.navigation}
       />
       {children}
-      <AtmosphereGrade />
       {isSanityConfigured ? <LiveVisualEditing /> : null}
     </>
   );

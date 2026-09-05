@@ -1,0 +1,92 @@
+.controls {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: calc(100vw - 24px);
+  padding: 10px;
+  border: 1px solid #666;
+  border-radius: 8px;
+  background: #111;
+  color: #eee;
+  font: 12px/1.4 sans-serif;
+}
+
+.controls[hidden] {
+  display: none;
+}
+
+.controls button,
+.summary button {
+  padding: 7px 10px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  background: #222;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.controls button[aria-pressed="true"] {
+  background: #eee;
+  color: #111;
+}
+
+.controls button:focus-visible,
+.summary button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px 24px 100px;
+  background: #111;
+  color: #eee;
+  font: 13px/1.5 sans-serif;
+}
+
+.summary {
+  max-width: 960px;
+  margin-bottom: 24px;
+}
+
+.summary h2 {
+  margin: 0 0 12px;
+  font: 24px/1.2 sans-serif;
+}
+
+.summary p {
+  margin: 8px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 20px;
+}
+
+.grid figure {
+  margin: 0;
+}
+
+.grid canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #080808;
+}
+
+.grid figcaption {
+  padding-top: 6px;
+  font: 11px/1.4 monospace;
+  color: #bbb;
+}

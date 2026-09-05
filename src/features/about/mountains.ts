@@ -26,11 +26,11 @@ export type MountainLayer = {
 
 /** Distant haze → two background ranges → midground → near foreground. */
 export const MOUNTAIN_LAYERS: MountainLayer[] = [
-  { id: "haze", depth: 0.08, haze: 0.78, band: 0.18, valley: 0.25, roughness: 0.35, seed: 0xa11 },
-  { id: "far-a", depth: 0.24, haze: 0.6, band: 0.21, valley: 0.4, roughness: 0.5, seed: 0xb22 },
-  { id: "far-b", depth: 0.42, haze: 0.44, band: 0.24, valley: 0.55, roughness: 0.62, seed: 0xc33 },
-  { id: "mid", depth: 0.66, haze: 0.26, band: 0.27, valley: 0.72, roughness: 0.75, seed: 0xd44 },
-  { id: "near", depth: 1, haze: 0.08, band: 0.3, valley: 0.88, roughness: 0.9, seed: 0xe55 },
+  { id: "haze", depth: 0.08, haze: 0.86, band: 0.18, valley: 0.25, roughness: 0.35, seed: 0xa11 },
+  { id: "far-a", depth: 0.24, haze: 0.66, band: 0.21, valley: 0.4, roughness: 0.5, seed: 0xb22 },
+  { id: "far-b", depth: 0.42, haze: 0.46, band: 0.24, valley: 0.55, roughness: 0.62, seed: 0xc33 },
+  { id: "mid", depth: 0.66, haze: 0.23, band: 0.27, valley: 0.72, roughness: 0.75, seed: 0xd44 },
+  { id: "near", depth: 1, haze: 0.055, band: 0.3, valley: 0.88, roughness: 0.9, seed: 0xe55 },
 ];
 
 /** Mobile keeps the silhouette in three layers: haze, background, foreground. */

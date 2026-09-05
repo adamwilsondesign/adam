@@ -17,9 +17,23 @@ declare module "vanta/dist/vanta.clouds.min" {
     sunGlareColor?: number;
     sunlightColor?: number;
     speed?: number;
+    scale?: number;
+    scaleMobile?: number;
+    mouseEase?: boolean;
   };
 
   export type VantaCloudsEffect = {
+    options: VantaCloudsOptions & { speed: number };
+    afterRender?: () => void;
+    onUpdate?: () => void;
+    onResize?: () => void;
+    scene: THREE.Scene;
+    renderer: THREE.WebGLRenderer;
+    uniforms: Record<string, THREE.IUniform> & {
+      iTime: { value: number };
+      iMouse: { value: THREE.Vector2 };
+      iResolution: { value: THREE.Vector2 };
+    };
     destroy(): void;
     setOptions(options: Partial<VantaCloudsOptions>): void;
     /** Vanta base API: feeds the pointer position the sky reacts to. */

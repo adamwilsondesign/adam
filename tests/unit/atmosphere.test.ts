@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { ATMOS, hexToRgb, MOON_DIRECTION, rgba, VANTA_NIGHT } from "@/lib/atmosphere";
 import { ABOUT_TIMINGS } from "@/features/about/AboutScene";
-import { orbPoseFor } from "@/features/sky/SurrealAnchor";
 import { ENTRANCE_MS, RETURN_MS } from "@/features/sky/star-field";
 
 describe("oxidized nocturne palette", () => {
@@ -32,49 +31,14 @@ describe("oxidized nocturne palette", () => {
   });
 });
 
-describe("route transition clocks", () => {
-  it("keeps the Work entrance inside its cinematic window (~1.7–1.9s total)", () => {
-    // Camera starts ≈ 260–300ms after the click.
-    expect(ENTRANCE_MS.camera).toBeGreaterThanOrEqual(1400);
-    expect(ENTRANCE_MS.camera).toBeLessThanOrEqual(1650);
-    expect(RETURN_MS.camera).toBeGreaterThanOrEqual(1000);
-    expect(RETURN_MS.camera).toBeLessThanOrEqual(1200);
+describe("recorded transition timing", () => {
+  it("preserves the approved Work flight and faster return", () => {
+    expect(ENTRANCE_MS).toEqual({ camera: 1400, crossfade: 280, settle: 380 });
+    expect(RETURN_MS).toEqual({ camera: 800, contract: 200 });
   });
-
-  it("keeps the About descent deliberate and its reverse a true inverse", () => {
-    expect(ABOUT_TIMINGS.desktop.arrival).toBeGreaterThanOrEqual(2100);
-    expect(ABOUT_TIMINGS.desktop.arrival).toBeLessThanOrEqual(2300);
-    expect(ABOUT_TIMINGS.mobile.arrival).toBeGreaterThanOrEqual(1500);
-    expect(ABOUT_TIMINGS.mobile.arrival).toBeLessThanOrEqual(1700);
-    expect(ABOUT_TIMINGS.reverse).toBeGreaterThanOrEqual(1400);
-    expect(ABOUT_TIMINGS.reverse).toBeLessThanOrEqual(1600);
-    expect(ABOUT_TIMINGS.desktop.reveal).toBeLessThan(ABOUT_TIMINGS.desktop.arrival);
-    expect(ABOUT_TIMINGS.desktop.unlock).toBeLessThan(ABOUT_TIMINGS.desktop.arrival);
-  });
-});
-
-describe("surreal orb projections", () => {
-  it("stays small, distant and route-appropriate on desktop", () => {
-    const home = orbPoseFor("home", 1440, 900, 0);
-    expect(home.diameter / 14.4).toBeGreaterThanOrEqual(3.5); // vw
-    expect(home.diameter / 14.4).toBeLessThanOrEqual(5);
-    const work = orbPoseFor("work", 1440, 900, 0);
-    expect(work.alpha).toBeLessThan(home.alpha); // subdued behind logos
-    expect(work.diameter).toBeLessThan(home.diameter);
-  });
-
-  it("aligns near the valley centre on About and grows with the travel", () => {
-    const settled = orbPoseFor("about", 1440, 900, 0);
-    const deep = orbPoseFor("about", 1440, 900, 1);
-    expect(settled.x).toBe(720);
-    expect(deep.diameter).toBeGreaterThan(settled.diameter);
-  });
-
-  it("reduces prominence on mobile and hides on unrelated routes", () => {
-    const desktop = orbPoseFor("home", 1440, 900, 0);
-    const mobile = orbPoseFor("home", 390, 844, 0);
-    expect(mobile.diameter / 3.9).toBeLessThan(desktop.diameter / 14.4);
-    expect(mobile.alpha).toBeLessThan(desktop.alpha);
-    expect(orbPoseFor("other", 1440, 900, 0).alpha).toBe(0);
+  it("keeps About copy overlapping the original descent", () => {
+    expect(ABOUT_TIMINGS.desktop).toEqual({ arrival: 1700, reveal: 1050, unlock: 1300 });
+    expect(ABOUT_TIMINGS.mobile).toEqual({ arrival: 1200, reveal: 760, unlock: 950 });
+    expect(ABOUT_TIMINGS.reverse).toBe(780);
   });
 });

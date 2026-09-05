@@ -1,7 +1,7 @@
 /**
  * Coordination between the persistent star canvas and the route components.
  *
- * The canvas (StarField) lives in the site layout and never unmounts; the
+ * The flight controller (StarField) lives in the site layout and never unmounts; the
  * homepage and Work views come and go around it. This module is the message
  * bus between them:
  *
@@ -13,6 +13,8 @@
  * Everything is in-memory and per-session by design: a hard refresh lands on
  * the completed state of whatever route it loads, never mid-transition.
  */
+
+import type { SphereProjection } from "./sphere-occlusion";
 
 export type TargetRect = { x: number; y: number; width: number; height: number };
 
@@ -37,6 +39,7 @@ let flightActive: "toWork" | "toHome" | null = null;
 
 export function registerFlightHandler(next: FlightHandler | null): void {
   handler = next;
+  if (!next) flightActive = null;
 }
 
 /**
@@ -64,13 +67,7 @@ export function surgeClouds(durationMs: number, intensity: number): void {
  * past the camera, fading as the camera passes below the deck). Null
  * restores the resting layer. A missing handler is a quiet no-op.
  */
-export type CloudShift = {
-  y: number;
-  scale: number;
-  opacity: number;
-  /** Optional motion blur in px — tied to camera velocity, 0 at rest. */
-  blur?: number;
-};
+export type CloudShift = { y: number; scale: number; opacity: number };
 
 type CloudShiftHandler = (shift: CloudShift | null) => void;
 
@@ -83,6 +80,15 @@ export function registerCloudShiftHandler(next: CloudShiftHandler | null): void 
 export function shiftClouds(shift: CloudShift | null): void {
   if (SKY_DISABLED) return;
   cloudShiftHandler?.(shift);
+}
+
+/** Normalized vertical camera pose: 0 above the deck, 1 in the valley. */
+let aboutPose = 0;
+export function setAboutPose(value: number): void {
+  aboutPose = Math.min(1, Math.max(0, value));
+}
+export function getAboutPose(): number {
+  return aboutPose;
 }
 
 /**
@@ -154,13 +160,14 @@ export function provideWorkTargets(targets: WorkTargets, done: () => void): void
  */
 export function beginHomeFlight(targets: WorkTargets, options: { domIsLive: boolean }): void {
   pendingWorkFlightAt = null;
-  if (SKY_DISABLED || !handler || targets.size === 0) return;
+  if (SKY_DISABLED || !handler) return;
   flightActive = "toHome";
   handler.flyToHome(targets, options);
-  // The canvas owns completion; the return flight never blocks navigation.
-  window.setTimeout(() => {
-    if (flightActive === "toHome") flightActive = null;
-  }, 1400);
+}
+
+/** Follow the renderer's visible clock, including time paused in a hidden tab. */
+export function finishHomeFlight(): void {
+  if (flightActive === "toHome") flightActive = null;
 }
 
 /** True while a return flight is settling — HomeView softens its entrance. */
@@ -180,4 +187,20 @@ export function measureStarTargets(): WorkTargets {
       targets.set(id, { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
   });
   return targets;
+}
+
+/** The world landmark's current projected silhouette, shared with distant stars. */
+export type AnchorSilhouette = {
+  x: number;
+  y: number;
+  radius: number;
+  alpha: number;
+  projection?: SphereProjection;
+};
+let anchorSilhouette: AnchorSilhouette | null = null;
+export function setAnchorSilhouette(value: AnchorSilhouette | null): void {
+  anchorSilhouette = value;
+}
+export function getAnchorSilhouette(): AnchorSilhouette | null {
+  return anchorSilhouette;
 }

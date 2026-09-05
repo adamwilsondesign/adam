@@ -6,6 +6,7 @@ import {
   beginHomeFlight,
   beginWorkFlight,
   consumeWorkEntrance,
+  finishHomeFlight,
   isReturnFlightActive,
   measureStarTargets,
   provideWorkTargets,
@@ -17,6 +18,7 @@ const targetsOf = (ids: string[]): WorkTargets =>
   new Map(ids.map((id, i) => [id, { x: i * 100, y: 50, width: 80, height: 60 }]));
 
 afterEach(() => {
+  vi.useRealTimers();
   registerFlightHandler(null);
   // Drain any pending entrance so tests stay independent.
   provideWorkTargets(new Map(), () => undefined);
@@ -58,6 +60,30 @@ describe("home → work progression", () => {
 });
 
 describe("work → home reverse progression", () => {
+  it("keeps an empty Work return active until the visible flight completes", () => {
+    vi.useFakeTimers();
+    const flyToHome = vi.fn();
+    registerFlightHandler({ flyToWork: vi.fn(), flyToHome });
+    beginHomeFlight(new Map(), { domIsLive: true });
+    expect(flyToHome).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(10000);
+    expect(isReturnFlightActive()).toBe(true);
+    finishHomeFlight();
+    expect(isReturnFlightActive()).toBe(false);
+  });
+
+  it("does not retain return state without a renderer or after an immediate reduced-motion finish", () => {
+    beginHomeFlight(new Map(), { domIsLive: true });
+    expect(isReturnFlightActive()).toBe(false);
+    registerFlightHandler({ flyToWork: vi.fn(), flyToHome: () => finishHomeFlight() });
+    beginHomeFlight(new Map(), { domIsLive: true });
+    expect(isReturnFlightActive()).toBe(false);
+    registerFlightHandler({ flyToWork: vi.fn(), flyToHome: vi.fn() });
+    beginHomeFlight(new Map(), { domIsLive: true });
+    registerFlightHandler(null);
+    expect(isReturnFlightActive()).toBe(false);
+  });
+
   it("starts the reverse flight and reports it active while settling", () => {
     const flyToHome = vi.fn();
     registerFlightHandler({ flyToWork: vi.fn(), flyToHome });

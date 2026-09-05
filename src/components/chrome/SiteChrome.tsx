@@ -4,12 +4,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { ArrowLeftIcon, LinkedInIcon, MailIcon, MenuIcon } from "@/components/icons";
+import { ArrowLeftIcon, LinkedInIcon, MailIcon } from "@/components/icons";
 import type { NavSection } from "@/lib/content/model";
 import { interceptShellNavigation } from "@/lib/shell-navigation";
 
 import { ContactModal } from "./ContactModal";
-import { MenuOverlay } from "./MenuOverlay";
 import { PersonalLogo } from "./PersonalLogo";
 import styles from "./SiteChrome.module.css";
 
@@ -23,26 +22,10 @@ type SiteChromeProps = {
 
 const slotTransition = { duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
 
-/**
- * The persistent shell chrome: back (or menu) at top left, the personal logo
- * centred, theme and contact at top right on every route. It stays mounted
- * across routes so the shell reads as one continuous interface.
- *
- * The header resolves instantly per route (the left-slot swap crossfades in
- * place, so no impossible combination ever renders); the menu appears only
- * when more than one section exists for it to navigate, since a menu that
- * duplicates the visible homepage index adds nothing.
- */
-export function SiteChrome({
-  title,
-  logoUrl,
-  contactUrl,
-  linkedinUrl,
-  navigation,
-}: SiteChromeProps) {
+/** Persistent home logo, contact controls and contextual Back navigation. */
+export function SiteChrome({ title, logoUrl, contactUrl, linkedinUrl }: SiteChromeProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
   const mode =
@@ -55,8 +38,6 @@ export function SiteChrome({
           : pathname.startsWith("/about")
             ? "about"
             : "other";
-  const availableSections = navigation.filter((section) => section.available);
-  const showMenu = availableSections.length > 1;
 
   useEffect(() => {
     router.prefetch("/work");
@@ -64,7 +45,6 @@ export function SiteChrome({
   }, [router]);
 
   const navigate = (href: string) => {
-    setMenuOpen(false);
     if (pathname === href) return;
     if (!interceptShellNavigation(href)) router.push(href);
   };
@@ -101,29 +81,14 @@ export function SiteChrome({
                 exit={{ opacity: 0 }}
                 transition={slotTransition}
               >
-                <button type="button" className={styles.control} onClick={() => navigate("/")}>
-                  <ArrowLeftIcon />
-                  <span className={styles.controlLabel}>Back</span>
-                </button>
-              </motion.div>
-            ) : showMenu ? (
-              <motion.div
-                key="menu"
-                className={`${styles.slotItem} ${styles.menuSlot}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={slotTransition}
-              >
                 <button
                   type="button"
+                  aria-label="Back"
                   className={styles.control}
-                  aria-haspopup="dialog"
-                  aria-expanded={menuOpen}
-                  onClick={() => setMenuOpen(true)}
+                  onClick={() => navigate("/")}
                 >
-                  <MenuIcon />
-                  <span className={styles.controlLabel}>Menu</span>
+                  <ArrowLeftIcon />
+                  <span className={styles.controlLabel}>Back</span>
                 </button>
               </motion.div>
             ) : null}
@@ -176,16 +141,6 @@ export function SiteChrome({
         contactUrl={contactUrl}
         onClose={() => setContactOpen(false)}
       />
-
-      {showMenu ? (
-        <MenuOverlay
-          open={menuOpen}
-          pathname={pathname}
-          sections={availableSections}
-          onClose={() => setMenuOpen(false)}
-          onNavigate={navigate}
-        />
-      ) : null}
     </>
   );
 }
